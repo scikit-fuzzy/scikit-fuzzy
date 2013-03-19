@@ -1,0 +1,17 @@
+- Joshua Warner
+  Project coordination
+  Python translation & optimizations
+
+- Hal Ottesen
+  Original toolbox written for Matlab predating MathWorks' Fuzzy Logic Toolbox
+
+- Zachary Kelm
+  Cleanroom reimplementation of continuous- to discrete-time conversion
+
+- Nicolas Pinto
+  Shape views: ``image.view_as_windows`` and ``image.view_as_blocks`` courtesy
+  of scikit-image
+
+- Nicolas Polivert
+  Shape views: ``image.view_as_windows`` and ``image.view_as_blocks`` courtesy
+  of scikit-image
