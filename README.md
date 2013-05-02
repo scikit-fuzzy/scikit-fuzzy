@@ -1,6 +1,6 @@
 Readme
 ======
-`scikit-fuzzy` is a fuzzy logic scientific toolkit for SciPy.
+`scikit-fuzzy` is a fuzzy logic toolkit for SciPy.
 
 The goals of scikit-fuzzy are:
 * To provide the community with a robust toolkit of independently developed and implemented fuzzy logic algorithms
