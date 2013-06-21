@@ -5,11 +5,11 @@
 originally released under the BSD 3-clause license, retained in `skfuzzy`.
 
 """
-
-__all__ = ['view_as_blocks', 'view_as_windows', 'pad']
-
+from __future__ import print_function
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
+
+__all__ = ['view_as_blocks', 'view_as_windows', 'pad']
 
 
 def view_as_blocks(arr_in, block_shape):
@@ -296,7 +296,7 @@ def pad(I, psf, mode='reflect'):
     else:
         # Check if this doesn't make sense for reflect
         if (xpad >= dx - 1) or (ypad >= dy - 1):
-            print 'Padding required is too large! I and m may be switched.'
+            print('Padding required is too large! I and m may be switched.')
             # Pad as much as possible
             xpad = dx - 2
             ypad = dy - 2

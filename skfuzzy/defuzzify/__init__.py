@@ -11,5 +11,5 @@ __all__ = ['arglcut',
            'lambda_cut',
            'vertex']
 
-from defuzz import (arglcut, centroid, dcentroid, defuzz, lambda_cut_series,
-                    lambda_cut, vertex)
+from .defuzz import (arglcut, centroid, dcentroid, defuzz, lambda_cut_series,
+                     lambda_cut, vertex)
