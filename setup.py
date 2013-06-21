@@ -17,7 +17,7 @@ DOWNLOAD_URL        = 'http://github.com/scikit-fuzzy/scikit-fuzzy'
 VERSION             = '0.1dev'
 PYTHON_VERSION      = (2, 5)
 DEPENDENCIES        = {'numpy': (1, 6),
-                       'scipy': (0, 10)}
+                       'scipy': (0, 9)}
 
 
 import os
@@ -33,7 +33,7 @@ except ImportError:
 
 def check_requirements():
     if sys.version_info < PYTHON_VERSION:
-        raise SystemExit('Python version %d.%d required; found %d.%d.' \
+        raise SystemExit('Python version %d.%d required; found %d.%d.'
                          % (PYTHON_VERSION[0], PYTHON_VERSION[1],
                             sys.version_info[0], sys.version_info[1]))
 
@@ -49,7 +49,7 @@ def check_requirements():
                 dep_err = True
 
         if dep_err:
-            raise ImportError('`%s` version %d.%d or later required.' \
+            raise ImportError('`%s` version %d.%d or later required.'
                               % ((package_name, ) + min_version))
 
 
