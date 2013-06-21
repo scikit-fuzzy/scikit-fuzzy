@@ -236,16 +236,16 @@ def pimf(x, a, b, c, d):
     y[idx] = 0
 
     idx = np.logical_and(a <= x, x <= (a + b) / 2.)
-    y[idx] = 2. * ((x - a) / (b - a)) ** 2.
+    y[idx] = 2. * ((x[idx] - a) / (b - a)) ** 2.
 
-    idx = np.logical_and((a + b) / 2. <= x, x <= b)
-    y[idx] = 1 - 2. * ((x - b) / (b - a)) ** 2.
+    idx = np.logical_and((a + b) / 2. < x, x <= b)
+    y[idx] = 1 - 2. * ((x[idx] - b) / (b - a)) ** 2.
 
-    idx = np.logical_and(c <= x, x <= (c + d) / 2.)
-    y[idx] = 1 - 2. * ((x - c) / (d - c)) ** 2.
+    idx = np.logical_and(c <= x, x < (c + d) / 2.)
+    y[idx] = 1 - 2. * ((x[idx] - c) / (d - c)) ** 2.
 
     idx = np.logical_and((c + d) / 2. <= x, x <= d)
-    y[idx] = 1 - 2. * ((x - d) / (d - c)) ** 2.
+    y[idx] = 2. * ((x[idx] - d) / (d - c)) ** 2.
 
     idx = x >= d
     y[idx] = 0
@@ -380,10 +380,10 @@ def smf(x, a, b):
     y[idx] = 0
 
     idx = np.logical_and(a <= x, x <= (a + b) / 2.)
-    y[idx] = 2. * ((x - a) / (b - a)) ** 2.
+    y[idx] = 2. * ((x[idx] - a) / (b - a)) ** 2.
 
     idx = np.logical_and((a + b) / 2. <= x, x <= b)
-    y[idx] = 1 - 2. * ((x - b) / (b - a)) ** 2.
+    y[idx] = 1 - 2. * ((x[idx] - b) / (b - a)) ** 2.
 
     return y
 
@@ -467,7 +467,7 @@ def trimf(x, abc):
 
 def zmf(x, a, b):
     """
-    Pi-function fuzzy membership generator.
+    Z-function fuzzy membership generator.
 
     Parameters
     ----------
@@ -492,11 +492,11 @@ def zmf(x, a, b):
 
     y = np.ones(len(x))
 
-    idx = np.logical_and(a <= x, x <= (a + b) / 2.)
-    y[idx] = 1 - 2. * ((x - a) / (b - a)) ** 2.
+    idx = np.logical_and(a <= x, x < (a + b) / 2.)
+    y[idx] = 1 - 2. * ((x[idx] - a) / (b - a)) ** 2.
 
     idx = np.logical_and((a + b) / 2. <= x, x <= b)
-    y[idx] = 1 - 2. * ((x - b) / (b - a)) ** 2.
+    y[idx] = 2. * ((x[idx] - b) / (b - a)) ** 2.
 
     idx = x >= b
     y[idx] = 0
