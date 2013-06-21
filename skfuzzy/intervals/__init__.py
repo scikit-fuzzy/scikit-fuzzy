@@ -19,5 +19,5 @@ __all__ = ['addval',
            'scaleval',
            'subval']
 
-from intervalops import (addval, divval, dsw_add, dsw_div, dsw_mult, dsw_sub,
-                         multval, scaleval, subval)
+from .intervalops import (addval, divval, dsw_add, dsw_div, dsw_mult, dsw_sub,
+                          multval, scaleval, subval)

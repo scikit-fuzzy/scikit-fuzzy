@@ -19,36 +19,36 @@ __all__ = []
 ######################
 
 # Core fuzzy mathematics subpackage
-import fuzzymath as _fuzzymath
-from fuzzymath import *
+import skfuzzy.fuzzymath as _fuzzymath
+from skfuzzy.fuzzymath import *
 __all__.extend(_fuzzymath.__all__)
 
 # Fuzzy membership function subpackage
-import membership as _membership
-from membership import *
+import skfuzzy.membership as _membership
+from skfuzzy.membership import *
 __all__.extend(_membership.__all__)
 
 # Clustering subpackage including fuzzy c-means
-import cluster as _cluster
-from cluster import *
+import skfuzzy.cluster as _cluster
+from skfuzzy.cluster import *
 __all__.extend(_cluster.__all__)
 
 # Interval subpackage
-import intervals as _intervals
-from intervals import *
+import skfuzzy.intervals as _intervals
+from skfuzzy.intervals import *
 __all__.extend(_intervals.__all__)
 
 # Filtering subpackage, including 1D and 2D FIRE functions
-import filter as _filter
-from filter import *
+import skfuzzy.filter as _filter
+from skfuzzy.filter import *
 __all__.extend(_filter.__all__)
 
 # Defuzzification subpackage
-import defuzzify as _defuzz
-from defuzzify import *
+import skfuzzy.defuzzify as _defuzz
+from skfuzzy.defuzzify import *
 __all__.extend(_defuzz.__all__)
 
 # Image processing subpackage
-import image as _image
-from image import *
+import skfuzzy.image as _image
+from skfuzzy.image import *
 __all__.extend(_image.__all__)
