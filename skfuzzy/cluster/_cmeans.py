@@ -28,7 +28,7 @@ def _cmeans0(data, U_old, c, m):
     cntr = np.dot(Um, data) / (np.dot(np.ones((data.shape[1], 1)),
                                       np.atleast_2d(Um.sum(axis=1))).T)
 
-    d = _distance(data, cntr).T
+    d = _distance(data, cntr)
     d = np.fmax(d, np.finfo(float).eps)
 
     Jm = (Um * d ** 2).sum()
