@@ -15,7 +15,6 @@ def _nearest(x, y0):
     ----------
     x : 1d array
         Input sequence.
-
     y0 : float
         Desired matching value.
 
@@ -23,7 +22,6 @@ def _nearest(x, y0):
     -------
     idx0 : int
         Index of the nearest value `x0` in x; e.g. x[idx0] = x0.
-
     x0 : float
         Value in `x` which is closest to `y0`.
 
