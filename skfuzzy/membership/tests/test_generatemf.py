@@ -14,7 +14,7 @@ def test_gaussmf():
 def test_gauss2mf():
     x = np.arange(-4, 5.1, 0.1)
     expected = np.ones_like(x)
-    expected[x < 1.2] = np.exp(- (x - 1.2) ** 2. / 0.45 ** 2.)
+    expected[x < 1.2] = np.exp(- (x[x < 1.2] - 1.2) ** 2. / 0.45 ** 2.)
     expected[x > 3.1] = np.exp(- (x[x > 3.1] - 3.1) ** 2. / 0.9 ** 2.)
     test = gauss2mf(x, 1.2, 0.45, 3.1, 0.9)
     assert_allclose(test, expected)
