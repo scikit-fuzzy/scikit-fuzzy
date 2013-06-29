@@ -24,7 +24,7 @@ def cartadd(x, y):
 
     """
     # Ensure rank-1 input
-    x, y = x.ravel(), y.ravel()
+    x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
 
     m, n = len(x), len(y)
 
@@ -52,7 +52,7 @@ def cartprod(x, y):
 
     """
     # Ensure rank-1 input
-    x, y = x.ravel(), y.ravel()
+    x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
 
     m, n = len(x), len(y)
 
