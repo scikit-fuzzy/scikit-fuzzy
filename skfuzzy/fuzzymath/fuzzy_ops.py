@@ -12,15 +12,15 @@ def cartadd(x, y):
 
     Parameters
     ----------
-    x : 1D array or iterable, length M
-        First fuzzy membership vector.
-    y : 1D array or iterable, length N
-        Second fuzzy membership vector.
+    x : 1D array or iterable
+        First fuzzy membership vector, of length M.
+    y : 1D array or iterable
+        Second fuzzy membership vector, of length N.
 
     Returns
     -------
-    z : 2D array, (M, N)
-        Resultant fuzzy membership vector.
+    z : 2D array
+        Cartesian addition of x and y, of shape (M, N).
 
     """
     # Ensure rank-1 input
@@ -40,15 +40,15 @@ def cartprod(x, y):
 
     Parameters
     ----------
-    x : 1D array or iterable, length M
-        First fuzzy membership vector.
-    y : 1D array or iterable, length N
-        Second fuzzy membership vector.
+    x : 1D array or iterable
+        First fuzzy membership vector, of length M.
+    y : 1D array or iterable
+        Second fuzzy membership vector, of length N.
 
     Returns
     -------
-    z : 2D array, size (M, N)
-        Resultant fuzzy membership vector.
+    z : 2D array
+        Cartesian product of x and y, of shape (M, N).
 
     """
     # Ensure rank-1 input
@@ -69,19 +69,24 @@ def classic_relation(A, B):
 
     Parameters
     ----------
-    A : 1D array or iterable, length M
-        First fuzzy membership vector.
-    B : 1D array or iterable, length N
-        Second fuzzy membership vector.
+    A : 1D array or iterable
+        First fuzzy membership vector, of length M.
+    B : 1D array or iterable
+        Second fuzzy membership vector, of length N.
 
     Returns
     -------
     R : 2D array
-        Classic relation matrix defined as
-            R = [A x B] U [(1 - A) x ones(1, N)],
-        where x represents a cartesian product and N is len(`B`).
+        Classic relation matrix between A and B, shape (M, N)
+
+    Note
+    ----
+    The classic relation is defined as
+    ::    R = [A x B] U [(1 - A) x ones(1, N)],
+    where x represents a cartesian product and N is len(`B`).
 
     """
+    A = np.asarray(A)
     return np.fmax(cartprod(A, B), cartprod(1 - A, np.ones(len(B))))
 
 
@@ -163,7 +168,7 @@ def fuzzy_add(x, A, y, B):
     BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
     Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
 
-    # Actually do the addition
+    # Do the addition
     Z = (X + Y).ravel()
     Z_index = np.argsort(Z)
     Z = np.sort(Z)
@@ -243,7 +248,7 @@ def fuzzy_div(x, A, y, B):
     BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
     Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
 
-    # Actually do the division (add eps to avoid div0 errors)
+    # Divide, adding eps to avoid potential div0
     Z = (X / (Y + np.finfo(float).eps)).ravel()
     Z_index = np.argsort(Z)
     Z = np.sort(Z)
@@ -366,7 +371,7 @@ def fuzzy_mult(x, A, y, B):
     BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
     Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
 
-    # Take the element-wise minimum
+    # Multiply universes
     Z = (X * Y).ravel()
     Z_index = np.argsort(Z)
     Z = np.sort(Z)
@@ -427,7 +432,7 @@ def fuzzy_sub(x, A, y, B):
     BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
     Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
 
-    # Actually do the division (add eps to avoid div0 errors)
+    # Subtract universes
     Z = (X - Y).ravel()
     Z_index = np.argsort(Z)
     Z = np.sort(Z)
@@ -614,8 +619,7 @@ def modus_ponens(A, B, Ap, C=None):
     Ap : 1d array
         New fuzzy fact A' (A prime, not transpose)
     C : 1d array, OPTIONAL
-        Keyword argument (must be provided as `C=arrayname` in function call)
-        which represents fuzzy set C on universe Y.
+        Keyword argument representing fuzzy set C on universe Y.
         Default = None, which will use a np.ones() array instead.
 
     Returns
@@ -661,14 +665,14 @@ def relation_min(A, B):
     Parameters
     ----------
     A : 1d array
-        Fuzzy antecedent matrix.
+        Fuzzy antecedent variable of length M.
     B : 1d array
-        Fuzzy consequent matrix.
+        Fuzzy consequent variable of length N.
 
     Returns
     -------
     R : 2d array
-        Fuzzy relation matrix.
+        Fuzzy relation between A and B, of shape (M, N).
 
     """
     m = len(A)
@@ -685,15 +689,15 @@ def relation_product(A, B):
 
     Parameters
     ----------
-    A : 1d array, length M
-        Fuzzy antecedent vector.
-    B : 1d array, length N
-        Fuzzy consequent vector.
+    A : 1d array
+        Fuzzy antecedent variable of length M.
+    B : 1d array
+        Fuzzy consequent variable of length N.
 
     Returns
     -------
-    R : 2d array, (M, N)
-        Fuzzy relational matrix.
+    R : 2d array
+        Fuzzy relation between A and B, of shape (M, N).
 
     """
     m = len(A)
