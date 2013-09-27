@@ -4,6 +4,8 @@ This can be either supervised or unsupervised, depending if U_init kwarg is
 used (if guesses are provided, it is supervised).
 
 """
-__all__ = ['cmeans']
+__all__ = ['cmeans',
+           'cmeans_predict',
+           ]
 
-from ._cmeans import cmeans
+from ._cmeans import cmeans, cmeans_predict
