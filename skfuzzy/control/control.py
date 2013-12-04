@@ -22,6 +22,30 @@ from ..fuzzymath import continuous_to_discrete
 from ..membership import trimf, trapmf
 
 
+def _roundoff_error(exact, test_arr):
+    out = np.zeros_like(test_arr)
+
+    if exact == 0.:
+        zero_mask = np.ones(test_arr.shape, dtype=np.bool)
+        return abs(exact + test_arr)
+
+    else:
+        zero_mask = test_arr == 0.
+
+        out[zero_mask] = abs(exact + test_arr[zero_mask])
+
+        zero_mask = np.logical_not(zero_mask)
+        out[zero_mask] = abs(test_arr / exact - 1.0)
+
+        return out
+
+
+def _float_equal(float1, arr2, epsilon=2.0e-9):
+    float1_tmp = float1.astype(float)
+    arr2_tmp = arr2.astype(float)
+    return (_roundoff_error(float1_tmp, arr2_tmp) < epsilon)
+
+
 def fcontrol(x1, M1, x2, M2, u, Mu, rules, x10, x20, K, Ts, N, A=None, B=None,
              Phi=None, Gamma=None, plot=True):
     """
@@ -112,25 +136,24 @@ def fcontrol(x1, M1, x2, M2, u, Mu, rules, x10, x20, K, Ts, N, A=None, B=None,
         xxx2 = M2[:, x2 == ((Kp2 * xxx[1, 0]).round() / Kp2).round()][0]
 
         # Indices of firing members of M1 & M2
-        i1 = np.nonzero(xxx1 > 0)[0]
-        i2 = np.nonzero(xxx2 > 0)[0]
+        i1 = np.nonzero(xxx1 > 1e-6)[0]
+        i2 = np.nonzero(xxx2 > 1e-6)[0]
 
         # Find truncated output membership (Mamdani) values & aggregation of
         # the union
         mu = np.zeros((1, len(u)))
-        for jj in range(i1):
-            for kk in range(i2):
-                q = np.logical_and(rules[:, 0] == i1[jj, 0],
-                                   rules[:, 1] == i2[kk, 0])
-                r = rules[np.nonzero(q)[0][0], 2]
-                mm = np.fmin(xxx1[i1[jj, 0], 0], xxx2[i2[kk, 0], 0])
+        for jj in range(len(i1)):
+            for kk in range(len(i2)):
+                r = rules[np.logical_and(rules[:, 0] == i1[jj],
+                                         rules[:, 1] == i2[kk]), 2]
+                mm = np.fmin(xxx1[i1[jj], 0], xxx2[i2[kk], 0])
                 mu = np.fmax(mu, np.fmin(mm, Mu[r, :]))
 
         # Defuzzify w/centroid method
-        uu[0, ii] = K * centroid(u, mu)
+        uu[ii] = K * centroid(u, mu)
 
         # Update time for discrete linearized inverting pendulum model
-        xxx = Phi * xxx + Gamma * uu[ii]
+        xxx = Phi.dot(xxx) + Gamma.dot(uu[ii])
         xx1[ii + 1] = xxx[0, 0]
         xx2[ii + 1] = xxx[1, 0]
 
@@ -159,6 +182,8 @@ def fcontrol(x1, M1, x2, M2, u, Mu, rules, x10, x20, K, Ts, N, A=None, B=None,
         ax[2].set_ylabel('Control u')
         ax[2].set_title('Fuzzy logic control action u')
         fig.suptitle('Simulation.  Gain K = ' + str(K))
+
+        plt.show()
 
     return xx1, xx2, uu, tt
 
@@ -216,39 +241,43 @@ def inv_pen(x1, M1, x2, M2, u, Mu, rules, x10, x20, K):
     xxx = np.hstack((x10, x20)).T
     xx1, xx2 = x10, x20
 
-    K1 = np.abs(1. / (x1[1] - x1[0] + np.finfo(float).eps))
-    K2 = np.abs(1. / (x2[1] - x2[0] + np.finfo(float).eps))
-    uu = np.zeros(25)
+    K1 = np.abs(1. / (x1[1] - x1[0]))
+    K2 = np.abs(1. / (x2[1] - x2[0]))
+    uu = np.zeros((1, 25))
+    tt = np.arange(26)
 
     # Consider first 25 time samples
     for ii in range(25):
         # Firing members in M1 and M2
-        xxx1 = M1[:, x1 == np.round(np.round(K1 * xxx[0, 0] / float(K1)))]
-        xxx2 = M2[:, x2 == np.round(np.round(K2 * xxx[1, 0] / float(K2)))]
+        xxx1 = M1[:,
+            _float_equal(np.round(np.round(K1 * xxx[0, 0]) / float(K1)), x1)]
+        xxx2 = M2[:,
+            _float_equal(np.round(np.round(K2 * xxx[1, 0]) / float(K2)), x2)]
 
         # Determine indices for firing members
-        i1 = np.nonzero(xxx1 > 0)[0]
-        i2 = np.nonzero(xxx2 > 0)[0]
+        i1 = np.nonzero(xxx1 > 1e-6)[0]
+        i2 = np.nonzero(xxx2 > 1e-6)[0]
 
         # Truncated output membership (Mamdani) values & aggregation of union
         mu = np.zeros((1, len(u)))
 
-        for jj in range(i1):
-            for kk in range(i2):
-                r = rules[np.logical_and(rules[:, 0] == i1[jj, 0],
-                                         rules[:, 1] == i2[kk, 0])]
-                mm = np.fmin(xxx1[i1[jj, 0], 0], xxx2[i2[kk, 0], 0])
+        for jj in range(len(i1)):
+            for kk in range(len(i2)):
+                r = rules[np.logical_and(rules[:, 0] == i1[jj],
+                                         rules[:, 1] == i2[kk]), 2]
+                mm = np.fmin(xxx1[i1[jj], 0], xxx2[i2[kk], 0])
                 mu = np.fmax(mu, np.fmin(mm, Mu[r, :]))
 
         # Defuzzify using centroid method
-        uu[ii] = K * centroid(u, mu)
+        uu[0, ii] = K * centroid(u, mu)
 
         # Update time step in model
-        xxx = Phi * xxx + Gamma * uu[ii]
-        xxx1 = np.hstack((xx1, xxx[0, 0]))
-        xxx2 = np.hstack((xx2, xxx[1, 0]))
+        xxx = Phi.dot(xxx) + Gamma.dot(uu[:, ii].reshape(1, -1))
+        xx1 = np.hstack((xx1, xxx[0, 0]))
+        xx2 = np.hstack((xx2, xxx[1, 0]))
 
-    uu = np.hstack((0, uu))
+    uu = np.hstack((0, uu[0, :]))
+    uu = uu[np.arange(1, len(tt))]
 
     return xx1, xx2, uu[:25], range(25)
 
@@ -308,7 +337,7 @@ def inv_pend(x10, x20, K, Ts, N, plot=True):
     u = np.arange(-25, 25.25, 0.25)
     NBu = trapmf(u, [-25, -25, -16, -8])  # `Big Negative` membership function
     Nu = trimf(u, [-16, -8, 0])           # `Negative` membership function
-    Zu = trimf(u, [-8, 0, -8])            # `Zero` membership function
+    Zu = trimf(u, [-8, 0, 8])             # `Zero` membership function
     Pu = trimf(u, [0, 8, 16])             # `Positive` membership function
     PBu = trapmf(u, [8, 16, 25, 25])      # `Big Positive` membership function
 
@@ -316,21 +345,20 @@ def inv_pend(x10, x20, K, Ts, N, plot=True):
 
     # Define rulebase & indexing of membership matrices M1, M2, and Mu
     # Also known as Fuzzy Associated Memory (FAM)
-    rules = np.r_[[[1, 1, 1],
-                   [1, 2, 2],
-                   [1, 3, 3],
-                   [2, 1, 2],
-                   [2, 2, 3],
-                   [2, 3, 4],
-                   [3, 1, 3],
-                   [3, 2, 4],
-                   [3, 3, 5]]]
+    rules = np.r_[[[0, 0, 0],
+                   [0, 1, 1],
+                   [0, 2, 2],
+                   [1, 0, 1],
+                   [1, 1, 2],
+                   [1, 2, 3],
+                   [2, 0, 2],
+                   [2, 1, 3],
+                   [2, 2, 4]]]
 
     # Define continuous space system
     A = np.r_[[[0, 1],
                [1, 0]]]
-    B = np.r_[[[0],
-              [-np.pi / 180.]]]
+    B = np.r_[[[0], [-np.pi / 180.]]]
 
     # Convert to discrete-time system
     Phi, Gamma = continuous_to_discrete(A, B, Ts)
@@ -340,40 +368,43 @@ def inv_pend(x10, x20, K, Ts, N, plot=True):
     xxx = np.vstack((x10, x20))
 
     # K1 and K2 found for scaling
-    K1 = np.abs(1. / (x1[1] - x1[0] + np.finfo(float).eps))
-    K2 = np.abs(1. / (x2[1] - x2[0] + np.finfo(float).eps))
+    K1 = np.abs(1. / (x1[1] - x1[0]))
+    K2 = np.abs(1. / (x2[1] - x2[0]))
 
     # Consider first N time samples
     tt = Ts * np.arange(N + 1)
     for ii in range(N):
         # Firing members in M1 and M2
-        xxx1 = M1[:, x1 == np.round(np.round(K1 * xxx[0, 0] / float(K1)))]
-        xxx2 = M2[:, x2 == np.round(np.round(K2 * xxx[1, 0] / float(K2)))]
+        xxx1 = M1[:,
+            _float_equal(np.round(np.round(K1 * xxx[0, 0]) / float(K1)), x1)]
+        xxx2 = M2[:,
+            _float_equal(np.round(np.round(K2 * xxx[1, 0]) / float(K2)), x2)]
 
         # Determine indices for firing members
-        i1 = np.nonzero(xxx1 > 0)[0]
-        i2 = np.nonzero(xxx2 > 0)[0]
+        i1 = np.nonzero(xxx1 > 1e-6)[0]
+        i2 = np.nonzero(xxx2 > 1e-6)[0]
 
         # Truncated output membership (Mamdani) values & aggregation of union
         mu = np.zeros((1, len(u)))
 
-        for jj in range(i1):
-            for kk in range(i2):
-                r = rules[np.logical_and(rules[:, 0] == i1[jj, 0],
-                                         rules[:, 1] == i2[kk, 0])]
-                mm = np.fmin(xxx1[i1[jj, 0], 0],
-                             xxx2[i2[kk, 0], 0])
+        for jj in range(len(i1)):
+            for kk in range(len(i2)):
+                r = rules[np.logical_and(rules[:, 0] == i1[jj],
+                                         rules[:, 1] == i2[kk]), 2]
+                mm = np.fmin(xxx1[i1[jj], 0],
+                             xxx2[i2[kk], 0])
                 mu = np.fmax(mu, np.fmin(mm, Mu[r, :]))
 
         # Defuzzify using centroid method
         uu[0, ii] = K * centroid(u, mu)
 
         # Update time step in model
-        xxx = Phi * xxx + Gamma * uu[ii]
-        xxx1 = np.hstack((xx1, xxx[0, 0]))
-        xxx2 = np.hstack((xx2, xxx[1, 0]))
+        xxx = Phi.dot(xxx) + Gamma.dot(uu[:, ii].reshape(1, -1))
+        xx1 = np.hstack((xx1, xxx[0, 0]))
+        xx2 = np.hstack((xx2, xxx[1, 0]))
 
-    uu = np.hstack((0, uu))
+    uu = np.hstack((0, uu[0, :]))
+    uu = uu[np.arange(len(tt))]
 
     if plot and can_plot:
         # Create the plots.
@@ -385,12 +416,14 @@ def inv_pend(x10, x20, K, Ts, N, plot=True):
         ax[0].set_xlabel('Time, t (sec)')
         ax[0].set_ylabel('Angular position x_1  &  angular velocity x_2')
         ax[0].set_title('Angular position and velocity of inverted pendulum')
-        ax[2].plot(tt, uu, 'k')
-        ax[2].grid()
-        ax[2].axis([0, tt.max(), 0, uu.max()])
-        ax[2].set_xlabel('Time, t (sec)')
-        ax[2].set_ylabel('Control u')
-        ax[2].set_title('Fuzzy logic control action for inverted pendulum')
+        ax[1].plot(tt, uu, 'k')
+        ax[1].grid()
+        ax[1].axis([0, tt.max(), 0, uu.max()])
+        ax[1].set_xlabel('Time, t (sec)')
+        ax[1].set_ylabel('Control u')
+        ax[1].set_title('Fuzzy logic control action for inverted pendulum')
         fig.suptitle('Inverted Pendulum Simulation.  Gain K = ' + str(K))
+
+        plt.show()
 
     return xx1, xx2, uu[:len(tt)], tt
