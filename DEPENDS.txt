@@ -1,0 +1,7 @@
+Dependencies
+============
+Listed below are the dependencies for Scikit-Fuzzy. They are checked when the
+package is installed via `[sudo] python setup.py install`.
+
+* NumPy >= 1.6.0
+* SciPy >= 0.9.0
