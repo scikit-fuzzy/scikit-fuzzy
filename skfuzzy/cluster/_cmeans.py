@@ -12,7 +12,7 @@ def _cmeans0(data, U_old, c, m):
     Ross, Fuzzy Logic w/Engineering Applications (2010) p.352-353, equations
     10.28 - 10.35.
 
-    Parameters inhereited from cmeans()
+    Parameters inherited from cmeans()
 
     This algorithm is a ripe target for Cython.
 
@@ -263,7 +263,7 @@ def _cmeans_predict0(test_data, cntr, U_old, c, m):
     p.352-353, equations 10.28 - 10.35, but this method to generate fuzzy
     predictions was independently derived by Josh Warner.
 
-    Parameters inhereited from cmeans()
+    Parameters inherited from cmeans()
 
     Very similar to initial clustering, except `cntr` is not updated, thus
     the new test data are forced into known (trained) clusters.
