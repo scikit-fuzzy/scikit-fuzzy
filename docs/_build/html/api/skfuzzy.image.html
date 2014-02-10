@@ -1,0 +1,939 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Module: image &mdash; scikit-fuzzy 0.1dev documentation</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <link rel="top" title="scikit-fuzzy 0.1dev documentation" href="../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="http://scikit-fuzzy.org" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="/">Home</a></li>
+<li><a href="/install.html">Download</a></li>
+<li><a href="/api/api.html">Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">Source</a></li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="module-skfuzzy.image">
+<span id="module-image"></span><h1>Module: <tt class="xref py py-mod docutils literal"><span class="pre">image</span></tt><a class="headerlink" href="#module-skfuzzy.image" title="Permalink to this headline">¶</a></h1>
+<p>skfuzzy.image : Essential operations for fuzzy logic on 2-D data and images.</p>
+<dl class="function">
+<dt id="skfuzzy.image.defocus">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">defocus</tt><big>(</big><em>I</em>, <em>bits</em>, <em>pad=True</em>, <em>unpad=False</em><big>)</big><a class="headerlink" href="#skfuzzy.image.defocus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defocusing non-normalized image I.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : ndarray</p>
+<blockquote>
+<div><p>Input image; normalization not required.</p>
+</div></blockquote>
+<p><strong>bits</strong> : float</p>
+<blockquote>
+<div><p>Bit depth of the input image.</p>
+</div></blockquote>
+<p><strong>pad</strong> : bool</p>
+<blockquote>
+<div><p>Controls edge padding. Default = True (DO use padding).</p>
+</div></blockquote>
+<p><strong>unpad</strong> : bool</p>
+<blockquote>
+<div><p>Controls removal of padding in output. Default = False (retain pad).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>D</strong> : ndarray, same shape as I</p>
+<blockquote class="last">
+<div><p>Defocused output image.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Reduces &#8216;salt &amp; pepper&#8217; noise in a quantized image.  Edge padding is used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.focus">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">focus</tt><big>(</big><em>I</em>, <em>p</em>, <em>a</em><big>)</big><a class="headerlink" href="#skfuzzy.image.focus" title="Permalink to this definition">¶</a></dt>
+<dd><p>General contrast booster or diffuser of normalized image I.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : 2d array</p>
+<blockquote>
+<div><p>Input image on range [0, 1]. If values exist outside this range,
+the image will be normalized and returned normalized.</p>
+</div></blockquote>
+<p><strong>p</strong> : float</p>
+<blockquote>
+<div><p>Positive scalar, controlling the contrast mechanism. See Note.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Positive scalar, on range [0, 1]. See Note.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>F</strong> : 2d array</p>
+<blockquote class="last">
+<div><p>Output normalized image with contrast adjusted.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.imcontrast">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">imcontrast</tt><big>(</big><em>x</em>, <em>p</em>, <em>q</em><big>)</big><a class="headerlink" href="#skfuzzy.image.imcontrast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intensifies the gray scale in an image. Uses array implementation of
+the sigmoid function,  y = 1 / (1 + exp(- exp(-p*(x - q)) ))</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : ndarray</p>
+<blockquote>
+<div><p>Input vector or image array.  Should be pre-normalized to range [0, 1]</p>
+</div></blockquote>
+<p><strong>p</strong> : float</p>
+<blockquote>
+<div><p>Power of the intensification (p &gt; 0).</p>
+</div></blockquote>
+<p><strong>q</strong> : float</p>
+<blockquote>
+<div><p>Threshold for intensification.  Values above q will be intensified,
+while values below q will be deintensified (0 &lt; q &lt; 1).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : ndarray, same size as x</p>
+<blockquote class="last">
+<div><p>Output vector or image.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.nmse">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">nmse</tt><big>(</big><em>I</em>, <em>J</em><big>)</big><a class="headerlink" href="#skfuzzy.image.nmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the percent normalized mean square error (NMSE %) between known
+and degraded arrays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : ndarray</p>
+<blockquote>
+<div><p>Known array of arbitrary size and shape. Must be convertible to float.</p>
+</div></blockquote>
+<p><strong>J</strong> : ndarray, same shape as I</p>
+<blockquote>
+<div><p>Degraded array, only requirement is identical shape as I.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>nmse</strong> : float</p>
+<blockquote class="last">
+<div><p>Calculated NMSE, as a percentage.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Usually used to compare a true/original image to a degraded version.
+For this calculation, which image is provided as true and which degraded
+does not matter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.sinmse">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">sinmse</tt><big>(</big><em>F</em>, <em>P</em><big>)</big><a class="headerlink" href="#skfuzzy.image.sinmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale-invariant normalized mean square error (SINMSE) percentage.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>F</strong> : ndarray</p>
+<blockquote>
+<div><p>Known array of arbitrary size and shape. Must be convertible to float.</p>
+</div></blockquote>
+<p><strong>P</strong> : ndarray, same shape as I</p>
+<blockquote>
+<div><p>Degraded array, only requirement is identical shape as I.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sinmse</strong> : float</p>
+<blockquote class="last">
+<div><p>SINMSE value in percent (sinmse * 100%).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.view_as_blocks">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">view_as_blocks</tt><big>(</big><em>arr_in</em>, <em>block_shape</em><big>)</big><a class="headerlink" href="#skfuzzy.image.view_as_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block view of the input n-dimensional array (using re-striding).</p>
+<p>Blocks are non-overlapping views of the input array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arr_in: ndarray</strong> :</p>
+<blockquote>
+<div><p>The n-dimensional input array.</p>
+</div></blockquote>
+<p><strong>block_shape: tuple</strong> :</p>
+<blockquote>
+<div><p>The shape of the block. Each dimension must divide evenly into the
+corresponding dimensions of <cite>arr_in</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>arr_out: ndarray</strong> :</p>
+<blockquote class="last">
+<div><p>Block view of the input array.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">skimage.util.shape</span> <span class="kn">import</span> <span class="n">view_as_blocks</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_blocks</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [4, 5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">array([[2, 3],</span>
+<span class="go">       [6, 7]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">13</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>  
+<span class="go">array([[[ 0,  1,  2,  3,  4,  5],</span>
+<span class="go">        [ 6,  7,  8,  9, 10, 11],</span>
+<span class="go">        [12, 13, 14, 15, 16, 17],</span>
+<span class="go">        [18, 19, 20, 21, 22, 23]],</span>
+<span class="go">       [[24, 25, 26, 27, 28, 29],</span>
+<span class="go">        [30, 31, 32, 33, 34, 35],</span>
+<span class="go">        [36, 37, 38, 39, 40, 41],</span>
+<span class="go">        [42, 43, 44, 45, 46, 47]],</span>
+<span class="go">       [[48, 49, 50, 51, 52, 53],</span>
+<span class="go">        [54, 55, 56, 57, 58, 59],</span>
+<span class="go">        [60, 61, 62, 63, 64, 65],</span>
+<span class="go">        [66, 67, 68, 69, 70, 71]],</span>
+<span class="go">       [[72, 73, 74, 75, 76, 77],</span>
+<span class="go">        [78, 79, 80, 81, 82, 83],</span>
+<span class="go">        [84, 85, 86, 87, 88, 89],</span>
+<span class="go">        [90, 91, 92, 93, 94, 95]]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_blocks</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(4, 2, 3, 1, 2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>  
+<span class="go">array([[[[52, 53],</span>
+<span class="go">         [58, 59]]],</span>
+<span class="go">       [[[76, 77],</span>
+<span class="go">         [82, 83]]]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.view_as_windows">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">view_as_windows</tt><big>(</big><em>arr_in</em>, <em>window_shape</em><big>)</big><a class="headerlink" href="#skfuzzy.image.view_as_windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rolling window view of the input n-dimensional array.</p>
+<p>Windows are overlapping views of the input array, with adjacent windows
+shifted by a single row or column (or an index of a higher dimension).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arr_in: ndarray</strong> :</p>
+<blockquote>
+<div><p>The n-dimensional input array.</p>
+</div></blockquote>
+<p><strong>window_shape: tuple</strong> :</p>
+<blockquote>
+<div><p>Defines the shape of the elementary n-dimensional orthotope
+(better know as hyperrectangle <a class="reference internal" href="#r11" id="id1">[R11]</a>) of the rolling window view.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>arr_out: ndarray</strong> :</p>
+<blockquote class="last">
+<div><p>(rolling) window view of the input array.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>One should be very careful with rolling views when it comes to
+memory usage.  Indeed, although a &#8216;view&#8217; has the same memory
+footprint as its base array, the actual array that emerges when this
+&#8216;view&#8217; is used in a computation is generally a (much) larger array
+than the original, especially for 2-dimensional arrays and above.</p>
+<p>For example, let us consider a 3 dimensional array of size (100,
+100, 100) of <tt class="docutils literal"><span class="pre">float64</span></tt>. This array takes about 8*100**3 Bytes for
+storage which is just 8 MB. If one decides to build a rolling view
+on this array with a window of (3, 3, 3) the hypothetical size of
+the rolling view (if one was to reshape the view for example) would
+be 8*(100-3+1)**3*3**3 which is about 203 MB! The scaling becomes
+even worse as the dimension of the input array becomes larger.</p>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[R11]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> <a class="reference external" href="http://en.wikipedia.org/wiki/Hyperrectangle">http://en.wikipedia.org/wiki/Hyperrectangle</a></td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">skimage.util.shape</span> <span class="kn">import</span> <span class="n">view_as_windows</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [4, 5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">array([[1, 2],</span>
+<span class="go">       [5, 6]])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(8, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [1, 2, 3],</span>
+<span class="go">       [2, 3, 4],</span>
+<span class="go">       [3, 4, 5],</span>
+<span class="go">       [4, 5, 6],</span>
+<span class="go">       [5, 6, 7],</span>
+<span class="go">       [6, 7, 8],</span>
+<span class="go">       [7, 8, 9]])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15],</span>
+<span class="go">       [16, 17, 18, 19]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 2, 4, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span>  
+<span class="go">array([[[[ 0,  1,  2],</span>
+<span class="go">         [ 4,  5,  6],</span>
+<span class="go">         [ 8,  9, 10],</span>
+<span class="go">         [12, 13, 14]],</span>
+<span class="go">        [[ 1,  2,  3],</span>
+<span class="go">         [ 5,  6,  7],</span>
+<span class="go">         [ 9, 10, 11],</span>
+<span class="go">         [13, 14, 15]]],</span>
+<span class="go">       [[[ 4,  5,  6],</span>
+<span class="go">         [ 8,  9, 10],</span>
+<span class="go">         [12, 13, 14],</span>
+<span class="go">         [16, 17, 18]],</span>
+<span class="go">        [[ 5,  6,  7],</span>
+<span class="go">         [ 9, 10, 11],</span>
+<span class="go">         [13, 14, 15],</span>
+<span class="go">         [17, 18, 19]]]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.image.pad">
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">pad</tt><big>(</big><em>I</em>, <em>psf</em>, <em>mode='reflect'</em><big>)</big><a class="headerlink" href="#skfuzzy.image.pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pad borders of a 2d array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : 2d array (Ix, Iy)</p>
+<blockquote>
+<div><p>Input grayscale image</p>
+</div></blockquote>
+<p><strong>psf</strong> : 2d array (mx, my)  OR  Tuple of ints</p>
+<blockquote>
+<div><p>Either the array which will be applied to I (region of interest)
+OR a length 2 Tuple, containing the size of the kernel to be applied
+to <cite>I</cite>.</p>
+</div></blockquote>
+<p><strong>mode</strong> : string</p>
+<blockquote>
+<div><p>Option kwarg; controls how padding is done.</p>
+<ul>
+<li><p class="first">&#8216;reflect&#8217; : Default, reflects values from interior to borders.</p>
+</li>
+<li><p class="first">&#8216;zero&#8217; : Pads with zeros.</p>
+</li>
+<li><dl class="first docutils">
+<dt>&#8216;replicate&#8217; <span class="classifier-delimiter">:</span> <span class="classifier">Pads by repeating outermost row. Corners repeat the</span></dt>
+<dd><p class="first last">corner pixel in an ever-increasing region.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>J</strong> : 2d array (Ix + mx - 1, Iy + my - 1)</p>
+<blockquote class="last">
+<div><p>Padded version of <cite>I</cite> by reflection (including corners).
+Outer row NOT duplicated.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="defocus">
+<h2>defocus<a class="headerlink" href="#defocus" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">defocus</tt><big>(</big><em>I</em>, <em>bits</em>, <em>pad=True</em>, <em>unpad=False</em><big>)</big></dt>
+<dd><p>Defocusing non-normalized image I.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : ndarray</p>
+<blockquote>
+<div><p>Input image; normalization not required.</p>
+</div></blockquote>
+<p><strong>bits</strong> : float</p>
+<blockquote>
+<div><p>Bit depth of the input image.</p>
+</div></blockquote>
+<p><strong>pad</strong> : bool</p>
+<blockquote>
+<div><p>Controls edge padding. Default = True (DO use padding).</p>
+</div></blockquote>
+<p><strong>unpad</strong> : bool</p>
+<blockquote>
+<div><p>Controls removal of padding in output. Default = False (retain pad).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>D</strong> : ndarray, same shape as I</p>
+<blockquote class="last">
+<div><p>Defocused output image.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Reduces &#8216;salt &amp; pepper&#8217; noise in a quantized image.  Edge padding is used.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="focus">
+<h2>focus<a class="headerlink" href="#focus" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">focus</tt><big>(</big><em>I</em>, <em>p</em>, <em>a</em><big>)</big></dt>
+<dd><p>General contrast booster or diffuser of normalized image I.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : 2d array</p>
+<blockquote>
+<div><p>Input image on range [0, 1]. If values exist outside this range,
+the image will be normalized and returned normalized.</p>
+</div></blockquote>
+<p><strong>p</strong> : float</p>
+<blockquote>
+<div><p>Positive scalar, controlling the contrast mechanism. See Note.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Positive scalar, on range [0, 1]. See Note.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>F</strong> : 2d array</p>
+<blockquote class="last">
+<div><p>Output normalized image with contrast adjusted.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="imcontrast">
+<h2>imcontrast<a class="headerlink" href="#imcontrast" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">imcontrast</tt><big>(</big><em>x</em>, <em>p</em>, <em>q</em><big>)</big></dt>
+<dd><p>Intensifies the gray scale in an image. Uses array implementation of
+the sigmoid function,  y = 1 / (1 + exp(- exp(-p*(x - q)) ))</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : ndarray</p>
+<blockquote>
+<div><p>Input vector or image array.  Should be pre-normalized to range [0, 1]</p>
+</div></blockquote>
+<p><strong>p</strong> : float</p>
+<blockquote>
+<div><p>Power of the intensification (p &gt; 0).</p>
+</div></blockquote>
+<p><strong>q</strong> : float</p>
+<blockquote>
+<div><p>Threshold for intensification.  Values above q will be intensified,
+while values below q will be deintensified (0 &lt; q &lt; 1).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : ndarray, same size as x</p>
+<blockquote class="last">
+<div><p>Output vector or image.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="nmse">
+<h2>nmse<a class="headerlink" href="#nmse" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">nmse</tt><big>(</big><em>I</em>, <em>J</em><big>)</big></dt>
+<dd><p>Computes the percent normalized mean square error (NMSE %) between known
+and degraded arrays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : ndarray</p>
+<blockquote>
+<div><p>Known array of arbitrary size and shape. Must be convertible to float.</p>
+</div></blockquote>
+<p><strong>J</strong> : ndarray, same shape as I</p>
+<blockquote>
+<div><p>Degraded array, only requirement is identical shape as I.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>nmse</strong> : float</p>
+<blockquote class="last">
+<div><p>Calculated NMSE, as a percentage.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Usually used to compare a true/original image to a degraded version.
+For this calculation, which image is provided as true and which degraded
+does not matter.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="pad">
+<h2>pad<a class="headerlink" href="#pad" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">pad</tt><big>(</big><em>I</em>, <em>psf</em>, <em>mode='reflect'</em><big>)</big></dt>
+<dd><p>Function to pad borders of a 2d array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>I</strong> : 2d array (Ix, Iy)</p>
+<blockquote>
+<div><p>Input grayscale image</p>
+</div></blockquote>
+<p><strong>psf</strong> : 2d array (mx, my)  OR  Tuple of ints</p>
+<blockquote>
+<div><p>Either the array which will be applied to I (region of interest)
+OR a length 2 Tuple, containing the size of the kernel to be applied
+to <cite>I</cite>.</p>
+</div></blockquote>
+<p><strong>mode</strong> : string</p>
+<blockquote>
+<div><p>Option kwarg; controls how padding is done.</p>
+<ul>
+<li><p class="first">&#8216;reflect&#8217; : Default, reflects values from interior to borders.</p>
+</li>
+<li><p class="first">&#8216;zero&#8217; : Pads with zeros.</p>
+</li>
+<li><dl class="first docutils">
+<dt>&#8216;replicate&#8217; <span class="classifier-delimiter">:</span> <span class="classifier">Pads by repeating outermost row. Corners repeat the</span></dt>
+<dd><p class="first last">corner pixel in an ever-increasing region.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>J</strong> : 2d array (Ix + mx - 1, Iy + my - 1)</p>
+<blockquote class="last">
+<div><p>Padded version of <cite>I</cite> by reflection (including corners).
+Outer row NOT duplicated.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sinmse">
+<h2>sinmse<a class="headerlink" href="#sinmse" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">sinmse</tt><big>(</big><em>F</em>, <em>P</em><big>)</big></dt>
+<dd><p>Scale-invariant normalized mean square error (SINMSE) percentage.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>F</strong> : ndarray</p>
+<blockquote>
+<div><p>Known array of arbitrary size and shape. Must be convertible to float.</p>
+</div></blockquote>
+<p><strong>P</strong> : ndarray, same shape as I</p>
+<blockquote>
+<div><p>Degraded array, only requirement is identical shape as I.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sinmse</strong> : float</p>
+<blockquote class="last">
+<div><p>SINMSE value in percent (sinmse * 100%).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="view-as-blocks">
+<h2>view_as_blocks<a class="headerlink" href="#view-as-blocks" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">view_as_blocks</tt><big>(</big><em>arr_in</em>, <em>block_shape</em><big>)</big></dt>
+<dd><p>Block view of the input n-dimensional array (using re-striding).</p>
+<p>Blocks are non-overlapping views of the input array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arr_in: ndarray</strong> :</p>
+<blockquote>
+<div><p>The n-dimensional input array.</p>
+</div></blockquote>
+<p><strong>block_shape: tuple</strong> :</p>
+<blockquote>
+<div><p>The shape of the block. Each dimension must divide evenly into the
+corresponding dimensions of <cite>arr_in</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>arr_out: ndarray</strong> :</p>
+<blockquote class="last">
+<div><p>Block view of the input array.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">skimage.util.shape</span> <span class="kn">import</span> <span class="n">view_as_blocks</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_blocks</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [4, 5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">array([[2, 3],</span>
+<span class="go">       [6, 7]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">13</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>  
+<span class="go">array([[[ 0,  1,  2,  3,  4,  5],</span>
+<span class="go">        [ 6,  7,  8,  9, 10, 11],</span>
+<span class="go">        [12, 13, 14, 15, 16, 17],</span>
+<span class="go">        [18, 19, 20, 21, 22, 23]],</span>
+<span class="go">       [[24, 25, 26, 27, 28, 29],</span>
+<span class="go">        [30, 31, 32, 33, 34, 35],</span>
+<span class="go">        [36, 37, 38, 39, 40, 41],</span>
+<span class="go">        [42, 43, 44, 45, 46, 47]],</span>
+<span class="go">       [[48, 49, 50, 51, 52, 53],</span>
+<span class="go">        [54, 55, 56, 57, 58, 59],</span>
+<span class="go">        [60, 61, 62, 63, 64, 65],</span>
+<span class="go">        [66, 67, 68, 69, 70, 71]],</span>
+<span class="go">       [[72, 73, 74, 75, 76, 77],</span>
+<span class="go">        [78, 79, 80, 81, 82, 83],</span>
+<span class="go">        [84, 85, 86, 87, 88, 89],</span>
+<span class="go">        [90, 91, 92, 93, 94, 95]]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_blocks</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(4, 2, 3, 1, 2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>  
+<span class="go">array([[[[52, 53],</span>
+<span class="go">         [58, 59]]],</span>
+<span class="go">       [[[76, 77],</span>
+<span class="go">         [82, 83]]]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="view-as-windows">
+<h2>view_as_windows<a class="headerlink" href="#view-as-windows" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.image.</tt><tt class="descname">view_as_windows</tt><big>(</big><em>arr_in</em>, <em>window_shape</em><big>)</big></dt>
+<dd><p>Rolling window view of the input n-dimensional array.</p>
+<p>Windows are overlapping views of the input array, with adjacent windows
+shifted by a single row or column (or an index of a higher dimension).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>arr_in: ndarray</strong> :</p>
+<blockquote>
+<div><p>The n-dimensional input array.</p>
+</div></blockquote>
+<p><strong>window_shape: tuple</strong> :</p>
+<blockquote>
+<div><p>Defines the shape of the elementary n-dimensional orthotope
+(better know as hyperrectangle <a class="reference internal" href="#r12" id="id3">[R12]</a>) of the rolling window view.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>arr_out: ndarray</strong> :</p>
+<blockquote class="last">
+<div><p>(rolling) window view of the input array.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>One should be very careful with rolling views when it comes to
+memory usage.  Indeed, although a &#8216;view&#8217; has the same memory
+footprint as its base array, the actual array that emerges when this
+&#8216;view&#8217; is used in a computation is generally a (much) larger array
+than the original, especially for 2-dimensional arrays and above.</p>
+<p>For example, let us consider a 3 dimensional array of size (100,
+100, 100) of <tt class="docutils literal"><span class="pre">float64</span></tt>. This array takes about 8*100**3 Bytes for
+storage which is just 8 MB. If one decides to build a rolling view
+on this array with a window of (3, 3, 3) the hypothetical size of
+the rolling view (if one was to reshape the view for example) would
+be 8*(100-3+1)**3*3**3 which is about 203 MB! The scaling becomes
+even worse as the dimension of the input array becomes larger.</p>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[R12]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id4">2</a>)</em> <a class="reference external" href="http://en.wikipedia.org/wiki/Hyperrectangle">http://en.wikipedia.org/wiki/Hyperrectangle</a></td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">skimage.util.shape</span> <span class="kn">import</span> <span class="n">view_as_windows</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [4, 5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">array([[1, 2],</span>
+<span class="go">       [5, 6]])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(8, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [1, 2, 3],</span>
+<span class="go">       [2, 3, 4],</span>
+<span class="go">       [3, 4, 5],</span>
+<span class="go">       [4, 5, 6],</span>
+<span class="go">       [5, 6, 7],</span>
+<span class="go">       [6, 7, 8],</span>
+<span class="go">       [7, 8, 9]])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">array([[ 0,  1,  2,  3],</span>
+<span class="go">       [ 4,  5,  6,  7],</span>
+<span class="go">       [ 8,  9, 10, 11],</span>
+<span class="go">       [12, 13, 14, 15],</span>
+<span class="go">       [16, 17, 18, 19]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">window_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 2, 4, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span>  
+<span class="go">array([[[[ 0,  1,  2],</span>
+<span class="go">         [ 4,  5,  6],</span>
+<span class="go">         [ 8,  9, 10],</span>
+<span class="go">         [12, 13, 14]],</span>
+<span class="go">        [[ 1,  2,  3],</span>
+<span class="go">         [ 5,  6,  7],</span>
+<span class="go">         [ 9, 10, 11],</span>
+<span class="go">         [13, 14, 15]]],</span>
+<span class="go">       [[[ 4,  5,  6],</span>
+<span class="go">         [ 8,  9, 10],</span>
+<span class="go">         [12, 13, 14],</span>
+<span class="go">         [16, 17, 18]],</span>
+<span class="go">        [[ 5,  6,  7],</span>
+<span class="go">         [ 9, 10, 11],</span>
+<span class="go">         [13, 14, 15],</span>
+<span class="go">         [17, 18, 19]]]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Module: <tt class="docutils literal"><span class="pre">image</span></tt></a><ul class="nav nav-list">
+<li><a class="reference internal" href="#defocus">defocus</a></li>
+<li><a class="reference internal" href="#focus">focus</a></li>
+<li><a class="reference internal" href="#imcontrast">imcontrast</a></li>
+<li><a class="reference internal" href="#nmse">nmse</a></li>
+<li><a class="reference internal" href="#pad">pad</a></li>
+<li><a class="reference internal" href="#sinmse">sinmse</a></li>
+<li><a class="reference internal" href="#view-as-blocks">view_as_blocks</a></li>
+<li><a class="reference internal" href="#view-as-windows">view_as_windows</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

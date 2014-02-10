@@ -1,0 +1,118 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.fuzzymath &mdash; scikit-fuzzy 0.1dev documentation</title>
+    
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link href="../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <link rel="top" title="scikit-fuzzy 0.1dev documentation" href="../../index.html" />
+        <link rel="up" title="skfuzzy" href="../skfuzzy.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="http://scikit-fuzzy.org" class="logo"><img src="../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="/">Home</a></li>
+<li><a href="/install.html">Download</a></li>
+<li><a href="/api/api.html">Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">Source</a></li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.fuzzymath</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Fuzzy mathematics subpackage, containing essential mathematical operations for</span>
+<span class="sd">fuzzy sets and universe variables.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;cartadd&#39;</span><span class="p">,</span>
+           <span class="s">&#39;cartprod&#39;</span><span class="p">,</span>
+           <span class="s">&#39;classic_relation&#39;</span><span class="p">,</span>
+           <span class="s">&#39;continuous_to_discrete&#39;</span><span class="p">,</span>
+           <span class="s">&#39;contrast&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_add&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_sub&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_mult&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_div&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_min&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_or&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_and&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_not&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_compare&#39;</span><span class="p">,</span>
+           <span class="s">&#39;fuzzy_similarity&#39;</span><span class="p">,</span>
+           <span class="s">&#39;inner_product&#39;</span><span class="p">,</span>
+           <span class="s">&#39;interp_membership&#39;</span><span class="p">,</span>
+           <span class="s">&#39;interp10&#39;</span><span class="p">,</span>
+           <span class="s">&#39;maxmin_composition&#39;</span><span class="p">,</span>
+           <span class="s">&#39;maxprod_composition&#39;</span><span class="p">,</span>
+           <span class="s">&#39;modus_ponens&#39;</span><span class="p">,</span>
+           <span class="s">&#39;outer_product&#39;</span><span class="p">,</span>
+           <span class="s">&#39;relation_min&#39;</span><span class="p">,</span>
+           <span class="s">&#39;relation_product&#39;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">.fuzzy_ops</span> <span class="kn">import</span> <span class="p">(</span><span class="n">cartadd</span><span class="p">,</span> <span class="n">cartprod</span><span class="p">,</span> <span class="n">classic_relation</span><span class="p">,</span> <span class="n">contrast</span><span class="p">,</span>
+                        <span class="n">fuzzy_add</span><span class="p">,</span> <span class="n">fuzzy_sub</span><span class="p">,</span> <span class="n">fuzzy_mult</span><span class="p">,</span> <span class="n">fuzzy_div</span><span class="p">,</span>
+                        <span class="n">fuzzy_min</span><span class="p">,</span> <span class="n">fuzzy_compare</span><span class="p">,</span> <span class="n">fuzzy_similarity</span><span class="p">,</span>
+                        <span class="n">inner_product</span><span class="p">,</span> <span class="n">interp_membership</span><span class="p">,</span> <span class="n">interp10</span><span class="p">,</span>
+                        <span class="n">maxmin_composition</span><span class="p">,</span> <span class="n">maxprod_composition</span><span class="p">,</span> <span class="n">modus_ponens</span><span class="p">,</span>
+                        <span class="n">outer_product</span><span class="p">,</span> <span class="n">relation_min</span><span class="p">,</span> <span class="n">relation_product</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.fuzzy_logic</span> <span class="kn">import</span> <span class="n">fuzzy_and</span><span class="p">,</span> <span class="n">fuzzy_or</span><span class="p">,</span> <span class="n">fuzzy_not</span>
+
+<span class="kn">from</span> <span class="nn">._continuous_to_discrete</span> <span class="kn">import</span> <span class="n">continuous_to_discrete</span>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

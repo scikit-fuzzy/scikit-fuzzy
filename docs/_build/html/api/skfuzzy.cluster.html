@@ -1,0 +1,445 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Module: cluster &mdash; scikit-fuzzy 0.1dev documentation</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <link rel="top" title="scikit-fuzzy 0.1dev documentation" href="../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="http://scikit-fuzzy.org" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="/">Home</a></li>
+<li><a href="/install.html">Download</a></li>
+<li><a href="/api/api.html">Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">Source</a></li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="module-skfuzzy.cluster">
+<span id="module-cluster"></span><h1>Module: <tt class="xref py py-mod docutils literal"><span class="pre">cluster</span></tt><a class="headerlink" href="#module-skfuzzy.cluster" title="Permalink to this headline">¶</a></h1>
+<p>Fuzzy clustering subpackage, containing fuzzy c-means clustering algorithm.
+This can be either supervised or unsupervised, depending if U_init kwarg is
+used (if guesses are provided, it is supervised).</p>
+<dl class="function">
+<dt id="skfuzzy.cluster.cmeans">
+<tt class="descclassname">skfuzzy.cluster.</tt><tt class="descname">cmeans</tt><big>(</big><em>data</em>, <em>c</em>, <em>m</em>, <em>error</em>, <em>maxiter</em>, <em>U_init=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#skfuzzy.cluster.cmeans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuzzy c-means clustering algorithm for training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Data to be clustered.  N is the number of data sets; S is the number
+of features within each sample vector.</p>
+</div></blockquote>
+<p><strong>c</strong> : int</p>
+<blockquote>
+<div><p>Desired number of clusters or classes.</p>
+</div></blockquote>
+<p><strong>m</strong> : float</p>
+<blockquote>
+<div><p>Array exponentiation applied to the membership function U_old at each
+iteration, where U_new = U_old ** m.</p>
+</div></blockquote>
+<p><strong>error</strong> : float</p>
+<blockquote>
+<div><p>Stopping criterion; stop early if the norm of (U[p] - U[p-1]) &lt; error.</p>
+</div></blockquote>
+<p><strong>maxiter</strong> : int</p>
+<blockquote>
+<div><p>Maximum number of iterations allowed.</p>
+</div></blockquote>
+<p><strong>U_init</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Initial fuzzy c-partitioned matrix. If none provided, algorithm is
+randomly initialized.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int</p>
+<blockquote>
+<div><p>If provided, sets random seed of U_init. No effect if U_init is
+provided. Mainly for debug/testing purposes.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cntr</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Cluster centers.  Data for each center along each feature provided
+for every cluster (of the <cite>c</cite> requested clusters).</p>
+</div></blockquote>
+<p><strong>U</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final fuzzy c-partitioned matrix.</p>
+</div></blockquote>
+<p><strong>U0</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Initial guess at fuzzy c-partitioned matrix (either provided U_init or
+random guess used if U_init was not provided).</p>
+</div></blockquote>
+<p><strong>d</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final Euclidian distance matrix.</p>
+</div></blockquote>
+<p><strong>Jm</strong> : 1d array, length P</p>
+<blockquote>
+<div><p>Objective function history.</p>
+</div></blockquote>
+<p><strong>p</strong> : int</p>
+<blockquote>
+<div><p>Number of iterations run.</p>
+</div></blockquote>
+<p><strong>fpc</strong> : float</p>
+<blockquote class="last">
+<div><p>Final fuzzy partition coefficient.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[R7]</a></td><td>Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
+Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.cluster.cmeans_predict">
+<tt class="descclassname">skfuzzy.cluster.</tt><tt class="descname">cmeans_predict</tt><big>(</big><em>test_data</em>, <em>cntr_trained</em>, <em>m</em>, <em>error</em>, <em>maxiter</em>, <em>U_init=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#skfuzzy.cluster.cmeans_predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuzzy c-means clustering algorithm for training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test_data</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>New, independent data set to be predicted based on trained c-means.
+N is the number of data sets; S is the number of features within each
+sample vector.</p>
+</div></blockquote>
+<p><strong>cntr_trained</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Location of trained centers from prior training c-means.</p>
+</div></blockquote>
+<p><strong>m</strong> : float</p>
+<blockquote>
+<div><p>Array exponentiation applied to the membership function U_old at each
+iteration, where U_new = U_old ** m.</p>
+</div></blockquote>
+<p><strong>error</strong> : float</p>
+<blockquote>
+<div><p>Stopping criterion; stop early if the norm of (U[p] - U[p-1]) &lt; error.</p>
+</div></blockquote>
+<p><strong>maxiter</strong> : int</p>
+<blockquote>
+<div><p>Maximum number of iterations allowed.</p>
+</div></blockquote>
+<p><strong>U_init</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Initial fuzzy c-partitioned matrix. If none provided, algorithm is
+randomly initialized.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int</p>
+<blockquote>
+<div><p>If provided, sets random seed of U_init. No effect if U_init is
+provided. Mainly for debug/testing purposes.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cntr</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Cluster centers.  Data for each center along each feature provided
+for every cluster (of the <cite>c</cite> requested clusters).</p>
+</div></blockquote>
+<p><strong>U</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final fuzzy c-partitioned matrix.</p>
+</div></blockquote>
+<p><strong>U0</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Initial guess at fuzzy c-partitioned matrix (either provided U_init or
+random guess used if U_init was not provided).</p>
+</div></blockquote>
+<p><strong>d</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final Euclidian distance matrix.</p>
+</div></blockquote>
+<p><strong>Jm</strong> : 1d array, length P</p>
+<blockquote>
+<div><p>Objective function history.</p>
+</div></blockquote>
+<p><strong>p</strong> : int</p>
+<blockquote>
+<div><p>Number of iterations run.</p>
+</div></blockquote>
+<p><strong>fpc</strong> : float</p>
+<blockquote class="last">
+<div><p>Final fuzzy partition coefficient.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[R8]</a></td><td>Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
+Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="cmeans">
+<h2>cmeans<a class="headerlink" href="#cmeans" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.cluster.</tt><tt class="descname">cmeans</tt><big>(</big><em>data</em>, <em>c</em>, <em>m</em>, <em>error</em>, <em>maxiter</em>, <em>U_init=None</em>, <em>seed=None</em><big>)</big></dt>
+<dd><p>Fuzzy c-means clustering algorithm for training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Data to be clustered.  N is the number of data sets; S is the number
+of features within each sample vector.</p>
+</div></blockquote>
+<p><strong>c</strong> : int</p>
+<blockquote>
+<div><p>Desired number of clusters or classes.</p>
+</div></blockquote>
+<p><strong>m</strong> : float</p>
+<blockquote>
+<div><p>Array exponentiation applied to the membership function U_old at each
+iteration, where U_new = U_old ** m.</p>
+</div></blockquote>
+<p><strong>error</strong> : float</p>
+<blockquote>
+<div><p>Stopping criterion; stop early if the norm of (U[p] - U[p-1]) &lt; error.</p>
+</div></blockquote>
+<p><strong>maxiter</strong> : int</p>
+<blockquote>
+<div><p>Maximum number of iterations allowed.</p>
+</div></blockquote>
+<p><strong>U_init</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Initial fuzzy c-partitioned matrix. If none provided, algorithm is
+randomly initialized.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int</p>
+<blockquote>
+<div><p>If provided, sets random seed of U_init. No effect if U_init is
+provided. Mainly for debug/testing purposes.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cntr</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Cluster centers.  Data for each center along each feature provided
+for every cluster (of the <cite>c</cite> requested clusters).</p>
+</div></blockquote>
+<p><strong>U</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final fuzzy c-partitioned matrix.</p>
+</div></blockquote>
+<p><strong>U0</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Initial guess at fuzzy c-partitioned matrix (either provided U_init or
+random guess used if U_init was not provided).</p>
+</div></blockquote>
+<p><strong>d</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final Euclidian distance matrix.</p>
+</div></blockquote>
+<p><strong>Jm</strong> : 1d array, length P</p>
+<blockquote>
+<div><p>Objective function history.</p>
+</div></blockquote>
+<p><strong>p</strong> : int</p>
+<blockquote>
+<div><p>Number of iterations run.</p>
+</div></blockquote>
+<p><strong>fpc</strong> : float</p>
+<blockquote class="last">
+<div><p>Final fuzzy partition coefficient.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[R9]</a></td><td>Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
+Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="cmeans-predict">
+<h2>cmeans_predict<a class="headerlink" href="#cmeans-predict" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.cluster.</tt><tt class="descname">cmeans_predict</tt><big>(</big><em>test_data</em>, <em>cntr_trained</em>, <em>m</em>, <em>error</em>, <em>maxiter</em>, <em>U_init=None</em>, <em>seed=None</em><big>)</big></dt>
+<dd><p>Fuzzy c-means clustering algorithm for training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test_data</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>New, independent data set to be predicted based on trained c-means.
+N is the number of data sets; S is the number of features within each
+sample vector.</p>
+</div></blockquote>
+<p><strong>cntr_trained</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Location of trained centers from prior training c-means.</p>
+</div></blockquote>
+<p><strong>m</strong> : float</p>
+<blockquote>
+<div><p>Array exponentiation applied to the membership function U_old at each
+iteration, where U_new = U_old ** m.</p>
+</div></blockquote>
+<p><strong>error</strong> : float</p>
+<blockquote>
+<div><p>Stopping criterion; stop early if the norm of (U[p] - U[p-1]) &lt; error.</p>
+</div></blockquote>
+<p><strong>maxiter</strong> : int</p>
+<blockquote>
+<div><p>Maximum number of iterations allowed.</p>
+</div></blockquote>
+<p><strong>U_init</strong> : 2d array, size (S, N)</p>
+<blockquote>
+<div><p>Initial fuzzy c-partitioned matrix. If none provided, algorithm is
+randomly initialized.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int</p>
+<blockquote>
+<div><p>If provided, sets random seed of U_init. No effect if U_init is
+provided. Mainly for debug/testing purposes.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cntr</strong> : 2d array, size (S, c)</p>
+<blockquote>
+<div><p>Cluster centers.  Data for each center along each feature provided
+for every cluster (of the <cite>c</cite> requested clusters).</p>
+</div></blockquote>
+<p><strong>U</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final fuzzy c-partitioned matrix.</p>
+</div></blockquote>
+<p><strong>U0</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Initial guess at fuzzy c-partitioned matrix (either provided U_init or
+random guess used if U_init was not provided).</p>
+</div></blockquote>
+<p><strong>d</strong> : 2d array, (S, N)</p>
+<blockquote>
+<div><p>Final Euclidian distance matrix.</p>
+</div></blockquote>
+<p><strong>Jm</strong> : 1d array, length P</p>
+<blockquote>
+<div><p>Objective function history.</p>
+</div></blockquote>
+<p><strong>p</strong> : int</p>
+<blockquote>
+<div><p>Number of iterations run.</p>
+</div></blockquote>
+<p><strong>fpc</strong> : float</p>
+<blockquote class="last">
+<div><p>Final fuzzy partition coefficient.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[R10]</a></td><td>Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
+Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Module: <tt class="docutils literal"><span class="pre">cluster</span></tt></a><ul class="nav nav-list">
+<li><a class="reference internal" href="#cmeans">cmeans</a></li>
+<li><a class="reference internal" href="#cmeans-predict">cmeans_predict</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

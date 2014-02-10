@@ -1,0 +1,627 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Module: defuzzify &mdash; scikit-fuzzy 0.1dev documentation</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <link rel="top" title="scikit-fuzzy 0.1dev documentation" href="../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="http://scikit-fuzzy.org" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="/">Home</a></li>
+<li><a href="/install.html">Download</a></li>
+<li><a href="/api/api.html">Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">Source</a></li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="module-skfuzzy.defuzzify">
+<span id="module-defuzzify"></span><h1>Module: <tt class="xref py py-mod docutils literal"><span class="pre">defuzzify</span></tt><a class="headerlink" href="#module-skfuzzy.defuzzify" title="Permalink to this headline">¶</a></h1>
+<p>skfuzzy.defuzzify subpackage, containing various defuzzification algorithms.</p>
+<dl class="function">
+<dt id="skfuzzy.defuzzify.arglcut">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">arglcut</tt><big>(</big><em>ms</em>, <em>lambdacut</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.arglcut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the subset of indices <cite>mi</cite> of the elements in an N-point
+resultant fuzzy membership sequence <cite>ms</cite> that have a grade of membership
+&gt;= lambdacut.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ms</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership sequence.</p>
+</div></blockquote>
+<p><strong>lambdacut</strong> : float</p>
+<blockquote>
+<div><p>Value used for lambda cutting.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>lidx</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Indices corresponding to the lambda-cut subset of <cite>ms</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.centroid">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">centroid</tt><big>(</big><em>x</em>, <em>mfx</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.centroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defuzzification using centroid (<cite>center of gravity</cite>) method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array, length M</p>
+<blockquote>
+<div><p>Independent variable</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array, length M</p>
+<blockquote>
+<div><p>Fuzzy membership function</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : 1d array, length M</p>
+<blockquote class="last">
+<div><p>Defuzzified result</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">DCENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DEFUZZ</span></tt></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.dcentroid">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">dcentroid</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>x0</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.dcentroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defuzzification using a differential centroidal method about <cite>x0</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Fuzzy membership function.</p>
+</div></blockquote>
+<p><strong>x0</strong> : float</p>
+<blockquote>
+<div><p>Central value to calculate differential centroid about.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Defuzzified result.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">CENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DEFUZZ</span></tt></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.defuzz">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">defuzz</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>mode</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.defuzz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defuzzification of a membership function, returning a defuzzified value
+of the function at x, using various defuzzification methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable, length N</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array of iterable, length N</p>
+<blockquote>
+<div><p>Fuzzy membership function.</p>
+</div></blockquote>
+<p><strong>mode</strong> : string</p>
+<blockquote>
+<div><p>Controls which defuzzification method will be used.
+* &#8216;centroid&#8217;: Centroid of area
+* &#8216;bisector&#8217;: bisector of area
+* &#8216;mom&#8217;        : mean of maximum
+* &#8216;som&#8217;        : min of maximum
+* &#8216;lom&#8217;        : max of maximum</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : float or int</p>
+<blockquote class="last">
+<div><p>Defuzzified result.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">CENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DCENTROID</span></tt></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.lambda_cut_series">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">lambda_cut_series</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>N</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.lambda_cut_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines a series of lambda-cuts in a sweep from 0+ to 1.0 in N steps.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Universe function for fuzzy membership function mfx.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership function for x.</p>
+</div></blockquote>
+<p><strong>N</strong> : int</p>
+<blockquote>
+<div><p>Number of steps.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>z</strong> : 2d array, (N, 3)</p>
+<blockquote class="last">
+<div><p>Lambda cut intevals.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.lambda_cut">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">lambda_cut</tt><big>(</big><em>ms</em>, <em>lcut</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.lambda_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the crisp (binary) lambda-cut set of the membership sequence <cite>ms</cite>
+with membership &gt;= <cite>lcut</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ms</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership set.</p>
+</div></blockquote>
+<p><strong>lcut</strong> : float</p>
+<blockquote>
+<div><p>Value used for lambda-cut, on range [0, 1.0].</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>mlambda</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Lambda-cut set of <cite>ms</cite>: ones if ms[i] &gt;= lcut, zeros otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.defuzzify.vertex">
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">vertex</tt><big>(</big><em>x</em>, <em>mfy</em>, <em>funct</em>, <em>N</em>, <em>Ex=None</em><big>)</big><a class="headerlink" href="#skfuzzy.defuzzify.vertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the fuzzy membership function for variable x, u(x), where the
+function y = f(x) has ZERO OR ONE EXTREMUM {Ex, Ey} within the range of
+lambda-cuts, and Ey = f(Ex) &amp; fuzzy variable x has    membership function
+u(x). Vertex method used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array, length N</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfy ; 1d array, length N</strong> :</p>
+<blockquote>
+<div><p>Fuzzy membership function for <cite>x</cite>, also known as u(x).</p>
+</div></blockquote>
+<p><strong>funct</strong> : string</p>
+<blockquote>
+<div><p>Function transforming provided independent variable <cite>x</cite> into derived
+variable <cite>y</cite>. Assume <cite>&gt;&gt;&gt; import numpy as np</cite>, assign to <cite>y</cite>, and
+use variable <cite>x</cite> (lowercase) in the proper Python statement. Ex:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;y = x ** 2.&#8217;</li>
+<li>&#8216;y = 2 * np.exp(x) + 2&#8217;</li>
+<li>&#8216;y = np.cos(x) / x&#8217;</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p><strong>N</strong> : int</p>
+<blockquote>
+<div><p>Number of steps in interval.</p>
+</div></blockquote>
+<p><strong>Ex</strong> : float</p>
+<blockquote>
+<div><p>Value of <cite>x</cite> where the function reaches an extremum. If an extremum
+exists, <cite>x</cite> must be provided.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>yy</strong> : 2d array, shape (2*(N+1), 2)</p>
+<blockquote class="last">
+<div><p>First column is the ordered min &amp; max y-values of the lambda cuts on
+u(y), including extremes. Second column provides lambda-cut values.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="arglcut">
+<h2>arglcut<a class="headerlink" href="#arglcut" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">arglcut</tt><big>(</big><em>ms</em>, <em>lambdacut</em><big>)</big></dt>
+<dd><p>Determines the subset of indices <cite>mi</cite> of the elements in an N-point
+resultant fuzzy membership sequence <cite>ms</cite> that have a grade of membership
+&gt;= lambdacut.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ms</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership sequence.</p>
+</div></blockquote>
+<p><strong>lambdacut</strong> : float</p>
+<blockquote>
+<div><p>Value used for lambda cutting.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>lidx</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Indices corresponding to the lambda-cut subset of <cite>ms</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="centroid">
+<h2>centroid<a class="headerlink" href="#centroid" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">centroid</tt><big>(</big><em>x</em>, <em>mfx</em><big>)</big></dt>
+<dd><p>Defuzzification using centroid (<cite>center of gravity</cite>) method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array, length M</p>
+<blockquote>
+<div><p>Independent variable</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array, length M</p>
+<blockquote>
+<div><p>Fuzzy membership function</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : 1d array, length M</p>
+<blockquote class="last">
+<div><p>Defuzzified result</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">DCENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DEFUZZ</span></tt></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="dcentroid">
+<h2>dcentroid<a class="headerlink" href="#dcentroid" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">dcentroid</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>x0</em><big>)</big></dt>
+<dd><p>Defuzzification using a differential centroidal method about <cite>x0</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Fuzzy membership function.</p>
+</div></blockquote>
+<p><strong>x0</strong> : float</p>
+<blockquote>
+<div><p>Central value to calculate differential centroid about.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Defuzzified result.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">CENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DEFUZZ</span></tt></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="defuzz">
+<h2>defuzz<a class="headerlink" href="#defuzz" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">defuzz</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>mode</em><big>)</big></dt>
+<dd><p>Defuzzification of a membership function, returning a defuzzified value
+of the function at x, using various defuzzification methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable, length N</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array of iterable, length N</p>
+<blockquote>
+<div><p>Fuzzy membership function.</p>
+</div></blockquote>
+<p><strong>mode</strong> : string</p>
+<blockquote>
+<div><p>Controls which defuzzification method will be used.
+* &#8216;centroid&#8217;: Centroid of area
+* &#8216;bisector&#8217;: bisector of area
+* &#8216;mom&#8217;        : mean of maximum
+* &#8216;som&#8217;        : min of maximum
+* &#8216;lom&#8217;        : max of maximum</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : float or int</p>
+<blockquote class="last">
+<div><p>Defuzzified result.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">CENTROID</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">DCENTROID</span></tt></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="lambda-cut">
+<h2>lambda_cut<a class="headerlink" href="#lambda-cut" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">lambda_cut</tt><big>(</big><em>ms</em>, <em>lcut</em><big>)</big></dt>
+<dd><p>Returns the crisp (binary) lambda-cut set of the membership sequence <cite>ms</cite>
+with membership &gt;= <cite>lcut</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ms</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership set.</p>
+</div></blockquote>
+<p><strong>lcut</strong> : float</p>
+<blockquote>
+<div><p>Value used for lambda-cut, on range [0, 1.0].</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>mlambda</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Lambda-cut set of <cite>ms</cite>: ones if ms[i] &gt;= lcut, zeros otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="lambda-cut-series">
+<h2>lambda_cut_series<a class="headerlink" href="#lambda-cut-series" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">lambda_cut_series</tt><big>(</big><em>x</em>, <em>mfx</em>, <em>N</em><big>)</big></dt>
+<dd><p>Determines a series of lambda-cuts in a sweep from 0+ to 1.0 in N steps.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Universe function for fuzzy membership function mfx.</p>
+</div></blockquote>
+<p><strong>mfx</strong> : 1d array</p>
+<blockquote>
+<div><p>Fuzzy membership function for x.</p>
+</div></blockquote>
+<p><strong>N</strong> : int</p>
+<blockquote>
+<div><p>Number of steps.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>z</strong> : 2d array, (N, 3)</p>
+<blockquote class="last">
+<div><p>Lambda cut intevals.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="vertex">
+<h2>vertex<a class="headerlink" href="#vertex" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.defuzzify.</tt><tt class="descname">vertex</tt><big>(</big><em>x</em>, <em>mfy</em>, <em>funct</em>, <em>N</em>, <em>Ex=None</em><big>)</big></dt>
+<dd><p>Determine the fuzzy membership function for variable x, u(x), where the
+function y = f(x) has ZERO OR ONE EXTREMUM {Ex, Ey} within the range of
+lambda-cuts, and Ey = f(Ex) &amp; fuzzy variable x has    membership function
+u(x). Vertex method used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array, length N</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mfy ; 1d array, length N</strong> :</p>
+<blockquote>
+<div><p>Fuzzy membership function for <cite>x</cite>, also known as u(x).</p>
+</div></blockquote>
+<p><strong>funct</strong> : string</p>
+<blockquote>
+<div><p>Function transforming provided independent variable <cite>x</cite> into derived
+variable <cite>y</cite>. Assume <cite>&gt;&gt;&gt; import numpy as np</cite>, assign to <cite>y</cite>, and
+use variable <cite>x</cite> (lowercase) in the proper Python statement. Ex:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;y = x ** 2.&#8217;</li>
+<li>&#8216;y = 2 * np.exp(x) + 2&#8217;</li>
+<li>&#8216;y = np.cos(x) / x&#8217;</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p><strong>N</strong> : int</p>
+<blockquote>
+<div><p>Number of steps in interval.</p>
+</div></blockquote>
+<p><strong>Ex</strong> : float</p>
+<blockquote>
+<div><p>Value of <cite>x</cite> where the function reaches an extremum. If an extremum
+exists, <cite>x</cite> must be provided.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>yy</strong> : 2d array, shape (2*(N+1), 2)</p>
+<blockquote class="last">
+<div><p>First column is the ordered min &amp; max y-values of the lambda cuts on
+u(y), including extremes. Second column provides lambda-cut values.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Module: <tt class="docutils literal"><span class="pre">defuzzify</span></tt></a><ul class="nav nav-list">
+<li><a class="reference internal" href="#arglcut">arglcut</a></li>
+<li><a class="reference internal" href="#centroid">centroid</a></li>
+<li><a class="reference internal" href="#dcentroid">dcentroid</a></li>
+<li><a class="reference internal" href="#defuzz">defuzz</a></li>
+<li><a class="reference internal" href="#lambda-cut">lambda_cut</a></li>
+<li><a class="reference internal" href="#lambda-cut-series">lambda_cut_series</a></li>
+<li><a class="reference internal" href="#vertex">vertex</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

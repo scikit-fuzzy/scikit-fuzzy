@@ -1,0 +1,1011 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Module: membership &mdash; scikit-fuzzy 0.1dev documentation</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <link rel="top" title="scikit-fuzzy 0.1dev documentation" href="../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="http://scikit-fuzzy.org" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="/">Home</a></li>
+<li><a href="/install.html">Download</a></li>
+<li><a href="/api/api.html">Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">Source</a></li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="module-skfuzzy.membership">
+<span id="module-membership"></span><h1>Module: <tt class="xref py py-mod docutils literal"><span class="pre">membership</span></tt><a class="headerlink" href="#module-skfuzzy.membership" title="Permalink to this headline">¶</a></h1>
+<p>skfuzzy.membership : fuzzy membership function generators</p>
+<dl class="function">
+<dt id="skfuzzy.membership.dsigmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">dsigmf</tt><big>(</big><em>x</em>, <em>b1</em>, <em>c1</em>, <em>b2</em>, <em>c2</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.dsigmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Difference of two fuzzy sigmoid membership functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>b1</strong> : float</p>
+<blockquote>
+<div><p>Midpoint of first sigmoid; f1(b1) = 0.5</p>
+</div></blockquote>
+<p><strong>c1</strong> : float</p>
+<blockquote>
+<div><p>Width and sign of first sigmoid.</p>
+</div></blockquote>
+<p><strong>b2</strong> : float</p>
+<blockquote>
+<div><p>Midpoint of second sigmoid; f2(b2) = 0.5</p>
+</div></blockquote>
+<p><strong>c2</strong> : float</p>
+<blockquote>
+<div><p>Width and sign of second sigmoid.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>Generated sigmoid values, defined as</dt>
+<dd><p class="first last">y = f1 - f2
+f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
+f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.gaussmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gaussmf</tt><big>(</big><em>x</em>, <em>mean</em>, <em>sigma</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.gaussmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian fuzzy membership function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mean</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value.</p>
+</div></blockquote>
+<p><strong>sigma</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for standard deviation.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Gaussian membership function for x</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.gauss2mf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gauss2mf</tt><big>(</big><em>x</em>, <em>mean1</em>, <em>sigma1</em>, <em>mean2</em>, <em>sigma2</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.gauss2mf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian fuzzy membership function of two combined Gaussians.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mean1</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value of left-side Gaussian.
+Note mean1 &lt;= mean2 reqiured.</p>
+</div></blockquote>
+<p><strong>sigma1</strong> : float</p>
+<blockquote>
+<div><p>Standard deviation of left Gaussian.</p>
+</div></blockquote>
+<p><strong>mean2</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value of right-side Gaussian.
+Note mean2 &gt;= mean1 required.</p>
+</div></blockquote>
+<p><strong>sigma2</strong> : float</p>
+<blockquote>
+<div><p>Standard deviation of right Gaussian.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Membership function with left side up to <cite>mean1</cite> defined by the first
+Gaussian, and the right side above <cite>mean2</cite> defined by the second.
+In the range mean1 &lt;= x &lt;= mean2 the function has value = 1.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.gbellmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gbellmf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em>, <em>c</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.gbellmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generalized Bell function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling width. See Note for definition.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling center. See Note for definition.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling slope. See Note for definition.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generalized Bell fuzzy membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.piecemf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">piecemf</tt><big>(</big><em>x</em>, <em>abc</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.piecemf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Piecewise linear membership function (particularly used in FIRE filters).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable vector.</p>
+</div></blockquote>
+<p><strong>abc</strong> : 1d array, length 3</p>
+<blockquote>
+<div><p>Defines the piecewise function. Important: if abc = [a, b, c] then
+a &lt;= b &lt;= c is REQUIRED!</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Piecewise fuzzy membership function for x.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.pimf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">pimf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em>, <em>c</em>, <em>d</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.pimf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pi-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Left &#8216;foot&#8217;, where the function begins to climb from zero.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Left &#8216;ceiling&#8217;, where the function levels off at 1.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Right &#8216;ceiling&#8217;, where the function begins falling from 1.</p>
+</div></blockquote>
+<p><strong>d</strong> : float</p>
+<blockquote>
+<div><p>Right &#8216;foot&#8217;, where the function reattains zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Pi-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.psigmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">psigmf</tt><big>(</big><em>x</em>, <em>b1</em>, <em>c1</em>, <em>b2</em>, <em>c2</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.psigmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Product of two sigmoid membership functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Data vector for independent variable.</p>
+</div></blockquote>
+<p><strong>b1</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias for the first sigmoid.  This is the center value of the
+sigmoid, where it equals 1/2.</p>
+</div></blockquote>
+<p><strong>c1</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the first sigmoidal region about <cite>b1</cite> (magnitude),
+and also which side of the function is open (sign). A positive value of
+<cite>c1</cite> means the left side approaches zero while the right side
+approaches one; a negative value of <cite>c1</cite> means the opposite.</p>
+</div></blockquote>
+<p><strong>b2</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias for the second sigmoid.  This is the center value of the
+sigmoid, where it equals 1/2.</p>
+</div></blockquote>
+<p><strong>c2</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the second sigmoidal region about <cite>b2</cite> (magnitude),
+and also which side of the function is open (sign). A positive value of
+<cite>c2</cite> means the left side approaches zero while the right side
+approaches one; a negative value of <cite>c2</cite> means the opposite.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generated sigmoid values, defined as</p>
+<p>y = f1(x) * f2(x)</p>
+<blockquote>
+<div><p>f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
+f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</p>
+</div></blockquote>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.sigmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">sigmf</tt><big>(</big><em>x</em>, <em>b</em>, <em>c</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.sigmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>The basic sigmoid membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Data vector for independent variable.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias.  This is the center value of the sigmoid, where it
+equals 1/2.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the sigmoidal region about <cite>b</cite> (magnitude); also
+which side of the function is open (sign). A positive value of <cite>a</cite>
+means the left side approaches 0.0 while the right side approaches 1.;
+a negative value of <cite>c</cite> means the opposite.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generated sigmoid values, defined as y = 1 / (1. + exp[- c * (x - b)])</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.smf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">smf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.smf" title="Permalink to this definition">¶</a></dt>
+<dd><p>S-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>&#8216;foot&#8217;, where the function begins to climb from zero.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>&#8216;ceiling&#8217;, where the function levels off at 1.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>S-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.trapmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">trapmf</tt><big>(</big><em>x</em>, <em>abcd</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.trapmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trapezoidal membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>abcd</strong> : 1d array, length 4</p>
+<blockquote>
+<div><p>Four-element vector.  Ensure a &lt;= b &lt;= c &lt;= d.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Trapezoidal membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.trimf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">trimf</tt><big>(</big><em>x</em>, <em>abc</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.trimf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Triangular membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>abc</strong> : 1d array, length 3</p>
+<blockquote>
+<div><p>Three-element vector controlling shape of triangular function.
+Requires a &lt;= b &lt;= c.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Triangular membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="skfuzzy.membership.zmf">
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">zmf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em><big>)</big><a class="headerlink" href="#skfuzzy.membership.zmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Z-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>&#8216;ceiling&#8217;, where the function begins falling from 1.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>&#8216;foot&#8217;, where the function reattains zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Z-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="dsigmf">
+<h2>dsigmf<a class="headerlink" href="#dsigmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">dsigmf</tt><big>(</big><em>x</em>, <em>b1</em>, <em>c1</em>, <em>b2</em>, <em>c2</em><big>)</big></dt>
+<dd><p>Difference of two fuzzy sigmoid membership functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>b1</strong> : float</p>
+<blockquote>
+<div><p>Midpoint of first sigmoid; f1(b1) = 0.5</p>
+</div></blockquote>
+<p><strong>c1</strong> : float</p>
+<blockquote>
+<div><p>Width and sign of first sigmoid.</p>
+</div></blockquote>
+<p><strong>b2</strong> : float</p>
+<blockquote>
+<div><p>Midpoint of second sigmoid; f2(b2) = 0.5</p>
+</div></blockquote>
+<p><strong>c2</strong> : float</p>
+<blockquote>
+<div><p>Width and sign of second sigmoid.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>Generated sigmoid values, defined as</dt>
+<dd><p class="first last">y = f1 - f2
+f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
+f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="gauss2mf">
+<h2>gauss2mf<a class="headerlink" href="#gauss2mf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gauss2mf</tt><big>(</big><em>x</em>, <em>mean1</em>, <em>sigma1</em>, <em>mean2</em>, <em>sigma2</em><big>)</big></dt>
+<dd><p>Gaussian fuzzy membership function of two combined Gaussians.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mean1</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value of left-side Gaussian.
+Note mean1 &lt;= mean2 reqiured.</p>
+</div></blockquote>
+<p><strong>sigma1</strong> : float</p>
+<blockquote>
+<div><p>Standard deviation of left Gaussian.</p>
+</div></blockquote>
+<p><strong>mean2</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value of right-side Gaussian.
+Note mean2 &gt;= mean1 required.</p>
+</div></blockquote>
+<p><strong>sigma2</strong> : float</p>
+<blockquote>
+<div><p>Standard deviation of right Gaussian.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Membership function with left side up to <cite>mean1</cite> defined by the first
+Gaussian, and the right side above <cite>mean2</cite> defined by the second.
+In the range mean1 &lt;= x &lt;= mean2 the function has value = 1.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="gaussmf">
+<h2>gaussmf<a class="headerlink" href="#gaussmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gaussmf</tt><big>(</big><em>x</em>, <em>mean</em>, <em>sigma</em><big>)</big></dt>
+<dd><p>Gaussian fuzzy membership function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array or iterable</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>mean</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for center (mean) value.</p>
+</div></blockquote>
+<p><strong>sigma</strong> : float</p>
+<blockquote>
+<div><p>Gaussian parameter for standard deviation.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Gaussian membership function for x</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="gbellmf">
+<h2>gbellmf<a class="headerlink" href="#gbellmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">gbellmf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em>, <em>c</em><big>)</big></dt>
+<dd><p>Generalized Bell function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling width. See Note for definition.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling center. See Note for definition.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Bell function parameter controlling slope. See Note for definition.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generalized Bell fuzzy membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="piecemf">
+<h2>piecemf<a class="headerlink" href="#piecemf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">piecemf</tt><big>(</big><em>x</em>, <em>abc</em><big>)</big></dt>
+<dd><p>Piecewise linear membership function (particularly used in FIRE filters).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable vector.</p>
+</div></blockquote>
+<p><strong>abc</strong> : 1d array, length 3</p>
+<blockquote>
+<div><p>Defines the piecewise function. Important: if abc = [a, b, c] then
+a &lt;= b &lt;= c is REQUIRED!</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Piecewise fuzzy membership function for x.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="pimf">
+<h2>pimf<a class="headerlink" href="#pimf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">pimf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em>, <em>c</em>, <em>d</em><big>)</big></dt>
+<dd><p>Pi-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>Left &#8216;foot&#8217;, where the function begins to climb from zero.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Left &#8216;ceiling&#8217;, where the function levels off at 1.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Right &#8216;ceiling&#8217;, where the function begins falling from 1.</p>
+</div></blockquote>
+<p><strong>d</strong> : float</p>
+<blockquote>
+<div><p>Right &#8216;foot&#8217;, where the function reattains zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Pi-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="psigmf">
+<h2>psigmf<a class="headerlink" href="#psigmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">psigmf</tt><big>(</big><em>x</em>, <em>b1</em>, <em>c1</em>, <em>b2</em>, <em>c2</em><big>)</big></dt>
+<dd><p>Product of two sigmoid membership functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Data vector for independent variable.</p>
+</div></blockquote>
+<p><strong>b1</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias for the first sigmoid.  This is the center value of the
+sigmoid, where it equals 1/2.</p>
+</div></blockquote>
+<p><strong>c1</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the first sigmoidal region about <cite>b1</cite> (magnitude),
+and also which side of the function is open (sign). A positive value of
+<cite>c1</cite> means the left side approaches zero while the right side
+approaches one; a negative value of <cite>c1</cite> means the opposite.</p>
+</div></blockquote>
+<p><strong>b2</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias for the second sigmoid.  This is the center value of the
+sigmoid, where it equals 1/2.</p>
+</div></blockquote>
+<p><strong>c2</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the second sigmoidal region about <cite>b2</cite> (magnitude),
+and also which side of the function is open (sign). A positive value of
+<cite>c2</cite> means the left side approaches zero while the right side
+approaches one; a negative value of <cite>c2</cite> means the opposite.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generated sigmoid values, defined as</p>
+<p>y = f1(x) * f2(x)</p>
+<blockquote>
+<div><p>f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
+f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</p>
+</div></blockquote>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sigmf">
+<h2>sigmf<a class="headerlink" href="#sigmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">sigmf</tt><big>(</big><em>x</em>, <em>b</em>, <em>c</em><big>)</big></dt>
+<dd><p>The basic sigmoid membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Data vector for independent variable.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>Offset or bias.  This is the center value of the sigmoid, where it
+equals 1/2.</p>
+</div></blockquote>
+<p><strong>c</strong> : float</p>
+<blockquote>
+<div><p>Controls &#8216;width&#8217; of the sigmoidal region about <cite>b</cite> (magnitude); also
+which side of the function is open (sign). A positive value of <cite>a</cite>
+means the left side approaches 0.0 while the right side approaches 1.;
+a negative value of <cite>c</cite> means the opposite.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Generated sigmoid values, defined as y = 1 / (1. + exp[- c * (x - b)])</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="smf">
+<h2>smf<a class="headerlink" href="#smf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">smf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em><big>)</big></dt>
+<dd><p>S-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>&#8216;foot&#8217;, where the function begins to climb from zero.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>&#8216;ceiling&#8217;, where the function levels off at 1.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>S-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="trapmf">
+<h2>trapmf<a class="headerlink" href="#trapmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">trapmf</tt><big>(</big><em>x</em>, <em>abcd</em><big>)</big></dt>
+<dd><p>Trapezoidal membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>abcd</strong> : 1d array, length 4</p>
+<blockquote>
+<div><p>Four-element vector.  Ensure a &lt;= b &lt;= c &lt;= d.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Trapezoidal membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="trimf">
+<h2>trimf<a class="headerlink" href="#trimf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">trimf</tt><big>(</big><em>x</em>, <em>abc</em><big>)</big></dt>
+<dd><p>Triangular membership function generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>abc</strong> : 1d array, length 3</p>
+<blockquote>
+<div><p>Three-element vector controlling shape of triangular function.
+Requires a &lt;= b &lt;= c.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Triangular membership function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="zmf">
+<h2>zmf<a class="headerlink" href="#zmf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descclassname">skfuzzy.membership.</tt><tt class="descname">zmf</tt><big>(</big><em>x</em>, <em>a</em>, <em>b</em><big>)</big></dt>
+<dd><p>Z-function fuzzy membership generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : 1d array</p>
+<blockquote>
+<div><p>Independent variable.</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>&#8216;ceiling&#8217;, where the function begins falling from 1.</p>
+</div></blockquote>
+<p><strong>b</strong> : float</p>
+<blockquote>
+<div><p>&#8216;foot&#8217;, where the function reattains zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong> : 1d array</p>
+<blockquote class="last">
+<div><p>Z-function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Module: <tt class="docutils literal"><span class="pre">membership</span></tt></a><ul class="nav nav-list">
+<li><a class="reference internal" href="#dsigmf">dsigmf</a></li>
+<li><a class="reference internal" href="#gauss2mf">gauss2mf</a></li>
+<li><a class="reference internal" href="#gaussmf">gaussmf</a></li>
+<li><a class="reference internal" href="#gbellmf">gbellmf</a></li>
+<li><a class="reference internal" href="#piecemf">piecemf</a></li>
+<li><a class="reference internal" href="#pimf">pimf</a></li>
+<li><a class="reference internal" href="#psigmf">psigmf</a></li>
+<li><a class="reference internal" href="#sigmf">sigmf</a></li>
+<li><a class="reference internal" href="#smf">smf</a></li>
+<li><a class="reference internal" href="#trapmf">trapmf</a></li>
+<li><a class="reference internal" href="#trimf">trimf</a></li>
+<li><a class="reference internal" href="#zmf">zmf</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>
