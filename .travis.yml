@@ -14,7 +14,7 @@ matrix:
           env:
             - PYTHON=python
             - PYVER=2.x
-        - python: 3.3
+        - python: 3.2
           env:
             - PYTHON=python3
             - PYVER=3.x
@@ -31,7 +31,8 @@ before_install:
     - if [[ $PYVER == '2.x' ]]; then
     -   sudo apt-get install $PYTHON-matplotlib
     - fi
-    - if [[ $PYVER == '3.3' ]]; then
+    - if [[ $PYVER == '3.x' ]]; then
+    -   sudo apt-get install $PYTHON-setuptools
     -   pip install --use-mirrors matplotlib
     - fi
     # - pip install --use-mirrors cython  # If skfuzzy ever uses Cython
@@ -47,6 +48,6 @@ script:
     - nosetests --exe -v --with-cov --cov skfuzzy --cov-config .coveragerc skfuzzy
 
 after_success:
-    - if [[ $PYVER == '3.3' ]]; then
+    - if [[ $PYVER == '3.x' ]]; then
     -   coveralls
     - fi
