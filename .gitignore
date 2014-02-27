@@ -19,3 +19,4 @@ skfuzzy/version.py
 .coverage
 doc/source/auto_examples/*
 *.log
+docs/_build
