@@ -1,0 +1,13 @@
+# Configuration for coverage.py
+
+[run]
+branch = True
+source = skfuzzy
+include = */skfuzzy/*
+omit =
+    */setup.py
+
+[report]
+exclude_lines =
+    def __repr__
+    if __name__ == .__main__.:

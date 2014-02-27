@@ -1,27 +1,52 @@
 # vim ft=yaml
 # travis-ci.org definition for skfuzzy build
 #
-# We pretend to be erlang because we can't use the python support in
-# travis-ci; it uses virtualenvs, they do not have numpy, scipy, matplotlib,
-# and it is impractical to build them
+# Check changes to this file on http://lint.travis-ci.org/
 
-language: erlang
-env:
-    - PYTHON=python PYSUF='' PYVER=2.7
-    - PYTHON=python3 PYSUF='3' PYVER=3.2
-install:
-    - sudo apt-get update  # needed for python3-numpy
-    - sudo apt-get install $PYTHON-dev
+language: python
+
+python:
+    - 2.6
+
+matrix:
+    include:
+        - python: 2.7
+          env:
+            - PYTHON=python
+            - PYVER=2.x
+        - python: 3.3
+          env:
+            - PYTHON=python3
+            - PYVER=3.x
+    exclude:
+        - python: 2.6
+
+virtualenv:
+    system_site_packages: true
+
+before_install:
+    - sudo apt-get update
     - sudo apt-get install $PYTHON-numpy
     - sudo apt-get install $PYTHON-scipy
-    - sudo apt-get install $PYTHON-setuptools
-    - sudo apt-get install $PYTHON-nose
-    - sudo easy_install$PYSUF pip
-    - if [[ $PYVER == '2.7' ]]; then sudo apt-get install $PYTHON-matplotlib; fi
-    - if [[ $PYVER == '3.2' ]]; then sudo pip-$PYVER install git+git://github.com/matplotlib/matplotlib.git@v1.2.x; fi
-    # - sudo pip-$PYVER install cython
-    # - $PYTHON setup.py build
+    - if [[ $PYVER == '2.x' ]]; then
+    -   sudo apt-get install $PYTHON-matplotlib
+    - fi
+    - if [[ $PYVER == '3.3' ]]; then
+    -   pip install --use-mirrors matplotlib
+    - fi
+    # - pip install --use-mirrors cython  # If skfuzzy ever uses Cython
+    - pip install --use-mirrors flake8
+    - pip install --use-mirrors nose-cov
+    - pip install --use-mirrors python-coveralls
+
+install:
     - sudo $PYTHON setup.py install
+
 script:
     # Run tests
-    - nosetests-$PYVER --exe -v --cover-package=skfuzzy skfuzzy
+    - nosetests --exe -v --with-cov --cov skfuzzy --cov-config .coveragerc skfuzzy
+
+after_success:
+    - if [[ $PYVER == '3.3' ]]; then
+    -   coveralls
+    - fi
