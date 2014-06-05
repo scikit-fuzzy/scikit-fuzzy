@@ -733,3 +733,6 @@ def fuzzy_similarity(Ai, B, mode='min'):
         return min(inner_product(Ai, B), 1 - outer_product(Ai, B))
     else:
         return (inner_product(Ai, B) + (1 - outer_product(Ai, B))) / 2.
+
+def partial_dMF():
+    pass
