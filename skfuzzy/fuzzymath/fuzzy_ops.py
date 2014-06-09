@@ -734,5 +734,50 @@ def fuzzy_similarity(Ai, B, mode='min'):
     else:
         return (inner_product(Ai, B) + (1 - outer_product(Ai, B))) / 2.
 
-def partial_dMF():
-    pass
+def partial_dMF(x, mf_definition, partial_parameter):
+    """
+    Calculates the partial derivative of a given membership function.
+
+    Parameters
+    ----------
+    x : 1d array
+        input variable.
+    mf_definition : list in specific format
+        Fuzzy membership definition, with a specific format.  The format
+        is a list, the first element being the memebership function name, 
+        the second element is a dictionary of membership function 
+        parameters and values:
+        mf_definition = ['mf_name', {'param_one_name' : value_one, 'param_two_name' : value_two}]
+        e.g.
+        mf_definition = ['gaussmf', {'mean' : -10, 'sigma' : 5}]
+
+    partial_parameter : string
+        Name of the parameter for which we wish to take the partial derivative.
+    
+
+    Returns
+    -------
+    d : float
+        Partial derivative of the membership function with repsct to the
+        chosen parameter at input point x.
+
+    """
+
+    if mf_definition[0] == 'gaussmf':
+        
+        if partial_parameter == 'sigma':
+            
+            return (2. / mf_definition[1]['sigma'] ** 3) * \
+                np.exp(-(((x - mf_definition[1]['mean']) ** 2) / \
+                    (mf_definition[1]['sigma']) ** 2)) * \
+                        (x - mf_definition[1]['mean']) ** 2
+        
+        elif partial_parameter == 'mean':
+            
+            return (2. / mf_definition[1]['sigma'] ** 2) * \
+                np.exp(-(((x - mf_definition[1]['mean']) ** 2) / \
+                    (mf_definition[1]['sigma'] ** 2)) * \
+                        (x - mf_definition[1]['mean']))
+    
+    elif mf_definition[0] == 'gbellmf':
+        pass
