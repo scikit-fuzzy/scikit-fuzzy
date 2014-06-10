@@ -740,7 +740,7 @@ def partial_dMF(x, mf_definition, partial_parameter):
 
     Parameters
     ----------
-    x : 1d array
+    x : float
         input variable.
     mf_definition : list in specific format
         Fuzzy membership definition, with a specific format.  The format
@@ -762,22 +762,28 @@ def partial_dMF(x, mf_definition, partial_parameter):
         chosen parameter at input point x.
 
     """
+    mf_name = mf_definition[0]
 
-    if mf_definition[0] == 'gaussmf':
+    if mf_name == 'gaussmf':
         
+        sigma = mf_definition[1]['sigma']
+        mean = mf_definition[1]['mean']
+
         if partial_parameter == 'sigma':
             
-            return (2. / mf_definition[1]['sigma'] ** 3) * \
-                np.exp(-(((x - mf_definition[1]['mean']) ** 2) / \
-                    (mf_definition[1]['sigma']) ** 2)) * \
-                        (x - mf_definition[1]['mean']) ** 2
+            result = (2. / sigma ** 3) * \
+                np.exp(-(((x - mean) ** 2) / \
+                    (sigma) ** 2)) * \
+                        (x - mean) ** 2
         
         elif partial_parameter == 'mean':
             
-            return (2. / mf_definition[1]['sigma'] ** 2) * \
-                np.exp(-(((x - mf_definition[1]['mean']) ** 2) / \
-                    (mf_definition[1]['sigma'] ** 2)) * \
-                        (x - mf_definition[1]['mean']))
+            result = (2. / sigma ** 2) * \
+                np.exp(-(((x - mean) ** 2) / \
+                    (sigma ** 2)) * \
+                        (x - mean))
     
     elif mf_definition[0] == 'gbellmf':
         pass
+
+    return result
