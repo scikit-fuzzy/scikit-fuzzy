@@ -783,6 +783,23 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
                         (x - mean))
 
     elif mf_name == 'gbellmf':
-        pass
+
+        a = mf_parameter_dict['a']
+        b = mf_parameter_dict['b']
+        c = mf_parameter_dict['c']
+
+        if partial_parameter == 'a':
+            result = (2. * (b**2) * (-c + x)**2 \
+                * ((((-c + x) / a)**2)**(-1. + b**2))) / \
+                    (a**3 * (1. + (((-c + x) / a)**2)**(b**2))**2)
+
+        elif partial_parameter == 'b':
+            result = -(2. * b * ((((-c + x) / a)**2)**(b**2)) * \
+                np.log(((-c + x) / a)**2)) / ((1. + (((-c + x) / a)**2)**(b**2))**2)
+
+        elif partial_parameter == 'c':
+            result = (2. * (b**2) * (-c + x) * (((-c + x) / \
+                a)**2)**(-1. + b**2)) / ((a**2) * (1. + (((-c + x) / \
+                    a)**2)**(b**2))**2)
 
     return result
