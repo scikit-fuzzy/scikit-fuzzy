@@ -27,6 +27,7 @@ virtualenv:
 before_install:
     - sudo apt-get update
     - sudo apt-get install $PYTHON-numpy
+    - wget https://raw.githubusercontent.com/numpy/numpy/master/numpy/_import_tools.py -O /home/travis/virtualenv/python3.2_with_system_site_packages/lib/python3.2/site-packages/numpy/_import_tools.py
     - sudo apt-get install $PYTHON-scipy
     - if [[ $PYVER == '2.x' ]]; then
     -   sudo apt-get install $PYTHON-matplotlib
@@ -38,7 +39,7 @@ before_install:
     # - pip install --use-mirrors cython  # If skfuzzy ever uses Cython
     - pip install --use-mirrors flake8
     - pip install --use-mirrors nose-cov
-    - pip install --use-mirrors python-coveralls
+    - pip install --use-mirrors coveralls
 
 install:
     - sudo $PYTHON setup.py install
