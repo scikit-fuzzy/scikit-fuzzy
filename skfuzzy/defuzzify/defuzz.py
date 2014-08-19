@@ -180,7 +180,7 @@ def lambda_cut_series(x, mfx, N):
     z[:, 0] = lambda_cuts.T
     z[0, [1, 2]] = _support(x, mfx)
 
-    for ii in range(N):
+    for ii in range(1, N):
         xx = _lcutinterval(x, mfx, lambda_cuts[ii])
         z[ii, [1, 2]] = xx
 
