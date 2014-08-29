@@ -55,7 +55,8 @@ def centroid(x, mfx):
     DCENTROID, DEFUZZ
 
     """
-    return (x * mfx).sum() / (mfx.sum() + np.finfo(float).eps).astype(float)
+    return (x * mfx).sum() / np.fmax(mfx.sum(),
+                                     np.finfo(float).eps).astype(float)
 
 
 def dcentroid(x, mfx, x0):
@@ -233,9 +234,7 @@ def lambda_cut(ms, lcut):
         Lambda-cut set of `ms`: ones if ms[i] >= lcut, zeros otherwise.
 
     """
-    mlambda = np.zeros_like(ms)
-    mlambda[ms >= lcut] = 1
-    return mlambda
+    return (ms > lcut) * 1
 
 
 def _support(x, mfx):
@@ -265,68 +264,3 @@ def _support(x, mfx):
     xx = x[m:n]
     mfxx = mfx[m:n]
     return np.r_[z, xx[mfxx == mfxx.min()].min()]
-
-
-def vertex(x, mfy, funct, N, Ex=None):
-    """
-    Determine the fuzzy membership function for variable x, u(x), where the
-    function y = f(x) has ZERO OR ONE EXTREMUM {Ex, Ey} within the range of
-    lambda-cuts, and Ey = f(Ex) & fuzzy variable x has    membership function
-    u(x). Vertex method used.
-
-    Parameters
-    ----------
-    y : 1d array, length N
-        Independent variable.
-    mfy ; 1d array, length N
-        Fuzzy membership function for `x`, also known as u(x).
-    funct : string
-        Function transforming provided independent variable `x` into derived
-        variable `y`. Assume `>>> import numpy as np`, assign to `y`, and
-        use variable `x` (lowercase) in the proper Python statement. Ex:
-            * 'y = x ** 2.'
-            * 'y = 2 * np.exp(x) + 2'
-            * 'y = np.cos(x) / x'
-    N : int
-        Number of steps in interval.
-    Ex : float
-        Value of `x` where the function reaches an extremum. If an extremum
-        exists, `x` must be provided.
-
-    Returns
-    -------
-    yy : 2d array, shape (2*(N+1), 2)
-        First column is the ordered min & max y-values of the lambda cuts on
-        u(y), including extremes. Second column provides lambda-cut values.
-
-    """
-    z = lambda_cut_series(x, mfy, N)        # Also included in this package
-
-    M = z.shape[0]                 # M = N + 1
-
-    x = z[:, [1, 2]]
-
-    exec(funct)                    # evaluate function statement
-
-    if Ex is not None:
-        funct = funct.replace('y', 'Ey')
-        funct = funct.replace('x', 'Ex')
-        exec(funct)
-
-    z[:, 1] = y[:, 0]
-    z[:, 2] = y[:, 1]
-
-    # Arrange for plotting
-    yy = np.zeros((2 * M, 2))
-
-    yy[0:M, 1] = z[:, 0]
-    yy[M:2 * M, 1] = z[::-1, 0]
-
-    if Ex is not None:
-        yy[0:M, 0] = np.fmin(z[:, 1], Ey.max())
-        yy[M:2 * M, 0] = np.fmax(z[:, 2], Ey.max())[::-1]
-    else:
-        yy[0:M, 0] = z[:, 1]
-        yy[M:2 * M, 0] = z[::-1, 2]
-
-    return yy
