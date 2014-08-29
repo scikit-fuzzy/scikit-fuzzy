@@ -60,23 +60,6 @@ script:
     # Run pep8 and flake tests
     - flake8 --exit-zero --exclude=test_*,six.py skfuzzy doc/examples
 
-    # Install optional dependencies to get full test coverage
-    # Notes:
-    # - pyfits and imread do NOT support py3.2
-    # - Use the png headers included in anaconda (from matplotlib install)
-    # TODO: Remove the libm removal when anaconda fixes their libraries
-    #   The solution was suggested here
-    #   https://groups.google.com/a/continuum.io/forum/#!topic/anaconda/-DLG2ZdTkw0
-    - if [[ $ENV == python=3.2 ]]; then
-        travis_retry pip install -q matplotlib;
-      else
-        sudo cp ~/miniconda/envs/test/include/png* /usr/include;
-        rm ~/miniconda/envs/test/lib/libm-2.5.so;
-        rm ~/miniconda/envs/test/lib/libm.*;
-        sudo apt-get install -qq libtiff4-dev libwebp-dev xcftools;
-        travis_retry pip install -q imread;
-      fi
-
 after_success:
     - if [[ $ENV == python=3.3* ]]; then
           coveralls;
