@@ -1,6 +1,6 @@
 """
-skfuzzy.filter : Subpackage for filtering data, e.g. with Fuzzy Inference
-    by Else-action (FIRE) filters to denoise 1d or 2d data.
+skfuzzy.filters : Subpackage for filtering data, e.g. with Fuzzy Inference by
+    Else-action (FIRE) filters to denoise 1d or 2d data.
 
 """
 __all__ = ['fire1d',

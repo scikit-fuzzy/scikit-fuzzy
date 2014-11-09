@@ -39,9 +39,9 @@ from skfuzzy.intervals import *
 __all__.extend(_intervals.__all__)
 
 # Filtering subpackage, including 1D and 2D FIRE functions
-import skfuzzy.filter as _filter
-from skfuzzy.filter import *
-__all__.extend(_filter.__all__)
+import skfuzzy.filters as _filters
+from skfuzzy.filters import *
+__all__.extend(_filters.__all__)
 
 # Defuzzification subpackage
 import skfuzzy.defuzzify as _defuzz
