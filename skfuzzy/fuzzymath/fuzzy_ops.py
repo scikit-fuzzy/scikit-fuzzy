@@ -734,6 +734,7 @@ def fuzzy_similarity(Ai, B, mode='min'):
     else:
         return (inner_product(Ai, B) + (1 - outer_product(Ai, B))) / 2.
 
+
 def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
     """
     Calculates the partial derivative of a given membership function.
@@ -742,18 +743,14 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
     ----------
     x : float
         input variable.
-
     mf_name : string
         Membership function name, corresponding to the function names available in
         generatemf.py
-
     mf_parameter_dict : dict
-        A dictionary of param : value pairs for that particular membership function
+        A dictionary of param : key-value pairs for that particular membership function
         given in mf_name
-
     partial_parameter : string
-        Name of the parameter for which we wish to take the partial derivative.
-
+        Name of the parameter against which we wish to take the partial derivative.
 
     Returns
     -------
@@ -769,18 +766,9 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
         mean = mf_parameter_dict['mean']
 
         if partial_parameter == 'sigma':
-
-            result = (2. / sigma ** 3) * \
-                np.exp(-(((x - mean) ** 2) / \
-                    (sigma) ** 2)) * \
-                        (x - mean) ** 2
-
+            result = (2./sigma**3) * np.exp(-(((x-mean)**2)/(sigma)**2))*(x-mean)**2
         elif partial_parameter == 'mean':
-
-            result = (2. / sigma ** 2) * \
-                np.exp(-(((x - mean) ** 2) / \
-                    (sigma ** 2)) * \
-                        (x - mean))
+            result = (2./sigma**2) * np.exp(-(((x-mean)**2)/(sigma)**2))*(x-mean)
 
     elif mf_name == 'gbellmf':
 
@@ -789,17 +777,25 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
         c = mf_parameter_dict['c']
 
         if partial_parameter == 'a':
-            result = (2. * (b**2) * (-c + x)**2 \
-                * ((((-c + x) / a)**2)**(-1. + b**2))) / \
-                    (a**3 * (1. + (((-c + x) / a)**2)**(b**2))**2)
-
+            result = (2. * b * np.power((c-x),2) * np.power(np.absolute((c-x)/a), ((2 * b) - 2))) / \
+                (np.power(a, 3) * np.power((np.power(np.absolute((c-x)/a),(2*b)) + 1), 2))
         elif partial_parameter == 'b':
-            result = -(2. * b * ((((-c + x) / a)**2)**(b**2)) * \
-                np.log(((-c + x) / a)**2)) / ((1. + (((-c + x) / a)**2)**(b**2))**2)
-
+            result = -1 * (2 * np.power(np.absolute((c-x)/a), (2 * b)) * np.log(np.absolute((c-x)/a))) / \
+                (np.power((np.power(np.absolute((c-x)/a), (2 * b)) + 1), 2))
         elif partial_parameter == 'c':
-            result = (2. * (b**2) * (-c + x) * (((-c + x) / \
-                a)**2)**(-1. + b**2)) / ((a**2) * (1. + (((-c + x) / \
-                    a)**2)**(b**2))**2)
+            result = (2. * b * (x-c) * np.power(np.absolute((c-x)/a), ((2 * b) - 2))) / \
+                (np.power(a, 2) * np.power((np.power(np.absolute((c-x)/a),(2*b)) + 1), 2))
+
+    elif mf_name == 'sigmf':
+
+        b = mf_parameter_dict['b']
+        c = mf_parameter_dict['c']
+
+        if partial_parameter == 'b':
+            result = -1 * (c * np.exp(c * (b + x))) / \
+                np.power((np.exp(b*c) + np.exp(c*x)), 2)
+        elif partial_parameter == 'c':
+            result = ((x - b) * np.exp(c * (x - b))) / \
+                np.power((np.exp(c * (x - b))) + 1, 2)
 
     return result
