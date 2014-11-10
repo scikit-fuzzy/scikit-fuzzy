@@ -438,7 +438,6 @@ def test_partial_dMF():
                       ]
     sigmf_expected = [-0.75, -0.125, 0., 0.]
     assert_allclose(sigmf_results, sigmf_expected)
-    print 'passed'
 
 
 if __name__ == "__main__":
