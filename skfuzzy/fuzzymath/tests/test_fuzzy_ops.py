@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
+from random import randint
 from skfuzzy.membership import trapmf
 from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                interp10, maxmin_composition,
@@ -7,7 +8,7 @@ from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                relation_min, relation_product,
                                fuzzy_add, fuzzy_sub, fuzzy_min, fuzzy_mult,
                                fuzzy_div, fuzzy_compare, inner_product,
-                               modus_ponens, outer_product, fuzzy_similarity)
+                               modus_ponens, outer_product, fuzzy_similarity, partial_dMF)
 
 
 def test_cartadd():
@@ -388,6 +389,55 @@ def test_fuzzy_similarity():
     assert_allclose(np.r_[c], np.r_[0.6])
     c = fuzzy_similarity(A, B, mode='avg')
     assert_allclose(np.r_[c], np.r_[0.6])
+
+def test_partial_dMF():
+
+    gaussmf = 'gaussmf'
+    mean = -1.5
+    sigma = 0.75
+    gaussmf_param_dict = {'mean':mean, 'sigma':sigma}
+    test_int = randint(1,3)
+
+    gaussmf_results = [partial_dMF(-1.5, gaussmf, gaussmf_param_dict, 'mean'),
+                        partial_dMF(-1.5, gaussmf, gaussmf_param_dict, 'sigma'),
+                        partial_dMF(-1.5, gaussmf, {'mean':mean, 'sigma':test_int * sigma}, 'mean') == \
+                        -partial_dMF(-1.5, gaussmf, {'mean':mean, 'sigma':-test_int * sigma}, 'mean')]
+    gaussmf_expected = [0., 0., True]
+    assert_allclose(gaussmf_results, gaussmf_expected)
+
+
+    gbellmf = 'gbellmf'
+    a = 2.
+    b = 1.
+    c = 0.5
+    gbellmf_param_dict = {'a':a, 'b':b, 'c':c}
+
+    gbellmf_results = [partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'a'),
+                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'a'),
+                        partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'b'),
+                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'b'),
+                        partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'c'),
+                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'c')
+                        ]
+    gbellmf_expected = [0.25, 0.25, -0.0, -0.0, -0.25, 0.25]
+    assert_allclose(gbellmf_results, gbellmf_expected)
+
+
+    sigmf = 'sigmf'
+    b_one = 1.0
+    c_one = 3.0
+    b_two = -1.0
+    c_two = 0.5
+    sigmf_param_dict_one = {'b':b_one, 'c':c_one}
+    sigmf_param_dict_two = {'b':b_two, 'c':c_two}
+
+    sigmf_results = [partial_dMF(1.0, sigmf, sigmf_param_dict_one, 'b'),
+                      partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'b'),
+                      partial_dMF(1.0, sigmf, sigmf_param_dict_one, 'c'),
+                      partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'c')
+                      ]
+    sigmf_expected = [-0.75, -0.125, 0., 0.]
+    assert_allclose(sigmf_results, sigmf_expected)
 
 
 if __name__ == "__main__":

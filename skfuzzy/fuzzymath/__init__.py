@@ -26,14 +26,15 @@ __all__ = ['cartadd',
            'modus_ponens',
            'outer_product',
            'relation_min',
-           'relation_product']
+           'relation_product',
+           'partial_dMF']
 
 from .fuzzy_ops import (cartadd, cartprod, classic_relation, contrast,
                         fuzzy_add, fuzzy_sub, fuzzy_mult, fuzzy_div,
                         fuzzy_min, fuzzy_compare, fuzzy_similarity,
                         inner_product, interp_membership, interp10,
                         maxmin_composition, maxprod_composition, modus_ponens,
-                        outer_product, relation_min, relation_product)
+                        outer_product, relation_min, relation_product, partial_dMF)
 
 from .fuzzy_logic import fuzzy_and, fuzzy_or, fuzzy_not
 
