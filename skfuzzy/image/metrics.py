@@ -1,4 +1,4 @@
-import numpy as np
+from __future__ import division
 
 
 def nmse(I, J):
@@ -27,35 +27,3 @@ def nmse(I, J):
     """
     diff = I - J
     return 100. * diff.var() / I.var()
-
-
-def sinmse(I, J):
-    """
-    Scale-invariant normalized mean square error (SINMSE) percentage.
-
-    Parameters
-    ----------
-    I : ndarray
-        Known array of arbitrary size and shape. Must be convertible to float.
-    J : ndarray, same shape as `I`
-        Degraded version of `I`, must have same shape as `I`
-
-    Returns
-    -------
-    sinmse : float
-        SINMSE value in percent (sinmse * 100%).
-
-    """
-    diff = np.abs(I - J)
-
-    if diff.sum() == 0:
-        return 0
-    else:
-        cross = I * J
-
-    # Numpy by default computes statistics on flattened arrays
-    a = (cross.mean() - I.mean() * J.mean()) / J.var()
-    cross2 = I - a * J
-    num = cross2.var()
-    den = I.var()
-    return 100. * num / den
