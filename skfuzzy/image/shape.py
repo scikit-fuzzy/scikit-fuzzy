@@ -9,7 +9,7 @@ from __future__ import print_function
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
-__all__ = ['view_as_blocks', 'view_as_windows', 'pad']
+__all__ = ['view_as_blocks', 'view_as_windows']
 
 
 def view_as_blocks(arr_in, block_shape):
@@ -236,83 +236,3 @@ def view_as_windows(arr_in, window_shape):
     arr_out = as_strided(arr_in, shape=new_shape, strides=new_strides)
 
     return arr_out
-
-
-def pad(I, psf, mode='reflect'):
-    """
-    Function to pad borders of a 2d array.
-
-    Parameters
-    ----------
-    I : 2d array (Ix, Iy)
-        Input grayscale image
-    psf : 2d array (mx, my)  OR  Tuple of ints
-        Either the array which will be applied to I (region of interest)
-        OR a length 2 Tuple, containing the size of the kernel to be applied
-        to `I`.
-    mode : string
-        Option kwarg; controls how padding is done.
-
-        * 'reflect' : Default, reflects values from interior to borders.
-        * 'zero' : Pads with zeros.
-        * 'replicate' : Pads by repeating outermost row. Corners repeat the
-                        corner pixel in an ever-increasing region.
-
-    Returns
-    -------
-    J : 2d array (Ix + mx - 1, Iy + my - 1)
-        Padded version of `I` by reflection (including corners).
-        Outer row NOT duplicated.
-
-    Note
-    ----
-    For proper behavior, the `psf` dimensions mx and my should both be odd.
-
-    """
-    dx = I.shape[0]
-    dy = I.shape[1]
-
-    try:
-        xpad = (psf.shape[0] - 1) / 2
-        ypad = (psf.shape[1] - 1) / 2
-    except AttributeError:
-        xpad = (psf[0] - 1) / 2
-        ypad = (psf[1] - 1) / 2
-
-    if 'zero' in mode:
-        sides = np.zeros((dx, ypad), dtype=I.dtype)
-        J = np.hstack((sides, I, sides))
-        top = np.zeros((xpad, dy + 2 * ypad), dtype=I.dtype)
-        J = np.vstack((top, J, top))
-
-    elif 'replicate' in mode:
-        lside = np.atleast_2d(I[:, 0]).T.repeat(ypad, axis=1)
-        rside = np.atleast_2d(I[:, -1]).T.repeat(ypad, axis=1)
-        J = np.hstack((lside, I, rside))
-        top = np.atleast_2d(J[0, :]).repeat(xpad, axis=0)
-        bot = np.atleast_2d(J[-1, :]).repeat(ypad, axis=0)
-        J = np.vstack((top, J, bot))
-
-    else:
-        # Check if this doesn't make sense for reflect
-        if (xpad >= dx - 1) or (ypad >= dy - 1):
-            print('Padding required is too large! I and m may be switched.')
-            # Pad as much as possible
-            xpad = dx - 2
-            ypad = dy - 2
-
-        # Pad left and right sides
-        J = np.hstack((I[:, ypad:0: - 1], I, I[:, dy - 2:dy - ypad - 2:-1]))
-
-        # Make top & bottom w/corners
-        top = np.hstack((I[xpad:0:-1, ypad:0:-1],
-                         I[xpad:0:-1, :],
-                         I[xpad:0:-1, dy - 2:dy - ypad - 2:-1]))
-
-        bot = np.hstack((I[dx - 2:dx - xpad - 2:-1, ypad:0:-1],
-                         I[dx - 2:dx - xpad - 2:-1, :],
-                         I[dx - 2:dx - xpad - 2:-1, dy - 2:dy - ypad - 2:-1]))
-
-        J = np.vstack((top, J, bot))
-
-    return J
