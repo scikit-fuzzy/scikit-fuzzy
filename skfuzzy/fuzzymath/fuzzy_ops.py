@@ -90,45 +90,80 @@ def classic_relation(A, B):
     return np.fmax(cartprod(A, B), cartprod(1 - A, np.ones(len(B))))
 
 
-def contrast(x, p, m=0.5):
+def contrast(arr, amount=0.2, split=0.5, normalize=True):
     """
-    General contrast booster or diffuser of membership vector x.
+    General contrast booster or diffuser of normalized array-like data.
 
     Parameters
     ----------
-    x : 1d array
-        Fuzzy membership vector.
-    p : float
-        Positive scalar (norm of p taken to ensure this).
-    m : float
-        Scalar on range [0, 1].  Values below `m` decreased; values above `m`
-        increased.
+    arr : ndarray
+        Input array (of floats on range [0, 1] if normalize=False). If values
+        exist outside this range, with `normalize=True` the image will be
+        normalized for calculation.
+    amount : float or length-2 iterable of floats
+        Controls the exponential contrast mechanism for values above and below
+        `split` in `I`. If positive, the curve provides added contrast;
+        if negative, the curve provides reduced contrast.
+
+        If provided as a lenth-2 iterable of floats, they control the regions
+        (below, above) `split` separately.
+    split : float
+        Positive scalar, on range [0, 1], determining the midpoint of the
+        exponential contrast. The contrast below `split` is controlled by
+        `below`, while the contrast above `split` is controlled by `above`.
+        Default of 0.5 is reasonable for well-exposed images.
+    normalize : bool, default True
+        Controls if intensities in `I` will be normalized to the range [0, 1].
 
     Returns
     -------
-    y : 1d array
-        Resultant membership vector after contrast adjustment.
+    focused : ndarray
+        Contrast adjusted, normalized, floating-point image on range [0, 1].
 
     Note
     ----
-    Algorithm is defined as follows:
+    The result of this algorithm is like applying a Curves adjustment in the
+    GIMP or Photoshop.
 
-               | 2 ** (p - 1) * x ** p                 0 <= x <= m
-        y(x) = |
-               | 1 - 2 ** (p - 1) * (1 - x) ** p     m <= x <= 1.0
+    Algorithm for curves adjustment at a given pixel, x, is given by:
+
+             | split * (x/split)^below,                        0 <= x <= split
+    y(x)  =  |
+             | 1 - (1-split) * ((1-x) / (1-split))^above,   split < x <= 1.0
 
     See also
     --------
-    INTENSE, DINTENSE
-
+    SIGMOID
     """
-    p = abs(p)
-    y = np.zeros(x.shape)
+    # Ensure scalars are floats, to avoid truncating division in Python 2.x
+    split = float(split)
+    im = arr.astype(float)
+    amount_ = np.asarray(amount, dtype=np.float64).ravel()
 
-    y[x <= m] = (2 ** (p - 1) * x ** p)[x <= m]
-    y[x > m] = (1 - 2 ** (p - 1) * (1 - x) ** p)[x > m]
+    if len(amount_) == 1:
+        # One argument -> Equal amount applied on either side of `split`
+        above = below = amount_[0]
+    else:
+        # Two arguments -> Control contrast separately in light/dark regions
+        below = amount_[0]
+        above = amount_[1]
 
-    return y
+    # Normalize if required
+    if im.max() > 1. and normalize is True:
+        ma = float(im.max())
+        im /= float(im.max())
+    else:
+        ma = 1.
+
+    focused = np.zeros_like(im, dtype=np.float64)
+
+    # Simplified array-wise algorithm using fancy indexing rather than looping
+    focused[im <= split] = split * (im[im <= split] / split) ** below
+    focused[im > split] = (1 - (1. - split) *
+                           ((1 - im[im > split]) / (1. - split)) ** above)
+
+    # Reapply multiplicative factor
+    return focused * ma
 
 
 def fuzzy_add(x, A, y, B):
@@ -799,3 +834,35 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
                 np.power((np.exp(c * (x - b))) + 1, 2)
 
     return result
+
+
+def sigmoid(x, power, split=0.5):
+    """
+    Intensifies grayscale intensities in an array using a sigmoid function.
+
+    Parameters
+    ----------
+    x : ndarray
+        Input vector or image array.  Should be pre-normalized to range [0, 1]
+    p : float
+        Power of the intensification (p > 0). Experiment with small, decimal
+        values and increase as necessary.
+    split : float
+        Threshold for intensification. Values above `split` will be
+        intensified, while values below `split` will be deintensified. Note
+        range for `split` is (0, 1). Default of 0.5 is reasonable for many
+        well-exposed images.
+
+    Returns
+    -------
+    y : ndarray, same size as x
+        Output vector or image with contrast adjusted.
+
+    Note
+    ----
+    The sigmoid used herein is defined as:
+
+        y = 1 / (1 + exp(- exp(- power * (x-split))))
+
+    """
+    return 1. / (1. + np.exp(- power * (x - split)))
