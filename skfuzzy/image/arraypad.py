@@ -6,8 +6,12 @@ of an n-dimensional array.
 from __future__ import division, absolute_import, print_function
 
 import numpy as np
-from numpy.compat import long
-
+try:
+    # Required if present, on all Python 3.x versions
+    from numpy.compat import long
+except:
+    # Python 2.x has this at base, so silently pass
+    pass
 
 __all__ = ['pad']
 
