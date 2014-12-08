@@ -12,12 +12,12 @@ clean-build:
 	rm -rf ./build
 
 clean-version:
-	find pyril -name "*version.py" | xargs rm -f
+	find skfuzzy -name "*version.py" | xargs rm -f
 
 clean-cov:
 	rm -rf ./coverage ./.coverage ./htmlcov
 
-clean: clean-build clean-pyc
+clean: clean-build clean-pyc clean-version clean-cov
 
 test:
 	nosetests -s -v skfuzzy
