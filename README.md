@@ -1,7 +1,6 @@
 Readme
 ======
 
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/scikit-fuzzy/scikit-fuzzy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 `scikit-fuzzy` is a fuzzy logic toolkit for SciPy.
 
 The goals of scikit-fuzzy are:
@@ -12,8 +11,13 @@ Source
 ------
 https://github.com/scikit-fuzzy/scikit-fuzzy
 
-Mailing List
-------------
+Online Discussion & Mailing List
+--------------------------------
+
+Please join the discussion in our public chat room on Gitter.im
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/scikit-fuzzy/scikit-fuzzy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+or view/post on the Google Groups mailing list
 http://groups.google.com/group/scikit-fuzzy
 
 Installation from source
