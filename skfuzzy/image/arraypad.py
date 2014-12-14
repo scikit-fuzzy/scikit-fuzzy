@@ -6,12 +6,7 @@ of an n-dimensional array.
 from __future__ import division, absolute_import, print_function
 
 import numpy as np
-try:
-    # Required if present, on all Python 3.x versions
-    from numpy.compat import long
-except:
-    # Python 2.x has this at base, so silently pass
-    pass
+
 
 __all__ = ['pad']
 
@@ -991,7 +986,7 @@ def _pad_wrap(arr, pad_amt, axis=-1):
     return np.concatenate((wrap_chunk1, arr, wrap_chunk2), axis=axis)
 
 
-def _normalize_shape(narray, shape):
+def _normalize_shape(ndarray, shape, cast_to_int=True):
     """
     Private function which does some checks and normalizes the possibly
     much simpler representations of 'pad_width', 'stat_length',
@@ -1001,52 +996,75 @@ def _normalize_shape(narray, shape):
     ----------
     narray : ndarray
         Input ndarray
-    shape : {sequence, int}, optional
-        The width of padding (pad_width) or the number of elements on the
-        edge of the narray used for statistics (stat_length).
+    shape : {sequence, array_like, float, int}, optional
+        The width of padding (pad_width), the number of elements on the
+        edge of the narray used for statistics (stat_length), the constant
+        value(s) to use when filling padded regions (constant_values), or the
+        endpoint target(s) for linear ramps (end_values).
         ((before_1, after_1), ... (before_N, after_N)) unique number of
         elements for each axis where `N` is rank of `narray`.
         ((before, after),) yields same before and after constants for each
         axis.
-        (constant,) or int is a shortcut for before = after = constant for
+        (constant,) or val is a shortcut for before = after = constant for
         all axes.
+    cast_to_int : bool, optional
+        Controls if values in ``shape`` will be rounded and cast to int
+        before being returned.
 
     Returns
     -------
-    _normalize_shape : tuple of tuples
-        int                               => ((int, int), (int, int), ...)
-        [[int1, int2], [int3, int4], ...] => ((int1, int2), (int3, int4), ...)
-        ((int1, int2), (int3, int4), ...) => no change
-        [[int1, int2], ]                  => ((int1, int2), (int1, int2), ...)
-        ((int1, int2), )                  => ((int1, int2), (int1, int2), ...)
-        [[int ,     ], ]                  => ((int, int), (int, int), ...)
-        ((int ,     ), )                  => ((int, int), (int, int), ...)
+    normalized_shape : tuple of tuples
+        val                               => ((val, val), (val, val), ...)
+        [[val1, val2], [val3, val4], ...] => ((val1, val2), (val3, val4), ...)
+        ((val1, val2), (val3, val4), ...) => no change
+        [[val1, val2], ]                  => ((val1, val2), (val1, val2), ...)
+        ((val1, val2), )                  => ((val1, val2), (val1, val2), ...)
+        [[val ,     ], ]                  => ((val, val), (val, val), ...)
+        ((val ,     ), )                  => ((val, val), (val, val), ...)
 
     """
-    normshp = None
-    shapelen = len(np.shape(narray))
-    if (isinstance(shape, int)) or shape is None:
-        normshp = ((shape, shape), ) * shapelen
-    elif (isinstance(shape, (tuple, list))
-            and isinstance(shape[0], (tuple, list))
-            and len(shape) == shapelen):
-        normshp = shape
-        for i in normshp:
-            if len(i) != 2:
-                fmt = "Unable to create correctly shaped tuple from %s"
-                raise ValueError(fmt % (normshp,))
-    elif (isinstance(shape, (tuple, list))
-            and isinstance(shape[0], (int, float, long))
-            and len(shape) == 1):
-        normshp = ((shape[0], shape[0]), ) * shapelen
-    elif (isinstance(shape, (tuple, list))
-            and isinstance(shape[0], (int, float, long))
-            and len(shape) == 2):
-        normshp = (shape, ) * shapelen
-    if normshp is None:
+    ndims = ndarray.ndim
+
+    # Shortcut shape=None
+    if shape is None:
+        return ((None, None), ) * ndims
+
+    # Convert any input `info` to a NumPy array
+    arr = np.asarray(shape)
+
+    # Switch based on what input looks like
+    if arr.ndim <= 1:
+        if arr.shape == () or arr.shape == (1,):   # Single scalar input
+            # Create new array of ones, multiply by the scalar
+            arr = np.ones((ndims, 2), dtype=ndarray.dtype) * arr
+        elif arr.shape == (2,):    # Apply padding (before, after) each axis
+            # Create new axis 0, repeat along it for every axis
+            arr = arr[np.newaxis, :].repeat(ndims, axis=0)
+        else:
+            fmt = "Unable to create correctly shaped tuple from %s"
+            raise ValueError(fmt % (shape,))
+
+    elif arr.ndim == 2:
+        if arr.shape[1] == 1 and arr.shape[0] == ndims:
+            # Padded before and after by the same amount
+            arr = arr.repeat(2, axis=1)
+        elif arr.shape[0] == ndims:
+            # Input correctly formatted, pass it on as `arr`
+            arr = shape
+        else:
+            fmt = "Unable to create correctly shaped tuple from %s"
+            raise ValueError(fmt % (shape,))
+
+    else:
         fmt = "Unable to create correctly shaped tuple from %s"
         raise ValueError(fmt % (shape,))
-    return normshp
+
+    # Cast if necessary
+    if cast_to_int is True:
+        arr = np.round(arr).astype(int)
+
+    # Convert list of lists to tuple of tuples
+    return tuple(tuple(axis) for axis in arr.tolist())
 
 
 def _validate_lengths(narray, number_elements):
@@ -1102,14 +1120,14 @@ def pad(array, pad_width, mode=None, **kwargs):
     ----------
     array : array_like of rank N
         Input array
-    pad_width : {sequence, int}
+    pad_width : {sequence, array_like, int}
         Number of values padded to the edges of each axis.
         ((before_1, after_1), ... (before_N, after_N)) unique pad widths
         for each axis.
         ((before, after),) yields same before and after pad for each axis.
         (pad,) or int is a shortcut for before = after = pad width for all
         axes.
-    mode : {str, function}
+    mode : str or function
         One of the following string values or a user supplied function.
 
         'constant'
@@ -1144,7 +1162,7 @@ def pad(array, pad_width, mode=None, **kwargs):
             end values are used to pad the beginning.
         <function>
             Padding function, see Notes.
-    stat_length : {sequence, int}, optional
+    stat_length : sequence or int, optional
         Used in 'maximum', 'mean', 'median', and 'minimum'.  Number of
         values at edge of each axis used to calculate the statistic value.
 
@@ -1158,7 +1176,7 @@ def pad(array, pad_width, mode=None, **kwargs):
         length for all axes.
 
         Default is ``None``, to use the entire axis.
-    constant_values : {sequence, int}, optional
+    constant_values : sequence or int, optional
         Used in 'constant'.  The values to set the padded values for each
         axis.
 
@@ -1172,7 +1190,7 @@ def pad(array, pad_width, mode=None, **kwargs):
         all axes.
 
         Default is 0.
-    end_values : {sequence, int}, optional
+    end_values : sequence or int, optional
         Used in 'linear_ramp'.  The values used for the ending value of the
         linear_ramp and that will form the edge of the padded array.
 
@@ -1186,7 +1204,7 @@ def pad(array, pad_width, mode=None, **kwargs):
         all axes.
 
         Default is 0.
-    reflect_type : str {'even', 'odd'}, optional
+    reflect_type : {'even', 'odd'}, optional
         Used in 'reflect', and 'symmetric'.  The 'even' style is the
         default with an unaltered reflection around the edge value.  For
         the 'odd' style, the extented part of the array is created by
@@ -1231,13 +1249,13 @@ def pad(array, pad_width, mode=None, **kwargs):
     Examples
     --------
     >>> a = [1, 2, 3, 4, 5]
-    >>> np.lib.pad(a, (2,3), 'constant', constant_values=(4,6))
+    >>> np.lib.pad(a, (2,3), 'constant', constant_values=(4, 6))
     array([4, 4, 1, 2, 3, 4, 5, 6, 6, 6])
 
-    >>> np.lib.pad(a, (2,3), 'edge')
+    >>> np.lib.pad(a, (2, 3), 'edge')
     array([1, 1, 1, 2, 3, 4, 5, 5, 5, 5])
 
-    >>> np.lib.pad(a, (2,3), 'linear_ramp', end_values=(5,-4))
+    >>> np.lib.pad(a, (2, 3), 'linear_ramp', end_values=(5, -4))
     array([ 5,  3,  1,  2,  3,  4,  5,  2, -1, -4])
 
     >>> np.lib.pad(a, (2,), 'maximum')
@@ -1249,7 +1267,7 @@ def pad(array, pad_width, mode=None, **kwargs):
     >>> np.lib.pad(a, (2,), 'median')
     array([3, 3, 1, 2, 3, 4, 5, 3, 3])
 
-    >>> a = [[1,2], [3,4]]
+    >>> a = [[1, 2], [3, 4]]
     >>> np.lib.pad(a, ((3, 2), (2, 3)), 'minimum')
     array([[1, 1, 1, 2, 1, 1, 1],
            [1, 1, 1, 2, 1, 1, 1],
@@ -1260,19 +1278,19 @@ def pad(array, pad_width, mode=None, **kwargs):
            [1, 1, 1, 2, 1, 1, 1]])
 
     >>> a = [1, 2, 3, 4, 5]
-    >>> np.lib.pad(a, (2,3), 'reflect')
+    >>> np.lib.pad(a, (2, 3), 'reflect')
     array([3, 2, 1, 2, 3, 4, 5, 4, 3, 2])
 
-    >>> np.lib.pad(a, (2,3), 'reflect', reflect_type='odd')
+    >>> np.lib.pad(a, (2, 3), 'reflect', reflect_type='odd')
     array([-1,  0,  1,  2,  3,  4,  5,  6,  7,  8])
 
-    >>> np.lib.pad(a, (2,3), 'symmetric')
+    >>> np.lib.pad(a, (2, 3), 'symmetric')
     array([2, 1, 1, 2, 3, 4, 5, 5, 4, 3])
 
-    >>> np.lib.pad(a, (2,3), 'symmetric', reflect_type='odd')
+    >>> np.lib.pad(a, (2, 3), 'symmetric', reflect_type='odd')
     array([0, 1, 1, 2, 3, 4, 5, 5, 6, 7])
 
-    >>> np.lib.pad(a, (2,3), 'wrap')
+    >>> np.lib.pad(a, (2, 3), 'wrap')
     array([4, 5, 1, 2, 3, 4, 5, 1, 2, 3])
 
     >>> def padwithtens(vector, pad_width, iaxis, kwargs):
@@ -1281,7 +1299,7 @@ def pad(array, pad_width, mode=None, **kwargs):
     ...     return vector
 
     >>> a = np.arange(6)
-    >>> a = a.reshape((2,3))
+    >>> a = a.reshape((2, 3))
 
     >>> np.lib.pad(a, 2, padwithtens)
     array([[10, 10, 10, 10, 10, 10, 10],
@@ -1291,6 +1309,8 @@ def pad(array, pad_width, mode=None, **kwargs):
            [10, 10, 10, 10, 10, 10, 10],
            [10, 10, 10, 10, 10, 10, 10]])
     """
+    if not np.asarray(pad_width).dtype.kind == 'i':
+        raise TypeError('`pad_width` must be of integral type.')
 
     narray = np.array(array)
     pad_width = _validate_lengths(narray, pad_width)
@@ -1331,7 +1351,8 @@ def pad(array, pad_width, mode=None, **kwargs):
             if i == 'stat_length':
                 kwargs[i] = _validate_lengths(narray, kwargs[i])
             if i in ['end_values', 'constant_values']:
-                kwargs[i] = _normalize_shape(narray, kwargs[i])
+                kwargs[i] = _normalize_shape(narray, kwargs[i],
+                                             cast_to_int=False)
     elif mode is None:
         raise ValueError('Keyword "mode" must be a function or one of %s.' %
                          (list(allowedkwargs.keys()),))

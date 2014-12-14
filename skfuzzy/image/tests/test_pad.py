@@ -395,6 +395,88 @@ class TestConstant(TestCase):
             )
         assert_array_equal(a, b)
 
+    def test_check_constant_float(self):
+        # If input array is int, but constant_values are float, the dtype of
+        # the array to be padded is kept
+        arr = np.arange(30).reshape(5, 6)
+        test = pad(arr, (1, 2), mode='constant',
+                   constant_values=1.1)
+        expected = np.array(
+            [[ 1,  1,  1,  1,  1,  1,  1,  1,  1],
+
+             [ 1,  0,  1,  2,  3,  4,  5,  1,  1],
+             [ 1,  6,  7,  8,  9, 10, 11,  1,  1],
+             [ 1, 12, 13, 14, 15, 16, 17,  1,  1],
+             [ 1, 18, 19, 20, 21, 22, 23,  1,  1],
+             [ 1, 24, 25, 26, 27, 28, 29,  1,  1],
+
+             [ 1,  1,  1,  1,  1,  1,  1,  1,  1],
+             [ 1,  1,  1,  1,  1,  1,  1,  1,  1]]
+            )
+        assert_allclose(test, expected)
+
+    def test_check_constant_float2(self):
+        # If input array is float, and constant_values are float, the dtype of
+        # the array to be padded is kept - here retaining the float constants
+        arr = np.arange(30).reshape(5, 6)
+        arr_float = arr.astype(np.float64)
+        test = pad(arr_float, ((1, 2), (1, 2)), mode='constant',
+                   constant_values=1.1)
+        expected = np.array(
+            [[  1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1],
+
+             [  1.1,   0. ,   1. ,   2. ,   3. ,   4. ,   5. ,   1.1,   1.1],
+             [  1.1,   6. ,   7. ,   8. ,   9. ,  10. ,  11. ,   1.1,   1.1],
+             [  1.1,  12. ,  13. ,  14. ,  15. ,  16. ,  17. ,   1.1,   1.1],
+             [  1.1,  18. ,  19. ,  20. ,  21. ,  22. ,  23. ,   1.1,   1.1],
+             [  1.1,  24. ,  25. ,  26. ,  27. ,  28. ,  29. ,   1.1,   1.1],
+
+             [  1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1],
+             [  1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1,   1.1]]
+            )
+        assert_allclose(test, expected)
+
+    def test_check_constant_float3(self):
+        a = np.arange(100, dtype=float)
+        a = pad(a, (25, 20), 'constant', constant_values=(-1.1, -1.2))
+        b = np.array(
+            [-1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1,
+             -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1, -1.1,
+             -1.1, -1.1, -1.1, -1.1, -1.1,
+
+             0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+             10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+             20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+             30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+             40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+             50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+             60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+             70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+             80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+             90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+
+             -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2,
+             -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2]
+            )
+        assert_allclose(a, b)
+
+    def test_check_constant_odd_pad_amount(self):
+        arr = np.arange(30).reshape(5, 6)
+        test = pad(arr, ((1,), (2,)), mode='constant',
+                   constant_values=3)
+        expected = np.array(
+            [[ 3,  3,  3,  3,  3,  3,  3,  3,  3,  3],
+
+             [ 3,  3,  0,  1,  2,  3,  4,  5,  3,  3],
+             [ 3,  3,  6,  7,  8,  9, 10, 11,  3,  3],
+             [ 3,  3, 12, 13, 14, 15, 16, 17,  3,  3],
+             [ 3,  3, 18, 19, 20, 21, 22, 23,  3,  3],
+             [ 3,  3, 24, 25, 26, 27, 28, 29,  3,  3],
+
+             [ 3,  3,  3,  3,  3,  3,  3,  3,  3,  3]]
+            )
+        assert_allclose(test, expected)
+
 
 class TestLinearRamp(TestCase):
     def test_check_simple(self):
@@ -850,6 +932,27 @@ class TestLegacyVectorFunction(TestCase):
         assert_array_equal(a, b)
 
 
+class TestNdarrayPadWidth(TestCase):
+    def test_check_simple(self):
+        a = np.arange(12)
+        a = np.reshape(a, (4, 3))
+        a = pad(a, np.array(((2, 3), (3, 2))), 'edge')
+        b = np.array(
+            [[0,  0,  0,    0,  1,  2,    2,  2],
+             [0,  0,  0,    0,  1,  2,    2,  2],
+
+             [0,  0,  0,    0,  1,  2,    2,  2],
+             [3,  3,  3,    3,  4,  5,    5,  5],
+             [6,  6,  6,    6,  7,  8,    8,  8],
+             [9,  9,  9,    9, 10, 11,   11, 11],
+
+             [9,  9,  9,    9, 10, 11,   11, 11],
+             [9,  9,  9,    9, 10, 11,   11, 11],
+             [9,  9,  9,    9, 10, 11,   11, 11]]
+            )
+        assert_array_equal(a, b)
+
+
 class ValueError1(TestCase):
     def test_check_simple(self):
         arr = np.arange(30)
@@ -874,16 +977,7 @@ class ValueError1(TestCase):
 
 
 class ValueError2(TestCase):
-    def test_check_simple(self):
-        arr = np.arange(30)
-        arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(3, ))
-        assert_raises(ValueError, pad, arr, ((2, 3, 4), (3, 2)),
-                      **kwargs)
-
-
-class ValueError3(TestCase):
-    def test_check_simple(self):
+    def test_check_negative_pad_amount(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
         kwargs = dict(mode='mean', stat_length=(3, ))
@@ -891,7 +985,7 @@ class ValueError3(TestCase):
                       **kwargs)
 
 
-class ValueError4(TestCase):
+class ValueError3(TestCase):
     def test_check_kwarg_not_allowed(self):
         arr = np.arange(30).reshape(5, 6)
         assert_raises(ValueError, pad, arr, 4, mode='mean',
@@ -900,6 +994,53 @@ class ValueError4(TestCase):
     def test_mode_not_set(self):
         arr = np.arange(30).reshape(5, 6)
         assert_raises(ValueError, pad, arr, 4)
+
+    def test_malformed_pad_amount(self):
+        arr = np.arange(30).reshape(5, 6)
+        assert_raises(ValueError, pad, arr, (4, 5, 6, 7), mode='constant')
+
+    def test_malformed_pad_amount2(self):
+        arr = np.arange(30).reshape(5, 6)
+        assert_raises(ValueError, pad, arr, ((3, 4, 5), (0, 1, 2)),
+                      mode='constant')
+
+    def test_pad_too_many_axes(self):
+        arr = np.arange(30).reshape(5, 6)
+
+        # Attempt to pad using a 3D array equivalent
+        bad_shape = (((3,), (4,), (5,)), ((0,), (1,), (2,)))
+        assert_raises(ValueError, pad, arr, bad_shape,
+                      mode='constant')
+
+
+class TypeError1(TestCase):
+    def test_float(self):
+        arr = np.arange(30)
+        assert_raises(TypeError, pad, arr, ((-2.1, 3), (3, 2)))
+        assert_raises(TypeError, pad, arr, np.array(((-2.1, 3), (3, 2))))
+
+    def test_str(self):
+        arr = np.arange(30)
+        assert_raises(TypeError, pad, arr, 'foo')
+        assert_raises(TypeError, pad, arr, np.array('foo'))
+
+    def test_object(self):
+        class FooBar(object):
+            pass
+        arr = np.arange(30)
+        assert_raises(TypeError, pad, arr, FooBar())
+
+    def test_complex(self):
+        arr = np.arange(30)
+        assert_raises(TypeError, pad, arr, complex(1, -1))
+        assert_raises(TypeError, pad, arr, np.array(complex(1, -1)))
+
+    def test_check_wrong_pad_amount(self):
+        arr = np.arange(30)
+        arr = np.reshape(arr, (6, 5))
+        kwargs = dict(mode='mean', stat_length=(3, ))
+        assert_raises(TypeError, pad, arr, ((2, 3, 4), (3, 2)),
+                      **kwargs)
 
 
 if __name__ == "__main__":
