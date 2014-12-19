@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import assert_allclose, assert_array_equal, TestCase
 from random import randint
 from skfuzzy.membership import trapmf
 from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
@@ -8,7 +8,8 @@ from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                relation_min, relation_product,
                                fuzzy_add, fuzzy_sub, fuzzy_min, fuzzy_mult,
                                fuzzy_div, fuzzy_compare, inner_product,
-                               modus_ponens, outer_product, fuzzy_similarity, partial_dMF)
+                               modus_ponens, outer_product, fuzzy_similarity,
+                               sigmoid, partial_dMF)
 
 
 def test_cartadd():
@@ -62,76 +63,81 @@ def test_classic_relation():
     assert_allclose(z, expected)
 
 
-def test_contrast():
-    a = np.r_[0, 0, 0, 0.3, 0.7, 1, 0.9, 0]
-    z = contrast(a, 1.8)
+class TestContrast(TestCase):
+    def test_trivial_curves(self):
+        im = np.r_[[[0, 3, 4, 6, 1],
+                    [3, 6, 1, 1, 8],
+                    [4, 2, 6, 0, 7],
+                    [5, 5, 9, 0, 2]]]
+        test = contrast(im, 0.5)
+        assert_array_equal(test, contrast(im, (0.5, 0.5)))
 
-    # Legacy slower code which should produce identical result
-    p = 1.8
-    m = 0.5
-    ymin = np.fmin(a, m)
-    ymax = np.fmax(a, m)
-    w = np.arange(len(a))
-    wmax = w[ymax > m]
-    wmin = w[ymax <= m]
-    ymin = 2 ** (p - 1) * ymin ** p
-    ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
-    ymin[wmax] = 0
-    ymax[wmin] = 0
+        expected = np.array(
+            [[0.        , 0.40824829, 0.47140452, 0.59175171, 0.23570226],
+             [0.40824829, 0.59175171, 0.23570226, 0.23570226, 0.76429774],
+             [0.47140452, 0.33333333, 0.59175171, 0.        , 0.66666667],
+             [0.52859548, 0.52859548, 1.        , 0.        , 0.33333333]])
 
-    assert_allclose(z, ymin + ymax)
+        assert_allclose(test, expected * 9)
 
-    # Legacy slower code which should produce identical result
-    p = 0.5
-    m = 0.5
-    z = contrast(a, 0.5)
-    ymin = np.fmin(a, m)
-    ymax = np.fmax(a, m)
-    w = np.arange(len(a))
-    wmax = w[ymax > m]
-    wmin = w[ymax <= m]
-    ymin = 2 ** (p - 1) * ymin ** p
-    ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
-    ymin[wmax] = 0
-    ymax[wmin] = 0
+    def test_contrast(self):
+        a = np.r_[0, 0, 0, 0.3, 0.7, 1, 0.9, 0]
+        z = contrast(a, 1.8)
 
-    assert_allclose(z, ymin + ymax)
+        # Legacy slower code which should produce identical result
+        p = 1.8
+        m = 0.5
+        ymin = np.fmin(a, m)
+        ymax = np.fmax(a, m)
+        w = np.arange(len(a))
+        wmax = w[ymax > m]
+        wmin = w[ymax <= m]
+        ymin = 2 ** (p - 1) * ymin ** p
+        ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
+        ymin[wmax] = 0
+        ymax[wmin] = 0
 
-    # Legacy slower code which should produce identical result
-    p = 2.
-    m = 0.5
-    z = contrast(a, 2.)
-    ymin = np.fmin(a, m)
-    ymax = np.fmax(a, m)
-    w = np.arange(len(a))
-    wmax = w[ymax > m]
-    wmin = w[ymax <= m]
-    ymin = 2 ** (p - 1) * ymin ** p
-    ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
-    ymin[wmax] = 0
-    ymax[wmin] = 0
+        assert_allclose(z, ymin + ymax)
 
-    assert_allclose(z, ymin + ymax)
+        # Legacy slower code which should produce identical result
+        p = 0.5
+        m = 0.5
+        z = contrast(a, 0.5)
+        ymin = np.fmin(a, m)
+        ymax = np.fmax(a, m)
+        w = np.arange(len(a))
+        wmax = w[ymax > m]
+        wmin = w[ymax <= m]
+        ymin = 2 ** (p - 1) * ymin ** p
+        ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
+        ymin[wmax] = 0
+        ymax[wmin] = 0
 
+        assert_allclose(z, ymin + ymax)
 
-def test_contrast_offcenter():
-    a = np.r_[0, 0, 0, 0.3, 0.7, 1, 0.9, 0]
-    z = contrast(a, 1.8, m=0.75)
+        # Legacy slower code which should produce identical result
+        p = 2.
+        m = 0.5
+        z = contrast(a, 2.)
+        ymin = np.fmin(a, m)
+        ymax = np.fmax(a, m)
+        w = np.arange(len(a))
+        wmax = w[ymax > m]
+        wmin = w[ymax <= m]
+        ymin = 2 ** (p - 1) * ymin ** p
+        ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
+        ymin[wmax] = 0
+        ymax[wmin] = 0
 
-    # Legacy slower code which produces correct results
-    p = 1.8
-    m = 0.75
-    ymin = np.fmin(a, m)
-    ymax = np.fmax(a, m)
-    w = np.arange(len(a))
-    wmax = w[ymax > m]
-    wmin = w[ymax <= m]
-    ymin = 2 ** (p - 1) * ymin ** p
-    ymax = 1 - 2 ** (p - 1) * (1 - ymax) ** p
-    ymin[wmax] = 0
-    ymax[wmin] = 0
+        assert_allclose(z, ymin + ymax)
 
-    assert_array_equal(z, ymin + ymax)
+    def test_contrast_offcenter(self):
+        a = np.r_[0, 0, 0, 0.3, 0.7, 1, 0.9, 0]
+        z = contrast(a, 1.8, 0.75)
+
+        expected = np.r_[0, 0, 0, 0.14413493, 0.66241089, 1, 0.95195502, 0]
+
+        assert_allclose(z, expected)
 
 
 def test_fuzzy_add():
@@ -390,52 +396,66 @@ def test_fuzzy_similarity():
     c = fuzzy_similarity(A, B, mode='avg')
     assert_allclose(np.r_[c], np.r_[0.6])
 
+
+def test_sigmoid():
+    a = np.arange(30) / 29.
+    expected = np.array(
+      [ 0.4378235 ,  0.44207164,  0.44632827,  0.45059279,  0.45486458,
+        0.45914303,  0.4634275 ,  0.46771738,  0.47201205,  0.47631085,
+        0.48061317,  0.48491837,  0.48922581,  0.49353484,  0.49784484,
+        0.50215516,  0.50646516,  0.51077419,  0.51508163,  0.51938683,
+        0.52368915,  0.52798795,  0.53228262,  0.5365725 ,  0.54085697,
+        0.54513542,  0.54940721,  0.55367173,  0.55792836,  0.5621765 ])
+
+    test = sigmoid(a, 0.5)
+    assert_allclose(test, expected)
+
+
 def test_partial_dMF():
 
     gaussmf = 'gaussmf'
     mean = -1.5
     sigma = 0.75
-    gaussmf_param_dict = {'mean':mean, 'sigma':sigma}
-    test_int = randint(1,3)
+    gaussmf_param_dict = {'mean': mean,
+                          'sigma': sigma}
+    test_int = randint(1, 3)
 
     gaussmf_results = [partial_dMF(-1.5, gaussmf, gaussmf_param_dict, 'mean'),
-                        partial_dMF(-1.5, gaussmf, gaussmf_param_dict, 'sigma'),
-                        partial_dMF(-1.5, gaussmf, {'mean':mean, 'sigma':test_int * sigma}, 'mean') == \
-                        -partial_dMF(-1.5, gaussmf, {'mean':mean, 'sigma':-test_int * sigma}, 'mean')]
+                       partial_dMF(-1.5, gaussmf, gaussmf_param_dict, 'sigma'),
+                       partial_dMF(-1.5, gaussmf, {'mean': mean, 'sigma': test_int * sigma}, 'mean') ==
+                       -partial_dMF(-1.5, gaussmf, {'mean': mean, 'sigma': -test_int * sigma}, 'mean')]
     gaussmf_expected = [0., 0., True]
     assert_allclose(gaussmf_results, gaussmf_expected)
-
 
     gbellmf = 'gbellmf'
     a = 2.
     b = 1.
     c = 0.5
-    gbellmf_param_dict = {'a':a, 'b':b, 'c':c}
+    gbellmf_param_dict = {'a': a, 'b': b, 'c': c}
 
     gbellmf_results = [partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'a'),
-                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'a'),
-                        partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'b'),
-                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'b'),
-                        partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'c'),
-                        partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'c')
-                        ]
+                       partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'a'),
+                       partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'b'),
+                       partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'b'),
+                       partial_dMF(-1.5, gbellmf, gbellmf_param_dict, 'c'),
+                       partial_dMF(2.5, gbellmf, gbellmf_param_dict, 'c')
+                       ]
     gbellmf_expected = [0.25, 0.25, -0.0, -0.0, -0.25, 0.25]
     assert_allclose(gbellmf_results, gbellmf_expected)
-
 
     sigmf = 'sigmf'
     b_one = 1.0
     c_one = 3.0
     b_two = -1.0
     c_two = 0.5
-    sigmf_param_dict_one = {'b':b_one, 'c':c_one}
-    sigmf_param_dict_two = {'b':b_two, 'c':c_two}
+    sigmf_param_dict_one = {'b': b_one, 'c': c_one}
+    sigmf_param_dict_two = {'b': b_two, 'c': c_two}
 
     sigmf_results = [partial_dMF(1.0, sigmf, sigmf_param_dict_one, 'b'),
-                      partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'b'),
-                      partial_dMF(1.0, sigmf, sigmf_param_dict_one, 'c'),
-                      partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'c')
-                      ]
+                     partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'b'),
+                     partial_dMF(1.0, sigmf, sigmf_param_dict_one, 'c'),
+                     partial_dMF(-1.0, sigmf, sigmf_param_dict_two, 'c')
+                     ]
     sigmf_expected = [-0.75, -0.125, 0., 0.]
     assert_allclose(sigmf_results, sigmf_expected)
 
