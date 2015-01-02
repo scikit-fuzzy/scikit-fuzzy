@@ -10,9 +10,10 @@ from ..membership import trimf
 
 def fire1d(x, L1=0, L2=1):
     """
-    1-D Nonlinear fuzzy filtering using Fuzzy Inference Ruled by Else-action
-    (FIRE) operators, commonly known as a FIRE filter. This filter is
-    specifically designed to remove impulse (salt & pepper) noise.
+    1-D fuzzy filtering using Fuzzy Inference Ruled by Else-action (FIRE)
+
+    FIRE filtering is nonlinear, and is specifically designed to remove
+    impulse (salt and pepper) noise.
 
     Parameters
     ----------
@@ -40,6 +41,8 @@ def fire1d(x, L1=0, L2=1):
            Brussels, Belgium, June 4 - 6, 1996, pp 1281 - 1285.
 
     """
+    from ..image import pad as padimg
+
     # Enforce range limit
     np.clip(x, -L2, L2, out=x)
 
@@ -56,8 +59,8 @@ def fire1d(x, L1=0, L2=1):
                    [0, 3, 4],
                    [0, 1, 4]]]
 
-    # Padding the array by extension
-    x = np.r_[x[[0, 0]], x, x[[-1, -1]]]
+    # Padding the array
+    x = padimg(x, 2, mode='reflect')
 
     # Generate rolling 5-point window view into the array
     xx = view_as_windows(x, (5,))
@@ -69,8 +72,8 @@ def fire1d(x, L1=0, L2=1):
     dxx = xx - center
 
     # Conduct interpolation all at once, on every point, for PO and NE
-    mPO = np.interp(dxx, dx, PO)  # .reshape(xx.shape) unnecessary
-    mNE = np.interp(dxx, dx, NE)  # .reshape(xx.shape) unnecessary
+    mPO = np.interp(dxx, dx, PO)
+    mNE = np.interp(dxx, dx, NE)
 
     # Build output correction functions all at once
     lam = np.empty((0, len(mPO)))
@@ -88,11 +91,12 @@ def fire1d(x, L1=0, L2=1):
     return y
 
 
-def fire2d(I, L1=0, L2=255, fuzzyresolution=1, pad='reflect'):
+def fire2d(I, L1=0, L2=255, fuzzyresolution=1):
     """
-    2-D Nonlinear fuzzy filtering using Fuzzy Inference Ruled by Else-action
-    (FIRE) operators, commonly known as a FIRE filter. This filter is
-    specifically designed to remove impulse (salt & pepper) noise.
+    2-D fuzzy filtering using Fuzzy Inference Ruled by Else-action (FIRE)
+
+    FIRE filtering is nonlinear, and is specifically designed to remove
+    impulse (salt and pepper) noise.
 
     Parameters
     ----------
@@ -104,10 +108,6 @@ def fire2d(I, L1=0, L2=255, fuzzyresolution=1, pad='reflect'):
         Upper limit of filtering range.
     fuzzyresolution : float, default = 1
         Resolution of fuzzy input sequence, or spacing between [-L2+1, L2-1].
-    pad : string
-        Controls behavior of one-pixel padding. Options include:
-        * 'reflect' : (default) borders are reflected
-        * 'zero' : padded with zeros
 
     Returns
     -------
@@ -128,15 +128,14 @@ def fire2d(I, L1=0, L2=255, fuzzyresolution=1, pad='reflect'):
     """
     from ..image import pad as padimg
 
-    assert isinstance(pad, str), '`pad` keyword must be passed as a string.'
-    I = padimg(I.astype(float), [3, 3], pad)
+    I = padimg(I.astype(float), 1, mode='reflect')
 
     # Fuzzy input sequence
     dx = np.arange(- L2 + 1, L2 - 1, fuzzyresolution)
 
     # Fuzzy membership functions
-    PO = np.atleast_2d(trimf(dx, [L1,     L2 - 1, L2 - 1]))
-    NE = np.atleast_2d(trimf(dx, [1 - L2, 1 - L2, - L1]))
+    PO = np.atleast_2d(trimf(dx, [L1,      L2 - 1,  L2 - 1]))
+    NE = np.atleast_2d(trimf(dx, [1 - L2,  1 - L2,    - L1]))
 
     # Combine into matrix
     MS = np.hstack([PO.T, NE.T])
