@@ -198,9 +198,6 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, U_init=None,
 
     Returns
     -------
-    cntr : 2d array, size (S, c)
-        Cluster centers.  Data for each center along each feature provided
-        for every cluster (of the `c` requested clusters).
     U : 2d array, (S, N)
         Final fuzzy c-partitioned matrix.
     U0 : 2d array, (S, N)
