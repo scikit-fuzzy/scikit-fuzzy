@@ -106,6 +106,8 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
         Upper limit of filtering range.
     fuzzyresolution : float, default = 1
         Resolution of fuzzy input sequence, or spacing between [-l2+1, l2-1].
+        The default assumes an integer input; for floating point images a
+        decimal value should be used approximately equal to the bit depth.
 
     Returns
     -------
@@ -129,11 +131,16 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     im = padimg(im.astype(float), 1, mode='reflect')
 
     # Fuzzy input sequence
-    dx = np.arange(- l2 + 1, l2 - 1, fuzzyresolution)
+    dx = np.arange(- l2 + fuzzyresolution,
+                     l2 - fuzzyresolution, fuzzyresolution)
 
     # Fuzzy membership functions
-    po = np.atleast_2d(trimf(dx, [l1,      l2 - 1,  l2 - 1]))
-    ne = np.atleast_2d(trimf(dx, [1 - l2,  1 - l2,    - l1]))
+    po = np.atleast_2d(trimf(dx, [l1,
+                                  l2 - fuzzyresolution,
+                                  l2 - fuzzyresolution]))
+    ne = np.atleast_2d(trimf(dx, [fuzzyresolution - l2,
+                                  fuzzyresolution - l2,
+                                  - l1]))
 
     # Combine into matrix
     multi_stack_rules = np.hstack([po.T, ne.T])
