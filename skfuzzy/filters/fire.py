@@ -67,9 +67,7 @@ def fire1d(x, L1=0, L2=1):
 
     # Zero each local window relative to center point
     center = xx[:, 2]
-    center.shape += (1,)
-    center = center.repeat(5, axis=1)
-    dxx = xx - center
+    dxx = xx - center[:, np.newaxis].repeat(5, axis=1)
 
     # Conduct interpolation all at once, on every point, for PO and NE
     mPO = np.interp(dxx, dx, PO)
