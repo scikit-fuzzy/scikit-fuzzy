@@ -2,49 +2,51 @@
 intervalops.py : Functions for proper mathematical treatment of intervals.
 
 """
-
+from __future__ import division, print_function
 import numpy as np
 from ..defuzzify import lambda_cut_series
 
 
-def addval(I, J):
+def addval(interval1, interval2):
     """
-    Adds intervals I and J.
+    Adds intervals interval1 and interval2.
 
     Parameters
     ----------
-    I : 2-element iterable
+    interval1 : 2-element iterable
         First interval set.
-    J : 2-element iterable
+    interval2 : 2-element iterable
         Second interval set.
 
     Returns
     -------
     Z : 2-element array
-        Sum of I and J, defined as Z = I + J = [a + c, b + d]
+        Sum of interval1 and interval2, defined as::
+
+          Z = interval1 + interval2 = [a + c, b + d]
 
     """
     # Handle arrays
-    if not isinstance(I, np.ndarray):
-        I = np.asarray(I)
-    if not isinstance(J, np.ndarray):
-        J = np.asarray(J)
+    if not isinstance(interval1, np.ndarray):
+        interval1 = np.asarray(interval1)
+    if not isinstance(interval2, np.ndarray):
+        interval2 = np.asarray(interval2)
 
     try:
-        return np.r_[I] + np.r_[J]
+        return np.r_[interval1] + np.r_[interval2]
     except:
-        return I + J
+        return interval1 + interval2
 
 
-def divval(I, J):
+def divval(interval1, interval2):
     """
-    Divides intervals J into I, by inverting J and multiplying.
+    Divides interval2 into interval1, by inverting interval2 and multiplying.
 
     Parameters
     ----------
-    I : 2-element iterable
+    interval1 : 2-element iterable
         First interval set.
-    J : 2-element iterable
+    interval2 : 2-element iterable
         Second interval set.
 
     Returns
@@ -53,17 +55,17 @@ def divval(I, J):
 
     """
     # Handle arrays
-    if not isinstance(I, np.ndarray):
-        I = np.asarray(I)
-    if not isinstance(J, np.ndarray):
-        J = np.asarray(J)
+    if not isinstance(interval1, np.ndarray):
+        interval1 = np.asarray(interval1)
+    if not isinstance(interval2, np.ndarray):
+        interval2 = np.asarray(interval2)
 
-    # Invert J and multiply
-    J = 1. / J
-    return multval(I, J)
+    # Invert interval2 and multiply
+    interval2 = 1. / interval2
+    return multval(interval1, interval2)
 
 
-def dsw_add(x, mfx, y, mfy, N):
+def dsw_add(x, mfx, y, mfy, n):
     """
     Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically add
     two fuzzy variables together.
@@ -78,7 +80,7 @@ def dsw_add(x, mfx, y, mfy, N):
         Universe for second fuzzy variable
     mfy : 1d array
         Fuzzy membership for universe `y`
-    N : int
+    n : int
         Number of lambda-cuts to use.
 
     Returns
@@ -89,29 +91,29 @@ def dsw_add(x, mfx, y, mfy, N):
         Output fuzzy membership on universe `z`
 
     """
-    # Restricted DSW w/N lambda cuts
-    X = lambda_cut_series(x, mfx, N)
-    Y = lambda_cut_series(y, mfy, N)
-    N1, N2 = X.shape
-    ff = np.zeros((N1, N2))
-    ff[:, 0] = X[:, 0]
+    # Restricted DSW w/n lambda cuts
+    x = lambda_cut_series(x, mfx, n)
+    y = lambda_cut_series(y, mfy, n)
+    n1, n2 = x.shape
+    ff = np.zeros((n1, n2))
+    ff[:, 0] = x[:, 0]
 
-    # Compute F = X + Y
-    for n in range(N1):
-        ff[n, [1, 2]] = addval(X[n, [1, 2]], Y[n, [1, 2]])
+    # Compute F = x + y
+    for n in range(n1):
+        ff[n, [1, 2]] = addval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    FF = np.zeros((2 * N1, 2))
-    FF[0:N1, 1] = ff[:, 0]
-    FF[N1:2 * N1, 1] = np.flipud(ff[:, 0])
-    FF[0:N1, 0] = ff[:, 1]
-    FF[N1:2 * N1, 0] = np.flipud(ff[:, 2])
+    ff = np.zeros((2 * n1, 2))
+    ff[0:n1, 1] = ff[:, 0]
+    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    ff[0:n1, 0] = ff[:, 1]
+    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return FF[:, 0], FF[:, 1]
+    return ff[:, 0], ff[:, 1]
 
 
-def dsw_div(x, mfx, y, mfy, N):
+def dsw_div(x, mfx, y, mfy, n):
     """
     Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
     divide two fuzzy variables, yielding z = x / y.
@@ -126,7 +128,7 @@ def dsw_div(x, mfx, y, mfy, N):
         Universe for second fuzzy variable
     mfy : 1d array
         Fuzzy membership for universe `y`
-    N : int
+    n : int
         Number of lambda-cuts to use.
 
     Returns
@@ -137,29 +139,29 @@ def dsw_div(x, mfx, y, mfy, N):
         Output fuzzy membership on universe `z`
 
     """
-    # Restricted DSW w/N lambda cuts
-    X = lambda_cut_series(x, mfx, N)
-    Y = lambda_cut_series(y, mfy, N)
-    N1, N2 = X.shape
-    ff = np.zeros((N1, N2))
-    ff[:, 0] = X[:, 0]
+    # Restricted DSW w/n lambda cuts
+    x = lambda_cut_series(x, mfx, n)
+    y = lambda_cut_series(y, mfy, n)
+    n1, n2 = x.shape
+    ff = np.zeros((n1, n2))
+    ff[:, 0] = x[:, 0]
 
-    # Compute F = X / Y
-    for n in range(N1):
-        ff[n, [1, 2]] = divval(X[n, [1, 2]], Y[n, [1, 2]])
+    # Compute F = x / y
+    for n in range(n1):
+        ff[n, [1, 2]] = divval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    FF = np.zeros((2 * N1, 2))
-    FF[0:N1, 1] = ff[:, 0]
-    FF[N1:2 * N1, 1] = np.flipud(ff[:, 0])
-    FF[0:N1, 0] = ff[:, 1]
-    FF[N1:2 * N1, 0] = np.flipud(ff[:, 2])
+    ff = np.zeros((2 * n1, 2))
+    ff[0:n1, 1] = ff[:, 0]
+    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    ff[0:n1, 0] = ff[:, 1]
+    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return FF[:, 0], FF[:, 1]
+    return ff[:, 0], ff[:, 1]
 
 
-def dsw_mult(x, mfx, y, mfy, N):
+def dsw_mult(x, mfx, y, mfy, n):
     """
     Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
     multiply two fuzzy variables, i.e. z = x * y.
@@ -174,7 +176,7 @@ def dsw_mult(x, mfx, y, mfy, N):
         Universe for second fuzzy variable
     mfy : 1d array
         Fuzzy membership for universe `y`
-    N : int
+    n : int
         Number of lambda-cuts to use.
 
     Returns
@@ -185,29 +187,29 @@ def dsw_mult(x, mfx, y, mfy, N):
         Output fuzzy membership on universe `z`
 
     """
-    # Restricted DSW w/N lambda cuts
-    X = lambda_cut_series(x, mfx, N)
-    Y = lambda_cut_series(y, mfy, N)
-    N1, N2 = X.shape
-    ff = np.zeros((N1, N2))
-    ff[:, 0] = X[:, 0]
+    # Restricted DSW w/n lambda cuts
+    x = lambda_cut_series(x, mfx, n)
+    y = lambda_cut_series(y, mfy, n)
+    n1, n2 = x.shape
+    ff = np.zeros((n1, n2))
+    ff[:, 0] = x[:, 0]
 
-    # Compute F = X * Y
-    for n in range(N1):
-        ff[n, [1, 2]] = multval(X[n, [1, 2]], Y[n, [1, 2]])
+    # Compute F = x * y
+    for n in range(n1):
+        ff[n, [1, 2]] = multval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    FF = np.zeros((2 * N1, 2))
-    FF[0:N1, 1] = ff[:, 0]
-    FF[N1:2 * N1, 1] = np.flipud(ff[:, 0])
-    FF[0:N1, 0] = ff[:, 1]
-    FF[N1:2 * N1, 0] = np.flipud(ff[:, 2])
+    ff = np.zeros((2 * n1, 2))
+    ff[0:n1, 1] = ff[:, 0]
+    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    ff[0:n1, 0] = ff[:, 1]
+    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return FF[:, 0], FF[:, 1]
+    return ff[:, 0], ff[:, 1]
 
 
-def dsw_sub(x, mfx, y, mfy, N):
+def dsw_sub(x, mfx, y, mfy, n):
     """
     Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
     divide two fuzzy variables, yielding z = x - y.
@@ -222,7 +224,7 @@ def dsw_sub(x, mfx, y, mfy, N):
         Universe for second fuzzy variable
     mfy : 1d array
         Fuzzy membership for universe `y`
-    N : int
+    n : int
         Number of lambda-cuts to use.
 
     Returns
@@ -233,96 +235,97 @@ def dsw_sub(x, mfx, y, mfy, N):
         Output fuzzy membership on universe `z`
 
     """
-    # Restricted DSW w/N lambda cuts
-    X = lambda_cut_series(x, mfx, N)
-    Y = lambda_cut_series(y, mfy, N)
-    N1, N2 = X.shape
-    ff = np.zeros((N1, N2))
-    ff[:, 0] = X[:, 0]
+    # Restricted DSW w/n lambda cuts
+    x = lambda_cut_series(x, mfx, n)
+    y = lambda_cut_series(y, mfy, n)
+    n1, n2 = x.shape
+    ff = np.zeros((n1, n2))
+    ff[:, 0] = x[:, 0]
 
-    # Compute F = X - Y
-    for n in range(N1):
-        ff[n, [1, 2]] = subval(X[n, [1, 2]], Y[n, [1, 2]])
+    # Compute F = x - y
+    for n in range(n1):
+        ff[n, [1, 2]] = subval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    FF = np.zeros((2 * N1, 2))
-    FF[0:N1, 1] = ff[:, 0]
-    FF[N1:2 * N1, 1] = np.flipud(ff[:, 0])
-    FF[0:N1, 0] = ff[:, 1]
-    FF[N1:2 * N1, 0] = np.flipud(ff[:, 2])
+    ff = np.zeros((2 * n1, 2))
+    ff[0:n1, 1] = ff[:, 0]
+    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    ff[0:n1, 0] = ff[:, 1]
+    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return FF[:, 0], FF[:, 1]
+    return ff[:, 0], ff[:, 1]
 
 
-def multval(I, J):
+def multval(interval1, interval2):
     """
-    Multiplies intervals I and J.
+    Multiplies intervals interval1 and interval2.
 
     Parameters
     ----------
-    I : 1d array, length 2
+    interval1 : 1d array, length 2
         First interval.
-    J : 1d array, length 2
+    interval2 : 1d array, length 2
         Second interval.
 
     Returns
     -------
     z : 1d array, length 2
-        Interval resulting from multiplication of I and J.
+        Interval resulting from multiplication of interval1 and interval2.
 
     """
     # Handle arrays
-    if not isinstance(I, np.ndarray):
-        I = np.asarray(I)
-    if not isinstance(J, np.ndarray):
-        J = np.asarray(J)
+    if not isinstance(interval1, np.ndarray):
+        interval1 = np.asarray(interval1)
+    if not isinstance(interval2, np.ndarray):
+        interval2 = np.asarray(interval2)
 
     try:
-        crosses = np.r_[I[0] * J[0],
-                        I[0] * J[1],
-                        I[1] * J[0],
-                        I[1] * J[1]]
+        crosses = np.r_[interval1[0] * interval2[0],
+                        interval1[0] * interval2[1],
+                        interval1[1] * interval2[0],
+                        interval1[1] * interval2[1]]
         return np.r_[crosses.min(), crosses.max()]
     except:
-        return I * J
+        return interval1 * interval2
 
 
-def scaleval(q, I):
+def scaleval(q, interval):
     """
-    Multiplies scalar q with interval I.
+    Multiplies scalar q with interval interval.
 
     Parameters
     q : float
         Scalar to multiply interval with.
-    I : 1d array, length 2
+    interval : 1d array, length 2
         Interval.  Must have exactly two elements.
 
     Returns
     -------
     z : 1d array, length 2
-        New interval; z = q x I.
+        New interval; z = q x interval.
 
     """
     # Handle array
-    if not isinstance(I, np.ndarray):
-        I = np.asarray(I)
+    if not isinstance(interval, np.ndarray):
+        interval = np.asarray(interval)
 
     try:
-        return np.r_[min(q * I[0], q * I[1]), max(q * I[0], q * I[1])]
+        return np.r_[min(q * interval[0], q * interval[1]),
+                     max(q * interval[0], q * interval[1])]
     except:
-        return q * I
+        return q * interval
 
 
-def subval(I, J):
+def subval(interval1, interval2):
     """
-    Subtracts interval J from interval I.
+    Subtracts interval interval2 from interval interval1.
 
     Parameters
     ----------
-    I : 1d array, length 2
+    interval1 : 1d array, length 2
         First interval.
-    J : 1d array, length 2
+    interval2 : 1d array, length 2
         Second interval.
 
     Returns
@@ -332,12 +335,12 @@ def subval(I, J):
 
     """
     # Handle arrays
-    if not isinstance(I, np.ndarray):
-        I = np.asarray(I)
-    if not isinstance(J, np.ndarray):
-        J = np.asarray(J)
+    if not isinstance(interval1, np.ndarray):
+        interval1 = np.asarray(interval1)
+    if not isinstance(interval2, np.ndarray):
+        interval2 = np.asarray(interval2)
 
     try:
-        return np.r_[I[0] - J[1], I[1] - J[0]]
+        return np.r_[interval1[0] - interval2[1], interval1[1] - interval2[0]]
     except:
-        return I - J
+        return interval1 - interval2

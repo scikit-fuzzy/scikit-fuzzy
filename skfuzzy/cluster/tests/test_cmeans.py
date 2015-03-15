@@ -34,7 +34,7 @@ def test_fuzzy_cmeans_centers():
 
     # Cluster using correct number of clusters (3)
     cntr, U, U0, d, Jm, p, fpc = fuzz.cluster.cmeans(
-        features, 3, 2., error=0.005, maxiter=1000, U_init=None)
+        features, 3, 2., error=0.005, maxiter=1000, init=None)
 
     # Expected result appears in this order given this random seed
     expected = np.c_[x_corr, y_corr][(1, 0, 2), :]
@@ -43,10 +43,10 @@ def test_fuzzy_cmeans_centers():
 
     # Cluster twice, setting the seed for random initialization
     cntr1, _, _, _, _, _, _ = fuzz.cluster.cmeans(
-        features, 3, 2., error=0.005, maxiter=1000, U_init=None, seed=123)
+        features, 3, 2., error=0.005, maxiter=1000, init=None, seed=123)
 
     cntr2, _, _, _, _, _, _ = fuzz.cluster.cmeans(
-        features, 3, 2., error=0.005, maxiter=1000, U_init=None, seed=123)
+        features, 3, 2., error=0.005, maxiter=1000, init=None, seed=123)
 
     # Should be exactly identical
     np.testing.assert_array_equal(cntr1, cntr2)
@@ -67,7 +67,7 @@ def test_fuzzy_cmeans_fpc():
     # Do repeated clustering on this data for n=range(2, 11) clusters
     for n in range(2, 11):
         _, _, _, _, _, _, fpc = fuzz.cluster.cmeans(
-            features, n, 2., error=0.005, maxiter=1000, U_init=None)
+            features, n, 2., error=0.005, maxiter=1000, init=None)
 
         fuzzy_partition_coefficients.append(fpc)
 
@@ -104,7 +104,7 @@ def test_fuzzy_cmeans_predict():
 
     # Cluster the data to obtain centers
     cntr, _, _, _, _, _, _ = fuzz.cluster.cmeans(
-        features, 3, 2., error=0.005, maxiter=1000, U_init=None)
+        features, 3, 2., error=0.005, maxiter=1000, init=None)
 
     # Predict fuzzy memberships, U, for all points in test_data, twice with
     # set seed

@@ -1,17 +1,17 @@
 from __future__ import division
 
 
-def nmse(I, J):
+def nmse(known, degraded):
     """
     Computes the percent normalized mean square error (NMSE %) between known
     and degraded arrays.
 
     Parameters
     ----------
-    I : ndarray
+    known : ndarray
         Known array of arbitrary size and shape. Must be convertible to float.
-    J : ndarray, same shape as `I`
-        Degraded version of `I`, must have same shape as `I`.
+    degraded : ndarray, same shape as `known`
+        Degraded version of `known`, must have same shape as `known`.
 
     Returns
     -------
@@ -25,5 +25,5 @@ def nmse(I, J):
     does not matter.
 
     """
-    diff = I - J
-    return 100. * diff.var() / I.var()
+    diff = known - degraded
+    return 100. * diff.var() / known.var()

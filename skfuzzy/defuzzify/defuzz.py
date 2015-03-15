@@ -153,9 +153,9 @@ def defuzz(x, mfx, mode):
         raise ValueError('The input for `mode`, %s, was incorrect.' % (mode))
 
 
-def lambda_cut_series(x, mfx, N):
+def lambda_cut_series(x, mfx, n):
     """
-    Determines a series of lambda-cuts in a sweep from 0+ to 1.0 in N steps.
+    Determines a series of lambda-cuts in a sweep from 0+ to 1.0 in n steps.
 
     Parameters
     ----------
@@ -163,25 +163,25 @@ def lambda_cut_series(x, mfx, N):
         Universe function for fuzzy membership function mfx.
     mfx : 1d array
         Fuzzy membership function for x.
-    N : int
+    n : int
         Number of steps.
 
     Returns
     -------
-    z : 2d array, (N, 3)
+    z : 2d array, (n, 3)
         Lambda cut intevals.
 
     """
     x = np.asarray(x)
     mfx = np.asarray(mfx)
 
-    step = (mfx.max() - mfx.min()) / float(N - 1)
+    step = (mfx.max() - mfx.min()) / float(n - 1)
     lambda_cuts = np.arange(mfx.min(), mfx.max() + np.finfo(float).eps, step)
-    z = np.zeros((N, 3))
+    z = np.zeros((n, 3))
     z[:, 0] = lambda_cuts.T
     z[0, [1, 2]] = _support(x, mfx)
 
-    for ii in range(1, N):
+    for ii in range(1, n):
         xx = _lcutinterval(x, mfx, lambda_cuts[ii])
         z[ii, [1, 2]] = xx
 

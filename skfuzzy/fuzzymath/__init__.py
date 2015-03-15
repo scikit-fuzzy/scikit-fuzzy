@@ -28,7 +28,8 @@ __all__ = ['cartadd',
            'relation_min',
            'relation_product',
            'sigmoid',
-           'partial_dMF']
+           'partial_dmf',
+           ]
 
 from .fuzzy_ops import (cartadd, cartprod, classic_relation, contrast,
                         fuzzy_add, fuzzy_sub, fuzzy_mult, fuzzy_div,
@@ -36,7 +37,7 @@ from .fuzzy_ops import (cartadd, cartprod, classic_relation, contrast,
                         inner_product, interp_membership, interp10,
                         maxmin_composition, maxprod_composition, modus_ponens,
                         outer_product, relation_min, relation_product,
-                        sigmoid, partial_dMF)
+                        sigmoid, partial_dmf)
 
 from .fuzzy_logic import fuzzy_and, fuzzy_or, fuzzy_not
 
