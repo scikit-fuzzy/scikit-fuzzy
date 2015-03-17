@@ -8,13 +8,13 @@ projects involving fuzzy logic, also known as grey logic.
 """
 
 DISTNAME            = 'scikit-fuzzy'
-DESCRIPTION         = 'Fuzzy logic routines for SciPy'
+DESCRIPTION         = 'Fuzzy logic toolkit for SciPy'
 LONG_DESCRIPTION    = descr
 MAINTAINER          = 'Joshua Warner'
 MAINTAINER_EMAIL    = 'joshua.dale.warner@gmail.com'
 LICENSE             = 'Modified BSD'
 DOWNLOAD_URL        = 'http://github.com/scikit-fuzzy/scikit-fuzzy'
-VERSION             = '0.1dev'
+VERSION             = '0.2dev'
 PYTHON_VERSION      = (2, 5)
 DEPENDENCIES        = {'numpy': (1, 6),
                        'scipy': (0, 9)}
