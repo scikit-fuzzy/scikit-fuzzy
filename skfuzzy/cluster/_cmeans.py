@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 
-def _cmeans0(data, U_old, c, m):
+def _cmeans0(data, u_old, c, m):
     """
     Single step in generic fuzzy c-means clustering algorithm. Modified from
     Ross, Fuzzy Logic w/Engineering Applications (2010) p.352-353, equations
@@ -18,25 +18,25 @@ def _cmeans0(data, U_old, c, m):
 
     """
     # Normalizing, then eliminating any potential zero values.
-    U_old /= np.ones((c, 1)).dot(np.atleast_2d(U_old.sum(axis=0)))
-    U_old = np.fmax(U_old, np.finfo(float).eps)
+    u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
+    u_old = np.fmax(u_old, np.finfo(float).eps)
 
-    Um = U_old ** m
+    um = u_old ** m
 
     # Calculate cluster centers
     data = data.T
-    cntr = Um.dot(data) / (np.ones((data.shape[1],
-                                    1)).dot(np.atleast_2d(Um.sum(axis=1))).T)
+    cntr = um.dot(data) / (np.ones((data.shape[1],
+                                    1)).dot(np.atleast_2d(um.sum(axis=1))).T)
 
     d = _distance(data, cntr)
     d = np.fmax(d, np.finfo(float).eps)
 
-    Jm = (Um * d ** 2).sum()
+    jm = (um * d ** 2).sum()
 
-    U = d ** (- 2. / (m - 1))
-    U /= np.ones((c, 1)).dot(np.atleast_2d(U.sum(axis=0)))
+    u = d ** (- 2. / (m - 1))
+    u /= np.ones((c, 1)).dot(np.atleast_2d(u.sum(axis=0)))
 
-    return cntr, U, Jm, d
+    return cntr, u, jm, d
 
 
 def _distance(data, centers):
@@ -64,14 +64,14 @@ def _distance(data, centers):
     return cdist(data, centers).T
 
 
-def _fp_coeff(U):
+def _fp_coeff(u):
     """
     Fuzzy partition coefficient `fpc` relative to fuzzy c-partitioned
-    matrix U. Measures 'fuzziness' in partitioned clustering.
+    matrix u. Measures 'fuzziness' in partitioned clustering.
 
     Parameter
     ---------
-    U : 2d array (C, N)
+    u : 2d array (C, N)
         Fuzzy c-partitioned matrix; N = number of data points and C = number
         of clusters.
 
@@ -81,12 +81,12 @@ def _fp_coeff(U):
         Fuzzy partition coefficient.
 
     """
-    n = U.shape[1]
+    n = u.shape[1]
 
-    return np.trace(U.dot(U.T)) / float(n)
+    return np.trace(u.dot(u.T)) / float(n)
 
 
-def cmeans(data, c, m, error, maxiter, U_init=None, seed=None):
+def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     """
     Fuzzy c-means clustering algorithm for training.
 
@@ -98,17 +98,17 @@ def cmeans(data, c, m, error, maxiter, U_init=None, seed=None):
     c : int
         Desired number of clusters or classes.
     m : float
-        Array exponentiation applied to the membership function U_old at each
-        iteration, where U_new = U_old ** m.
+        Array exponentiation applied to the membership function u_old at each
+        iteration, where U_new = u_old ** m.
     error : float
-        Stopping criterion; stop early if the norm of (U[p] - U[p-1]) < error.
+        Stopping criterion; stop early if the norm of (u[p] - u[p-1]) < error.
     maxiter : int
         Maximum number of iterations allowed.
-    U_init : 2d array, size (S, N)
+    init : 2d array, size (S, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
     seed : int
-        If provided, sets random seed of U_init. No effect if U_init is
+        If provided, sets random seed of init. No effect if init is
         provided. Mainly for debug/testing purposes.
 
     Returns
@@ -116,14 +116,14 @@ def cmeans(data, c, m, error, maxiter, U_init=None, seed=None):
     cntr : 2d array, size (S, c)
         Cluster centers.  Data for each center along each feature provided
         for every cluster (of the `c` requested clusters).
-    U : 2d array, (S, N)
+    u : 2d array, (S, N)
         Final fuzzy c-partitioned matrix.
-    U0 : 2d array, (S, N)
-        Initial guess at fuzzy c-partitioned matrix (either provided U_init or
-        random guess used if U_init was not provided).
+    u0 : 2d array, (S, N)
+        Initial guess at fuzzy c-partitioned matrix (either provided init or
+        random guess used if init was not provided).
     d : 2d array, (S, N)
         Final Euclidian distance matrix.
-    Jm : 1d array, length P
+    jm : 1d array, length P
         Objective function history.
     p : int
         Number of iterations run.
@@ -136,40 +136,40 @@ def cmeans(data, c, m, error, maxiter, U_init=None, seed=None):
            Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.
 
     """
-    # Setup U0
-    if U_init is None:
+    # Setup u0
+    if init is None:
         if seed is not None:
             np.random.seed(seed=seed)
         n = data.shape[1]
-        U0 = np.random.rand(c, n)
-        U0 /= np.ones((c, 1)).dot(np.atleast_2d(U0.sum(axis=0))).astype(float)
-        U_init = U0.copy()
-    U0 = U_init
-    U = np.fmax(U0, np.finfo(float).eps)
+        u0 = np.random.rand(c, n)
+        u0 /= np.ones((c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(float)
+        init = u0.copy()
+    u0 = init
+    u = np.fmax(u0, np.finfo(float).eps)
 
     # Initialize loop parameters
-    Jm = np.empty(0)
+    jm = np.empty(0)
     p = 0
 
     # Main cmeans loop
     while p < maxiter - 1:
-        U2 = U.copy()
-        [cntr, U, JJm, d] = _cmeans0(data, U2, c, m)
-        Jm = np.hstack((Jm, JJm))
+        u2 = u.copy()
+        [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m)
+        jm = np.hstack((jm, Jjm))
         p += 1
 
         # Stopping rule
-        if np.linalg.norm(U - U2) < error:
+        if np.linalg.norm(u - u2) < error:
             break
 
     # Final calculations
-    error = np.linalg.norm(U - U2)
-    fpc = _fp_coeff(U)
+    error = np.linalg.norm(u - u2)
+    fpc = _fp_coeff(u)
 
-    return cntr, U, U0, d, Jm, p, fpc
+    return cntr, u, u0, d, jm, p, fpc
 
 
-def cmeans_predict(test_data, cntr_trained, m, error, maxiter, U_init=None,
+def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
                    seed=None):
     """
     Fuzzy c-means clustering algorithm for training.
@@ -183,29 +183,29 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, U_init=None,
     cntr_trained : 2d array, size (S, c)
         Location of trained centers from prior training c-means.
     m : float
-        Array exponentiation applied to the membership function U_old at each
-        iteration, where U_new = U_old ** m.
+        Array exponentiation applied to the membership function u_old at each
+        iteration, where U_new = u_old ** m.
     error : float
-        Stopping criterion; stop early if the norm of (U[p] - U[p-1]) < error.
+        Stopping criterion; stop early if the norm of (u[p] - u[p-1]) < error.
     maxiter : int
         Maximum number of iterations allowed.
-    U_init : 2d array, size (S, N)
+    init : 2d array, size (S, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
     seed : int
-        If provided, sets random seed of U_init. No effect if U_init is
+        If provided, sets random seed of init. No effect if init is
         provided. Mainly for debug/testing purposes.
 
     Returns
     -------
-    U : 2d array, (S, N)
+    u : 2d array, (S, N)
         Final fuzzy c-partitioned matrix.
-    U0 : 2d array, (S, N)
-        Initial guess at fuzzy c-partitioned matrix (either provided U_init or
-        random guess used if U_init was not provided).
+    u0 : 2d array, (S, N)
+        Initial guess at fuzzy c-partitioned matrix (either provided init or
+        random guess used if init was not provided).
     d : 2d array, (S, N)
         Final Euclidian distance matrix.
-    Jm : 1d array, length P
+    jm : 1d array, length P
         Objective function history.
     p : int
         Number of iterations run.
@@ -220,40 +220,40 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, U_init=None,
     """
     c = cntr_trained.shape[0]
 
-    # Setup U0
-    if U_init is None:
+    # Setup u0
+    if init is None:
         if seed is not None:
             np.random.seed(seed=seed)
         n = test_data.shape[1]
-        U0 = np.random.rand(c, n)
-        U0 /= np.ones((c, 1)).dot(np.atleast_2d(U0.sum(axis=0))).astype(float)
-        U_init = U0.copy()
-    U0 = U_init
-    U = np.fmax(U0, np.finfo(float).eps)
+        u0 = np.random.rand(c, n)
+        u0 /= np.ones((c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(float)
+        init = u0.copy()
+    u0 = init
+    u = np.fmax(u0, np.finfo(float).eps)
 
     # Initialize loop parameters
-    Jm = np.empty(0)
+    jm = np.empty(0)
     p = 0
 
     # Main cmeans loop
     while p < maxiter - 1:
-        U2 = U.copy()
-        [U, JJm, d] = _cmeans_predict0(test_data, cntr_trained, U2, c, m)
-        Jm = np.hstack((Jm, JJm))
+        u2 = u.copy()
+        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m)
+        jm = np.hstack((jm, Jjm))
         p += 1
 
         # Stopping rule
-        if np.linalg.norm(U - U2) < error:
+        if np.linalg.norm(u - u2) < error:
             break
 
     # Final calculations
-    error = np.linalg.norm(U - U2)
-    fpc = _fp_coeff(U)
+    error = np.linalg.norm(u - u2)
+    fpc = _fp_coeff(u)
 
-    return U, U0, d, Jm, p, fpc
+    return u, u0, d, jm, p, fpc
 
 
-def _cmeans_predict0(test_data, cntr, U_old, c, m):
+def _cmeans_predict0(test_data, cntr, u_old, c, m):
     """
     Single step in fuzzy c-means prediction algorithm. Clustering algorithm
     modified from Ross, Fuzzy Logic w/Engineering Applications (2010)
@@ -267,10 +267,10 @@ def _cmeans_predict0(test_data, cntr, U_old, c, m):
 
     """
     # Normalizing, then eliminating any potential zero values.
-    U_old /= np.ones((c, 1)).dot(np.atleast_2d(U_old.sum(axis=0)))
-    U_old = np.fmax(U_old, np.finfo(float).eps)
+    u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
+    u_old = np.fmax(u_old, np.finfo(float).eps)
 
-    Um = U_old ** m
+    um = u_old ** m
     test_data = test_data.T
 
     # For prediction, we do not recalculate cluster centers. The test_data is
@@ -279,9 +279,9 @@ def _cmeans_predict0(test_data, cntr, U_old, c, m):
     d = _distance(test_data, cntr)
     d = np.fmax(d, np.finfo(float).eps)
 
-    Jm = (Um * d ** 2).sum()
+    jm = (um * d ** 2).sum()
 
-    U = d ** (- 2. / (m - 1))
-    U /= np.ones((c, 1)).dot(np.atleast_2d(U.sum(axis=0)))
+    u = d ** (- 2. / (m - 1))
+    u /= np.ones((c, 1)).dot(np.atleast_2d(u.sum(axis=0)))
 
-    return U, Jm, d
+    return u, jm, d

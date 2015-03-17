@@ -2,15 +2,15 @@ import scipy.linalg
 import numpy as np
 
 
-def continuous_to_discrete(A, B, sampling_rate):
+def continuous_to_discrete(a, b, sampling_rate):
     """
     Converts a continuous-time system to its equivalent discrete-time version.
 
     Parameters
     ----------
-    A : (N, N) array of floats
+    a : (N, N) array of floats
         State variable coefficients describing the continuous-time system.
-    B : (N,) or (N, 1) array of floats
+    b : (N,) or (N, 1) array of floats
         Constant coefficients describing the continuous-time system. Can be
         either a rank-1 array or a rank-2 array of shape (N, 1).
     sampling_rate : float
@@ -22,16 +22,16 @@ def continuous_to_discrete(A, B, sampling_rate):
         Variable coefficients describing the discrete-time system.
     gamma : (N,) or (N, 1) array of floats
         Constant coefficients describing the discrete-time system. Shape of
-        this output maintains the shape passed as `B`.
+        this output maintains the shape passed as `b`.
 
     """
-    A = A.astype(float)
-    B = B.astype(float)
+    a = a.astype(float)
+    b = b.astype(float)
 
-    phi = scipy.linalg.expm(A * sampling_rate)
+    phi = scipy.linalg.expm(a * sampling_rate)
 
-    A_pinv = scipy.linalg.pinv2(A)
+    a_pinv = scipy.linalg.pinv2(a)
 
-    gamma = np.dot(np.dot(A_pinv, phi - np.eye(A.shape[0])), B)
+    gamma = np.dot(np.dot(a_pinv, phi - np.eye(a.shape[0])), b)
 
     return phi, gamma

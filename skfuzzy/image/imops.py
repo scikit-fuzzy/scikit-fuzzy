@@ -9,19 +9,19 @@ from .arraypad import pad
 from .shape import view_as_windows
 
 
-def defocus_local_means(I):
+def defocus_local_means(im):
     """
-    Defocusing non-normalized image I using local arithmatic mean.
+    Defocusing non-normalized image im using local arithmatic mean.
 
     Parameters
     ----------
-    I : ndarray
+    im : ndarray
         Input image; normalization not required.
 
     Returns
     -------
-    D : ndarray of floats, same shape as I
-        Defocused output image. By definition will not extend the range of `I`
+    D : ndarray of floats, same shape as im
+        Defocused output image. By definition will not extend the range of `im`
         but the result will be an array of floats.
 
     Notes
@@ -43,10 +43,10 @@ def defocus_local_means(I):
 
     """
     # Pad input
-    J = pad(I.astype(np.float64), ((1, 1), (1, 1)), mode='reflect')
+    out = pad(im.astype(np.float64), ((1, 1), (1, 1)), mode='reflect')
 
     # Rolling windows into array
-    J = view_as_windows(J, (3, 3))
+    out = view_as_windows(out, (3, 3))
 
     # Slice out & average along axis representing 4 nearest neighbors
-    return J[:, :, [1, 1, 0, 2], [0, 2, 1, 1]].mean(axis=2)
+    return out[:, :, [1, 1, 0, 2], [0, 2, 1, 1]].mean(axis=2)

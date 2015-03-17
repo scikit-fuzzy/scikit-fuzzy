@@ -3,6 +3,7 @@ fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
 
 """
+from __future__ import division, print_function
 import numpy as np
 
 
@@ -62,32 +63,32 @@ def cartprod(x, y):
     return np.fmin(a, b)
 
 
-def classic_relation(A, B):
+def classic_relation(a, b):
     """
-    Determines the classic relation matrix, R, between fuzzy sets A and B,
-    on universes X and Y, respectively.
+    Determines the classic relation matrix, R, between fuzzy sets a and b,
+    on universes x and y, respectively.
 
     Parameters
     ----------
-    A : 1D array or iterable
+    a : 1D array or iterable
         First fuzzy membership vector, of length M.
-    B : 1D array or iterable
+    b : 1D array or iterable
         Second fuzzy membership vector, of length N.
 
     Returns
     -------
     R : 2D array
-        Classic relation matrix between A and B, shape (M, N)
+        Classic relation matrix between a and b, shape (M, N)
 
     Note
     ----
     The classic relation is defined as
-    ::    R = [A x B] U [(1 - A) x ones(1, N)],
-    where x represents a cartesian product and N is len(`B`).
+    ::    r = [a x b] U [(1 - a) x ones(1, N)],
+    where x represents a cartesian product and N is len(`b`).
 
     """
-    A = np.asarray(A)
-    return np.fmax(cartprod(A, B), cartprod(1 - A, np.ones(len(B))))
+    a = np.asarray(a)
+    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones(len(b))))
 
 
 def contrast(arr, amount=0.2, split=0.5, normalize=True):
@@ -166,19 +167,19 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     return focused * ma
 
 
-def fuzzy_add(x, A, y, B):
+def fuzzy_add(x, a, y, b):
     """
-    Adds fuzzy set A in universe x with fuzzy set B in universe y.
+    Adds fuzzy set a in universe x with fuzzy set b in universe y.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set A.
-    A : 1d array, length N
+        Universe variable for fuzzy set a.
+    a : 1d array, length N
         Fuzzy set for universe x.
     y : 1d array, length M
-        Universe variable for fuzzy set B.
-    B : 1d array, length M
+        Universe variable for fuzzy set b.
+    b : 1d array, length M
         Fuzzy set for universe y.
 
     Returns
@@ -194,47 +195,47 @@ def fuzzy_add(x, A, y, B):
     Engineering Applications (2010), pp. 414, Eq. 12.17.
 
     """
-    # A and x, and B and y, are formed into (MxN) matrices.  The former has
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    N = len(B)
-    AA = np.dot(np.atleast_2d(A).T, np.ones((1, N)))
-    X = np.dot(np.atleast_2d(x).T, np.ones((1, N)))
-    M = len(A)
-    BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
-    Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
+    n = len(b)
+    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
+    xx = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
+    m = len(a)
+    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
+    yy = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
     # Do the addition
-    Z = (X + Y).ravel()
-    Z_index = np.argsort(Z)
-    Z = np.sort(Z)
+    zz = (xx + yy).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
 
     # Array min() operation
-    C = np.fmin(AA, BB).ravel()
-    C = C[Z_index]
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
 
     # Initialize loop
     z, mfz = np.empty(0), np.empty(0)
     idx = 0
 
-    for i in range(len(C)):
-        index = np.nonzero(Z == Z[idx])[0]
-        z = np.hstack((z, Z[idx]))
-        mfz = np.hstack((mfz, C[index].max()))
-        if Z[idx] == Z.max():
+    for i in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        if zz[idx] == zz.max():
             break
         idx = index.max() + 1
 
     return z, mfz
 
 
-def fuzzy_compare(Q):
+def fuzzy_compare(q):
     """
     Determines the comparison matrix, C, based on the fuzzy pairwise
-    comparison matrix, Q, using Shimura's special relativity formula.
+    comparison matrix, q, using Shimura's special relativity formula.
 
     Parameter
     ---------
-    Q : 2d array, (N, N)
+    q : 2d array, (N, N)
         Fuzzy pairwise comparison matrix.
 
     Returns
@@ -243,22 +244,22 @@ def fuzzy_compare(Q):
         Comparison matrix.
 
     """
-    return Q.T / np.fmax(Q, Q.T).astype(np.float)
+    return q.T / np.fmax(q, q.T).astype(np.float)
 
 
-def fuzzy_div(x, A, y, B):
+def fuzzy_div(x, a, y, b):
     """
-    Divides fuzzy set B in universe y into fuzzy set A in universe X.
+    Divides fuzzy set b in universe y into fuzzy set a in universe x.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set A.
-    A : 1d array, length N
+        Universe variable for fuzzy set a.
+    a : 1d array, length N
         Fuzzy set for universe x.
     y : 1d array, length M
-        Universe variable for fuzzy set B.
-    B : 1d array, length M
+        Universe variable for fuzzy set b.
+    b : 1d array, length M
         Fuzzy set for universe y.
 
     Returns
@@ -274,53 +275,53 @@ def fuzzy_div(x, A, y, B):
     Applications, (2010), pp.414, Eq. 12.17.
 
     """
-    # A and x, and B and y, are formed into (MxN) matrices.  The former has
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    N = len(B)
-    AA = np.dot(np.atleast_2d(A).T, np.ones((1, N)))
-    X = np.dot(np.atleast_2d(x).T, np.ones((1, N)))
-    M = len(A)
-    BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
-    Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
+    n = len(b)
+    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
+    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
+    m = len(a)
+    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
+    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
     # Divide, adding eps to avoid potential div0
-    Z = (X / (Y + np.finfo(float).eps)).ravel()
-    Z_index = np.argsort(Z)
-    Z = np.sort(Z)
+    zz = (x / (y + np.finfo(float).eps)).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
 
     # Array min() operation
-    C = np.fmin(AA, BB).ravel()
-    C = C[Z_index]
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
 
     # Initialize loop
     z, mfz = np.empty(0), np.empty(0)
     idx = 0
 
-    for i in range(len(C)):
-        index = np.nonzero(Z == Z[idx])[0]
-        z = np.hstack((z, Z[idx]))
-        mfz = np.hstack((mfz, C[index].max()))
-        if Z[idx] == Z.max():
+    for i in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        if zz[idx] == zz.max():
             break
         idx = index.max() + 1
 
     return z, mfz
 
 
-def fuzzy_min(x, A, y, B):
+def fuzzy_min(x, a, y, b):
     """
-    Finds minimum between fuzzy set A in universe x and fuzzy set B in
+    Finds minimum between fuzzy set a in universe x and fuzzy set b in
     universe y.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set A.
-    A : 1d array, length N
+        Universe variable for fuzzy set a.
+    a : 1d array, length N
         Fuzzy set for universe x.
     y : 1d array, length M
-        Universe variable for fuzzy set B.
-    B : 1d array, length M
+        Universe variable for fuzzy set b.
+    b : 1d array, length M
         Fuzzy set for universe y.
 
     Returns
@@ -336,42 +337,42 @@ def fuzzy_min(x, A, y, B):
     Applications, (2010), pp.414, Eq. 12.17.
 
     """
-    # A and x, and B and y, are formed into (MxN) matrices.  The former has
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    N = len(B)
-    AA = np.dot(np.atleast_2d(A).T, np.ones((1, N)))
-    X = np.dot(np.atleast_2d(x).T, np.ones((1, N)))
-    M = len(A)
-    BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
-    Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
+    n = len(b)
+    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
+    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
+    m = len(a)
+    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
+    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
     # Take the element-wise minimum
-    Z = np.fmin(X, Y).ravel()
-    Z_index = np.argsort(Z)
-    Z = np.sort(Z)
+    zz = np.fmin(x, y).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
 
     # Array min() operation
-    C = np.fmin(AA, BB).ravel()
-    C = C[Z_index]
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
 
     # Initialize loop
     z, mfz = np.empty(0), np.empty(0)
     idx = 0
 
-    for i in range(len(C)):
-        index = np.nonzero(Z == Z[idx])[0]
-        z = np.hstack((z, Z[idx]))
-        mfz = np.hstack((mfz, C[index].max()))
-        if Z[idx] == Z.max():
+    for i in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        if zz[idx] == zz.max():
             break
         idx = index.max() + 1
 
     return z, mfz
 
 
-def fuzzy_mult(x, A, y, B):
+def fuzzy_mult(x, a, y, b):
     """
-    Multiplies fuzzy set A in universe x and fuzzy set B in universe y.
+    Multiplies fuzzy set A in universe x and fuzzy set b in universe y.
 
     Parameters
     ----------
@@ -380,8 +381,8 @@ def fuzzy_mult(x, A, y, B):
     A : 1d array, length N
         Fuzzy set for universe x.
     y : 1d array, length M
-        Universe variable for fuzzy set B.
-    B : 1d array, length M
+        Universe variable for fuzzy set b.
+    b : 1d array, length M
         Fuzzy set for universe y.
 
     Returns
@@ -397,42 +398,42 @@ def fuzzy_mult(x, A, y, B):
     Applications, (2010), pp.414, Eq. 12.17.
 
     """
-    # A and x, and B and y, are formed into (MxN) matrices.  The former has
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    N = len(B)
-    AA = np.dot(np.atleast_2d(A).T, np.ones((1, N)))
-    X = np.dot(np.atleast_2d(x).T, np.ones((1, N)))
-    M = len(A)
-    BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
-    Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
+    n = len(b)
+    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
+    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
+    m = len(a)
+    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
+    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
     # Multiply universes
-    Z = (X * Y).ravel()
-    Z_index = np.argsort(Z)
-    Z = np.sort(Z)
+    zz = (x * y).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
 
     # Array min() operation
-    C = np.fmin(AA, BB).ravel()
-    C = C[Z_index]
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
 
     # Initialize loop
     z, mfz = np.empty(0), np.empty(0)
     idx = 0
 
-    for i in range(len(C)):
-        index = np.nonzero(Z == Z[idx])[0]
-        z = np.hstack((z, Z[idx]))
-        mfz = np.hstack((mfz, C[index].max()))
-        if Z[idx] == Z.max():
+    for i in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        if zz[idx] == zz.max():
             break
         idx = index.max() + 1
 
     return z, mfz
 
 
-def fuzzy_sub(x, A, y, B):
+def fuzzy_sub(x, a, y, b):
     """
-    Subtracts fuzzy set B in universe y into fuzzy set A in universe X.
+    Subtracts fuzzy set b in universe y into fuzzy set A in universe x.
 
     Parameters
     ----------
@@ -441,8 +442,8 @@ def fuzzy_sub(x, A, y, B):
     A : 1d array, length N
         Fuzzy set for universe x.
     y : 1d array, length M
-        Universe variable for fuzzy set B.
-    B : 1d array, length M
+        Universe variable for fuzzy set b.
+    b : 1d array, length M
         Fuzzy set for universe y.
 
     Returns
@@ -458,48 +459,48 @@ def fuzzy_sub(x, A, y, B):
     Applications, (2010), pp.414, Eq. 12.17.
 
     """
-    # A and x, and B and y, are formed into (MxN) matrices.  The former has
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    N = len(B)
-    AA = np.dot(np.atleast_2d(A).T, np.ones((1, N)))
-    X = np.dot(np.atleast_2d(x).T, np.ones((1, N)))
-    M = len(A)
-    BB = np.dot(np.ones((M, 1)), np.atleast_2d(B))
-    Y = np.dot(np.ones((M, 1)), np.atleast_2d(y))
+    n = len(b)
+    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
+    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
+    m = len(a)
+    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
+    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
     # Subtract universes
-    Z = (X - Y).ravel()
-    Z_index = np.argsort(Z)
-    Z = np.sort(Z)
+    zz = (x - y).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
 
     # Array min() operation
-    C = np.fmin(AA, BB).ravel()
-    C = C[Z_index]
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
 
     # Initialize loop
     z, mfz = np.empty(0), np.empty(0)
     idx = 0
 
-    for i in range(len(C)):
-        index = np.nonzero(Z == Z[idx])[0]
-        z = np.hstack((z, Z[idx]))
-        mfz = np.hstack((mfz, C[index].max()))
-        if Z[idx] == Z.max():
+    for i in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        if zz[idx] == zz.max():
             break
         idx = index.max() + 1
 
     return z, mfz
 
 
-def inner_product(A, B):
+def inner_product(a, b):
     """
     Inner product (dot product) of two fuzzy sets.
 
     Parameters
     ----------
-    A : 1d array or iterable
+    a : 1d array or iterable
         Fuzzy membership function.
-    B : 1d array or iterable
+    b : 1d array or iterable
         Fuzzy membership function.
 
     Returns
@@ -508,7 +509,7 @@ def inner_product(A, B):
         Fuzzy inner product value, on range [0, 1]
 
     """
-    return np.max(np.fmin(np.r_[A], np.r_[B]))
+    return np.max(np.fmin(np.r_[a], np.r_[b]))
 
 
 def interp10(x):
@@ -530,68 +531,68 @@ def interp10(x):
     return np.interp(np.r_[0:len(x) - 0.9:0.1], range(len(x)), x)
 
 
-def maxmin_composition(S, R):
+def maxmin_composition(s, r):
     """
-    Determines max-min composition `T` of fuzzy relation matrices `S` and `R`
+    Determines max-min composition `t` of fuzzy relation matrices `s` and `r`
 
     Parameters
     ----------
-    S : 2d array, (M, N)
+    s : 2d array, (M, N)
         Fuzzy relation matrix #1.
-    R : 2d array, (N, P)
+    r : 2d array, (N, P)
         Fuzzy relation matrix #2.
 
     Returns
     -------
     T ; 2d array, (M, P)
-        Max-min composition, defined by T = S o R.
+        Max-min composition, defined by T = s o r.
 
     """
-    if S.ndim < 2:
-        S = np.atleast_2d(S)
-    if R.ndim < 2:
-        R = np.atleast_2d(R).T
-    M = S.shape[0]
-    P = R.shape[1]
-    T = np.zeros((M, P))
+    if s.ndim < 2:
+        s = np.atleast_2d(s)
+    if r.ndim < 2:
+        r = np.atleast_2d(r).T
+    m = s.shape[0]
+    p = r.shape[1]
+    t = np.zeros((m, p))
 
-    for p in range(P):
-        for m in range(M):
-            T[m, p] = (np.fmin(S[m, :], R[:, p].T)).max()
+    for pp in range(p):
+        for mm in range(m):
+            t[mm, pp] = (np.fmin(s[mm, :], r[:, pp].T)).max()
 
-    return T
+    return t
 
 
-def maxprod_composition(S, R):
+def maxprod_composition(s, r):
     """
-    Determines the max-product composition `T` of two fuzzy relation matrices
+    Determines the max-product composition `t` of two fuzzy relation matrices
 
     Parameters
     ----------
-    S : 2d array, (M, N)
+    s : 2d array, (M, N)
         Fuzzy relation matrix #1.
-    R : 2d array, (N, P)
+    r : 2d array, (N, P)
         Fuzzy relation matrix #2.
 
     Returns
     -------
-    T : 2d array, (M, P)
+    t : 2d array, (M, P)
         max-product composition matrix.
 
     """
-    if S.ndim < 2:
-        S = np.atleast_2d(S)
-    if R.ndim < 2:
-        R = np.atleast_2d(R).T
-    M = S.shape[0]
-    P = R.shape[1]
-    T = np.zeros((M, P))
+    if s.ndim < 2:
+        s = np.atleast_2d(s)
+    if r.ndim < 2:
+        r = np.atleast_2d(r).T
+    m = s.shape[0]
+    p = r.shape[1]
+    t = np.zeros((m, p))
 
-    for m in range(M):
-        for p in range(P):
-            T[m, p] = (S[m, :] * R[:, p].T).max()
+    for mm in range(m):
+        for pp in range(p):
+            t[mm, pp] = (s[mm, :] * r[:, pp].T).max()
 
-    return T
+    return t
 
 
 def interp_membership(x, xmf, xx):
@@ -605,7 +606,7 @@ def interp_membership(x, xmf, xx):
     xmf : 1d array
         Fuzzy membership function for x.  Same length as x.
     xx : float
-        Discrete singleton value on universe X.
+        Discrete singleton value on universe x.
 
     Returns
     -------
@@ -615,7 +616,7 @@ def interp_membership(x, xmf, xx):
     Note
     ----
     For use in Fuzzy Logic, where an interpolated discrete membership function
-    u(x) for discrete values of x on the universe of X is given. Then, assume
+    u(x) for discrete values of x on the universe of x is given. Then, assume
     that a new value x = xx, whose value does not correspond to any of the
     discrete values of x. The function computes the membership value u(xx)
     corresponding to the value xx using a linear interpolation.
@@ -640,47 +641,47 @@ def interp_membership(x, xmf, xx):
     return xxmf
 
 
-def modus_ponens(A, B, Ap, C=None):
+def modus_ponens(a, b, ap, c=None):
     """
     Generalized modus ponens deduction to make approximate reasoning in a
     rules-base system.
 
     Parameters
     ----------
-    A : 1d array
-        Fuzzy set A on universe X
-    B : 1d array
-        Fuzzy set B on universe Y
-    Ap : 1d array
-        New fuzzy fact A' (A prime, not transpose)
-    C : 1d array, OPTIONAL
-        Keyword argument representing fuzzy set C on universe Y.
+    a : 1d array
+        Fuzzy set a on universe x
+    b : 1d array
+        Fuzzy set b on universe y
+    ap : 1d array
+        New fuzzy fact a' (a prime, not transpose)
+    c : 1d array, OPTIONAL
+        Keyword argument representing fuzzy set c on universe y.
         Default = None, which will use a np.ones() array instead.
 
     Returns
     -------
     R : 2d array
         Full fuzzy relation.
-    Bp : 1d array
-        Fuzzy conclusion B' (B prime)
+    bp : 1d array
+        Fuzzy conclusion b' (b prime)
 
     """
-    if C is None:
-        C = np.ones(len(B))
-    R = np.fmax(cartprod(A, B), cartprod(1 - A, C))
-    Bp = maxmin_composition(Ap, R)
-    return R, Bp.squeeze()
+    if c is None:
+        c = np.ones(len(b))
+    r = np.fmax(cartprod(a, b), cartprod(1 - a, c))
+    bp = maxmin_composition(ap, r)
+    return r, bp.squeeze()
 
 
-def outer_product(A, B):
+def outer_product(a, b):
     """
     Outer product of two fuzzy sets.
 
     Parameters
     ----------
-    A : 1d array or iterable
+    a : 1d array or iterable
         Fuzzy membership function.
-    B : 1d array or iterable
+    b : 1d array or iterable
         Fuzzy membership function.
 
     Returns
@@ -689,70 +690,70 @@ def outer_product(A, B):
         Fuzzy outer product value, on range [0, 1]
 
     """
-    return np.min(np.fmax(np.r_[A], np.r_[B]))
+    return np.min(np.fmax(np.r_[a], np.r_[b]))
 
 
-def relation_min(A, B):
+def relation_min(a, b):
     """
     Determines fuzzy relation matrix `R` using Mamdani implication for the
-    fuzzy antecedent `A` and consequent `B` inputs.
+    fuzzy antecedent `a` and consequent `b` inputs.
 
     Parameters
     ----------
-    A : 1d array
+    a : 1d array
         Fuzzy antecedent variable of length M.
-    B : 1d array
+    b : 1d array
         Fuzzy consequent variable of length N.
 
     Returns
     -------
     R : 2d array
-        Fuzzy relation between A and B, of shape (M, N).
+        Fuzzy relation between a and b, of shape (M, N).
 
     """
-    m = len(A)
-    n = len(B)
-    A = np.atleast_2d(A)
-    B = np.atleast_2d(B)
-    return np.fmin(np.dot(A.T, np.ones((1, m))), np.dot(np.ones((n, 1)), B))
+    m = len(a)
+    n = len(b)
+    a = np.atleast_2d(a)
+    b = np.atleast_2d(b)
+    return np.fmin(np.dot(a.T, np.ones((1, m))), np.dot(np.ones((n, 1)), b))
 
 
-def relation_product(A, B):
+def relation_product(a, b):
     """
     Determines the fuzzy relation matrix, `R`, using product implication for
-    the fuzzy antecedent `A` and the fuzzy consequent `B`.
+    the fuzzy antecedent `a` and the fuzzy consequent `b`.
 
     Parameters
     ----------
-    A : 1d array
+    a : 1d array
         Fuzzy antecedent variable of length M.
-    B : 1d array
+    b : 1d array
         Fuzzy consequent variable of length N.
 
     Returns
     -------
     R : 2d array
-        Fuzzy relation between A and B, of shape (M, N).
+        Fuzzy relation between a and b, of shape (M, N).
 
     """
-    m = len(A)
-    n = len(B)
-    A = np.atleast_2d(A)
-    B = np.atleast_2d(B)
-    return np.dot(A.T, np.ones((1, n))) * np.dot(np.ones((m, 1)), B)
+    m = len(a)
+    n = len(b)
+    a = np.atleast_2d(a)
+    b = np.atleast_2d(b)
+    return np.dot(a.T, np.ones((1, n))) * np.dot(np.ones((m, 1)), b)
 
 
-def fuzzy_similarity(Ai, B, mode='min'):
+def fuzzy_similarity(ai, b, mode='min'):
     """
-    Calculates the fuzzy similarity between the fuzzy set Ai and observation
-    fuzzy set B.
+    Calculates the fuzzy similarity between the fuzzy set ai and observation
+    fuzzy set b.
 
     Parameters
     ----------
-    Ai : 1d array
-        Fuzzy membership function of set Ai.
-    B : 1d array
-        Fuzzy membership function of set B.
+    ai : 1d array
+        Fuzzy membership function of set ai.
+    b : 1d array
+        Fuzzy membership function of set b.
     mode : string
         Controls the method of similarity calculation.
         * 'min' : Computed by array minimum operation.
@@ -765,12 +766,12 @@ def fuzzy_similarity(Ai, B, mode='min'):
 
     """
     if 'min' in mode.lower():
-        return min(inner_product(Ai, B), 1 - outer_product(Ai, B))
+        return min(inner_product(ai, b), 1 - outer_product(ai, b))
     else:
-        return (inner_product(Ai, B) + (1 - outer_product(Ai, B))) / 2.
+        return (inner_product(ai, b) + (1 - outer_product(ai, b))) / 2.
 
 
-def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
+def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     """
     Calculates the partial derivative of a given membership function.
 
@@ -779,13 +780,14 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
     x : float
         input variable.
     mf_name : string
-        Membership function name, corresponding to the function names available in
-        generatemf.py
+        Membership function name, corresponding to the function names
+        available in generatemf.py
     mf_parameter_dict : dict
-        A dictionary of param : key-value pairs for that particular membership function
-        given in mf_name
+        A dictionary of param : key-value pairs for that particular membership
+        function given in `mf_name`
     partial_parameter : string
-        Name of the parameter against which we wish to take the partial derivative.
+        Name of the parameter against which we wish to take the partial
+        derivative.
 
     Returns
     -------
@@ -801,9 +803,11 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
         mean = mf_parameter_dict['mean']
 
         if partial_parameter == 'sigma':
-            result = (2./sigma**3) * np.exp(-(((x-mean)**2)/(sigma)**2))*(x-mean)**2
+            result = ((2. / sigma**3) *
+                      np.exp(-(((x - mean)**2) / (sigma)**2)) * (x - mean)**2)
         elif partial_parameter == 'mean':
-            result = (2./sigma**2) * np.exp(-(((x-mean)**2)/(sigma)**2))*(x-mean)
+            result = ((2. / sigma**2) *
+                      np.exp(-(((x - mean)**2) / (sigma)**2)) * (x - mean))
 
     elif mf_name == 'gbellmf':
 
@@ -811,15 +815,20 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
         b = mf_parameter_dict['b']
         c = mf_parameter_dict['c']
 
+        # Partial result for speed and conciseness in derived eqs below
+        d = np.abs((c - x) / a)
+
         if partial_parameter == 'a':
-            result = (2. * b * np.power((c-x),2) * np.power(np.absolute((c-x)/a), ((2 * b) - 2))) / \
-                (np.power(a, 3) * np.power((np.power(np.absolute((c-x)/a),(2*b)) + 1), 2))
+            result = ((2. * b * (c - x)**2.) * d**((2 * b) - 2) /
+                      (a**3. * (d**(2. * b) + 1)**2.))
+
         elif partial_parameter == 'b':
-            result = -1 * (2 * np.power(np.absolute((c-x)/a), (2 * b)) * np.log(np.absolute((c-x)/a))) / \
-                (np.power((np.power(np.absolute((c-x)/a), (2 * b)) + 1), 2))
+            result = (-1 * (2 * d**(2. * b) * np.log(d)) /
+                      ((d**(2. * b) + 1)**2.))
+
         elif partial_parameter == 'c':
-            result = (2. * b * (x-c) * np.power(np.absolute((c-x)/a), ((2 * b) - 2))) / \
-                (np.power(a, 2) * np.power((np.power(np.absolute((c-x)/a),(2*b)) + 1), 2))
+            result = ((2. * b * (x - c) * d**((2. * b) - 2)) /
+                      (a**2. * (d**(2. * b) + 1)**2.))
 
     elif mf_name == 'sigmf':
 
@@ -827,11 +836,14 @@ def partial_dMF(x, mf_name, mf_parameter_dict, partial_parameter):
         c = mf_parameter_dict['c']
 
         if partial_parameter == 'b':
-            result = -1 * (c * np.exp(c * (b + x))) / \
-                np.power((np.exp(b*c) + np.exp(c*x)), 2)
+            # Partial result for speed and conciseness
+            d = np.exp(c * (b + x))
+            result = -1 * (c * d) / (np.exp(b * c) + np.exp(c * x))**2.
+
         elif partial_parameter == 'c':
-            result = ((x - b) * np.exp(c * (x - b))) / \
-                np.power((np.exp(c * (x - b))) + 1, 2)
+            # Partial result for speed and conciseness
+            d = np.exp(c * (x - b))
+            result = ((x - b) * d) / (d + 1)**2.
 
     return result
 
