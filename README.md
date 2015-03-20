@@ -9,6 +9,7 @@ The goals of scikit-fuzzy are:
 
 Source
 ------
+
 https://github.com/scikit-fuzzy/scikit-fuzzy
 
 Online Discussion & Mailing List
@@ -20,11 +21,24 @@ Please join the discussion in our public chat room on Gitter.im
 or view/post on the Google Groups mailing list
 http://groups.google.com/group/scikit-fuzzy
 
-Installation from source
-------------------------
-Refer to DEPENDS.txt for a list of dependencies.
+Installation
+------------
 
-SciKit-Fuzzy may be installed globally by running
+Scikit-Fuzzy depends on
+
+  * NumPy >= 1.6
+  * SciPy >= 0.9
+
+and is now available on PyPi! The lastest stable release can be
+obtained and installed simply by running
+
+    $ pip install -U scikit-fuzzy
+
+which will also work to upgrade existing installations to the latest release.
+
+
+If you prefer to install from source or develop this package, you can fork and
+clone this repository then install SciKit-Fuzzy by running
 
 	$ python setup.py install
 
@@ -37,10 +51,12 @@ this path to your PYTHONPATH variable.
 
 License
 -------
+
 Please read LICENSE.txt in this directory.
 
 IEEE Rounding for Matlab users
 ------------------------------
+
 It should be noted that Matlab rounds incorrectly. The IEEE standard (which is
 how this package behaves) requires rounding to the nearest EVEN number if
 exactly between, e.g. 1.5 --> 2; 2.5 --> 2; 3.5 --> 4; 4.5 --> 4, etc. This
