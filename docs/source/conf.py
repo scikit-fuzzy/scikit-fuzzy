@@ -20,7 +20,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 curpath = os.path.dirname(__file__)
-sys.path.append(os.path.join(curpath, 'ext'))
+sys.path.append(os.path.join(curpath, '..', 'ext'))
 
 src_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 sys.path.insert(0, src_dir)
@@ -29,15 +29,14 @@ module = 'skfuzzy'
 
 # -- General configuration ------------------------------------------------
 
-# If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
-
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    #'sphinx.ext.autosummary',
+    'plot2rst',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.pngmath',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
@@ -46,16 +45,33 @@ extensions = [
     'numpydoc',
 ]
 
-autosummary_generate = True
+# Determine if the matplotlib has a recent enough version of the
+# plot_directive, otherwise use the local fork.
+try:
+    from matplotlib.sphinxext import plot_directive
+except ImportError:
+    use_matplotlib_plot_directive = False
+else:
+    try:
+        use_matplotlib_plot_directive = (plot_directive.__version__ >= 2)
+    except AttributeError:
+        use_matplotlib_plot_directive = False
 
-autodoc_default_flags = ['members', 'inherited-members']
+if use_matplotlib_plot_directive:
+    extensions.append('matplotlib.sphinxext.plot_directive')
+else:
+    extensions.append('plot_directive')
+
+
+# autosummary_generate = True
+# autodoc_default_flags = ['members', 'inherited-members']
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['_templates', '~/src/scikit-fuzzy/docs/source/_templates/']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = '.txt'
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -66,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'scikit-fuzzy'
-copyright = u'2014, Joshua Warner, Hal Ottesen, The scikit-image team, Zachary Kelm, Nicolas Pinto, Nicolas Polivert'
+copyright = u'2014, the scikit-image team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -79,10 +95,10 @@ version = '0.1'
 #import skfuzzy.version
 #release = skfuzzy.version
 
-setup_lines = open('../skfuzzy/version.py').readlines()
+setup_lines = open('../../setup.py').readlines()
 version = 'vUndefined'
 for l in setup_lines:
-    if l.startswith('version'):
+    if l.startswith('VERSION'):
         version = l.split("'")[1]
         break
 
@@ -143,7 +159,7 @@ html_theme_path = ['themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'skimage v{0} docs'.format(version)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -177,8 +193,9 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-   '**': ['navigation.html',
-          'localtoc.html',],
+    '**': ['navigation.html',
+           'localtoc.html',
+           'versions.html'],
 }
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -232,8 +249,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'scikit-fuzzy.tex', u'scikit-fuzzy Documentation',
-   u'Joshua Warner, Hal Ottesen, The scikit-image team, Zachary Kelm, Nicolas Pinto, Nicolas Polivert', 'manual'),
+    ('index', 'scikit-fuzzy.tex', u'The scikit-fuzzy Documentation',
+     u'The scikit-image team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -243,6 +260,28 @@ latex_documents = [
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
 #latex_use_parts = False
+
+# Additional stuff for the LaTeX preamble.
+latex_preamble = r'''
+\usepackage{enumitem}
+\setlistdepth{100}
+
+\usepackage{amsmath}
+\DeclareUnicodeCharacter{00A0}{\nobreakspace}
+
+% In the parameters section, place a newline after the Parameters header
+\usepackage{expdlist}
+\let\latexdescription=\description
+\def\description{\latexdescription{}{} \breaklabel}
+
+% Make Examples/etc section headers smaller and more compact
+\makeatletter
+\titleformat{\paragraph}{\normalsize\py@HeaderFamily}%
+            {\py@TitleColor}{0em}{\py@TitleColor}{\py@NormalColor}
+\titlespacing*{\paragraph}{0pt}{1ex}{0pt}
+\makeatother
+
+'''
 
 # If true, show page references after internal links.
 #latex_show_pagerefs = False
@@ -254,7 +293,7 @@ latex_documents = [
 #latex_appendices = []
 
 # If false, no module index is generated.
-#latex_domain_indices = True
+latex_domain_indices = False
 
 
 # -- Options for manual page output ---------------------------------------
@@ -263,7 +302,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'scikit-fuzzy', u'scikit-fuzzy Documentation',
-     [u'Joshua Warner, Hal Ottesen, The scikit-image team, Zachary Kelm, Nicolas Pinto, Nicolas Polivert'], 1)
+     [u'the scikit-fuzzy team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -277,7 +316,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'scikit-fuzzy', u'scikit-fuzzy Documentation',
-   u'Joshua Warner, Hal Ottesen, The scikit-image team, Zachary Kelm, Nicolas Pinto, Nicolas Polivert', 'scikit-fuzzy', 'One line description of project.',
+   u'the scikit-fuzzy team', 'scikit-fuzzy', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -294,6 +333,45 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # -----------------------------------------------------------------------------
+# Numpy extensions
+# -----------------------------------------------------------------------------
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
+
+# -----------------------------------------------------------------------------
+# Plots
+# -----------------------------------------------------------------------------
+plot_basedir = os.path.join(curpath, "plots")
+plot_pre_code = """
+import numpy as np
+import matplotlib.pyplot as plt
+np.random.seed(0)
+
+import matplotlib
+matplotlib.rcParams.update({
+    'font.size': 14,
+    'axes.titlesize': 12,
+    'axes.labelsize': 10,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 10,
+    'figure.subplot.bottom': 0.2,
+    'figure.subplot.left': 0.2,
+    'figure.subplot.right': 0.9,
+    'figure.subplot.top': 0.85,
+    'figure.subplot.wspace': 0.4,
+    'text.usetex': False,
+})
+
+"""
+plot_include_source = True
+plot_formats = [('png', 100), ('pdf', 100)]
+
+plot2rst_index_name = 'README'
+plot2rst_rcparams = {'image.cmap' : 'gray',
+                     'image.interpolation' : 'none'}
+
+# -----------------------------------------------------------------------------
 # intersphinx
 # -----------------------------------------------------------------------------
 _python_doc_base = 'http://docs.python.org/2.7'
@@ -301,5 +379,5 @@ intersphinx_mapping = {
     _python_doc_base: None,
     'http://docs.scipy.org/doc/numpy': None,
     'http://docs.scipy.org/doc/scipy/reference': None,
+    'http://scikit-learn.org/stable': None
 }
-
