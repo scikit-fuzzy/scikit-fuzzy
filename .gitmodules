@@ -1,0 +1,3 @@
+[submodule "docs/tools/gitwash"]
+	path = docs/tools/gitwash
+	url = https://github.com/matthew-brett/gitwash.git
