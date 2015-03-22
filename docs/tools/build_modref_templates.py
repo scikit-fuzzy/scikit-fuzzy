@@ -2,15 +2,14 @@
 """Script to auto-generate our API docs.
 """
 # stdlib imports
-import os, sys
+import sys
 
 # local imports
 from apigen import ApiDocWriter
 
 # version comparison
-from distutils.version import LooseVersion as V
+from distutils.version import LooseVersion
 
-#*****************************************************************************
 
 def abort(error):
     print('*WARNING* API documentation not generated: %s' % error)
@@ -22,36 +21,36 @@ if __name__ == '__main__':
     # Check that the 'image' package is available. If not, the API
     # documentation is not (re)generated and existing API documentation
     # sources will be used.
+
     try:
-        curpath = os.path.dirname(__file__)
-        src_dir = os.path.join(os.path.abspath(curpath), '..', '..')
-        sys.path.append(src_dir)
-
         __import__(package)
-
     except ImportError, e:
-        abort("Can not import skfuzzy in " + src_dir)
+        abort("Can not import skfuzzy")
 
     module = sys.modules[package]
 
-#    try:
-#        installed_version = V(module.version.version)
-#    except:
-    setup_lines = open(os.path.join(curpath, '../../setup.py')).readlines()
+    installed_version = LooseVersion(module.__version__)
+
+    # Check that the source version is equal to the installed
+    # version. If the versions mismatch the API documentation sources
+    # are not (re)generated. This avoids automatic generation of documentation
+    # for older or newer versions if such versions are installed on the system.
+
+    setup_lines = open('../setup.py').readlines()
     version = 'vUndefined'
     for l in setup_lines:
         if l.startswith('VERSION'):
-            source_version = V(l.split("'")[1])
+            source_version = LooseVersion(l.split("'")[1])
             break
 
-#    if source_version != installed_version:
-#        abort("Installed version does not match source version")
+    if source_version != installed_version:
+        abort("Installed version does not match source version")
 
-    outdir = 'api'
+    outdir = 'source/api'
     docwriter = ApiDocWriter(package)
-    docwriter.package_skip_patterns += [r'\.fixes$',
-                                        r'\.externals$',
-                                        ]
+    # docwriter.package_skip_patterns += [r'\.fixes$',
+    #                                     r'\.externals$',
+    #                                     ]
     docwriter.write_api_docs(outdir)
-    docwriter.write_index(outdir, 'api', relative_to='api')
+    docwriter.write_index(outdir, 'api', relative_to='source/api')
     print('%d files written' % len(docwriter.written_modules))

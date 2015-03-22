@@ -14,6 +14,13 @@ Recommended Use
 """
 __all__ = []
 
+try:
+    from .version import version as __version__
+except ImportError:
+    __version__ = "unbuilt-dev"
+else:
+    del version
+
 ######################
 # Subpackage imports #
 ######################
