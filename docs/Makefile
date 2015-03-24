@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 DEST = build
-.PHONY: all help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery
+.PHONY: all api help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery
 
 all: html
 
