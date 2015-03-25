@@ -15,7 +15,7 @@ Sections
    :hidden:
 
     overview
-    api/api
+    api
     install
     user_guide
     contribute

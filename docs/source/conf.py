@@ -19,10 +19,10 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-curpath = os.path.dirname(__file__)
-sys.path.append(os.path.join(curpath, '..', 'ext'))
+curpath = os.path.abspath('.')
+sys.path.append(os.path.abspath(os.path.join(curpath, '..', 'ext')))
 
-src_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+src_dir = os.path.abspath(os.path.join(curpath, '..', '..'))
 sys.path.insert(0, src_dir)
 
 module = 'skfuzzy'
@@ -68,7 +68,7 @@ else:
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates', '~/src/scikit-fuzzy/docs/source/_templates/']
+templates_path = ['./_templates/']
 
 # The suffix of source filenames.
 source_suffix = '.txt'

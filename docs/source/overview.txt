@@ -1,26 +1,26 @@
-SciKit Fuzzy
+SciKit-Fuzzy
 ============
 
-The `scikit-fuzzy ...
-
-It is written in the `Python <http://www.python.org>`_ language.
+Scikit-Fuzzy is a collection of fuzzy logic algorithms for
+`SciPy <http://scipy.org>`_ written in the
+`Python <http://www.python.org>`_ language.
 
 This `SciKit <http://scikits.appspot.com>`_ is developed by the SciPy
-community.  All contributions are most welcome!  Please join us on the
-mailing list (address provided below).
+community.  Contributions are welcome!  Please join us on the mailing list
+or our persistent chatroom on Gitter.IM
 
 Homepage
 --------
-
+Coming soon :superscript:`TM`
 
 Source, bugs and patches
 ------------------------
 http://github.com/scikit-fuzzy/scikit-fuzzy
 
+Gitter.IM
+---------
+https://gitter.im/scikit-fuzzy/scikit-fuzzy
+
 Mailing List
 ------------
 http://groups.google.com/group/scikit-fuzzy
-
-Contact
--------
-
