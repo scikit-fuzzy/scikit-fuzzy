@@ -617,9 +617,9 @@ def interp_membership(x, xmf, xx):
     ----
     For use in Fuzzy Logic, where an interpolated discrete membership function
     u(x) for discrete values of x on the universe of x is given. Then, assume
-    that a new value x = xx, whose value does not correspond to any of the
-    discrete values of x. The function computes the membership value u(xx)
-    corresponding to the value xx using a linear interpolation.
+    that a new value x = xx, is considered whose value does not correspond to
+    any of the discrete values of x. The function computes the membership value
+    u(xx) corresponding to the value xx using a linear interpolation.
 
     """
     # Nearest discrete x-values
