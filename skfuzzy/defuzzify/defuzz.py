@@ -153,6 +153,36 @@ def defuzz(x, mfx, mode):
         raise ValueError('The input for `mode`, %s, was incorrect.' % (mode))
 
 
+def _interp_universe(x, xmf, mf_val):
+    """
+    Finds the universe variable corresponding to membership `mf_val`.
+
+    Parameters
+    ----------
+    x : 1d array
+        Independent discrete variable vector.
+    xmf : 1d array
+        Fuzzy membership function for x.  Same length as x.
+    mf_val : float
+        Discrete singleton value on membership function mfx.
+
+    Returns
+    -------
+    x_interp : float
+        Universe variable value corresponding to `mf_val`.
+
+    """
+    slope = (xmf[1] - xmf[0]) / float(x[1] - x[0])
+
+    if slope == 0:
+        raise ZeroDivisionError("Something went wrong, the membership "
+                                "function is not monotonically increasing.")
+
+    x_interp = (mf_val - xmf[0]) / slope
+
+    return x_interp
+
+
 def lambda_cut_series(x, mfx, n):
     """
     Determines a series of lambda-cuts in a sweep from 0+ to 1.0 in n steps.
@@ -234,7 +264,50 @@ def lambda_cut(ms, lcut):
         Lambda-cut set of `ms`: ones if ms[i] >= lcut, zeros otherwise.
 
     """
-    return (ms > lcut) * 1
+    if lcut == 1:
+        return (ms >= lcut) * 1
+    else:
+        return (ms > lcut) * 1
+
+
+def lambda_cut_boundaries(x, mfx, lambdacut):
+    """
+    Find exact boundaries where `mfx` crosses `lambdacut` using interpolation.
+
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable
+    mfx : 1d array, length N
+        Fuzzy membership function
+    lambdacut : float
+        Floating point value on range [0, 1].
+
+    Returns
+    -------
+    boundaries : 1d array
+        Floating point values of `x` where `mfx` crosses `lambdacut`.
+        Calculated using linear interpolation.
+
+    """
+    # Pad binary set two values by extension
+    mfxx = np.pad(mfx, [2, 2], 'edge')
+
+    # Find binary lambda cut set
+    lcutset = lambda_cut(mfxx, lambdacut)
+
+    # Detect crossings with convolution, cutting off one padded value
+    crossings = np.convolve(lcutset, [1, -1])[1:-1]
+    argcrossings = np.where(np.abs(crossings) > 0)[0] - 1
+
+    # Calculate exact crossing points
+    boundaries = []
+    for cross in argcrossings:
+        idx = slice(cross - 1, cross + 1)
+        boundaries.append(
+            x[cross - 1] + _interp_universe(x[idx], mfx[idx], lambdacut))
+
+    return np.r_[boundaries]
 
 
 def _support(x, mfx):
