@@ -4,6 +4,7 @@ defuzz.py : Various methods for defuzzification and lambda-cuts, to convert
 
 """
 import numpy as np
+from ..image.arraypad import pad
 
 
 def arglcut(ms, lambdacut):
@@ -289,9 +290,13 @@ def lambda_cut_boundaries(x, mfx, lambdacut):
         Floating point values of `x` where `mfx` crosses `lambdacut`.
         Calculated using linear interpolation.
 
+    Note
+    ----
+    This function will only calculate
+
     """
     # Pad binary set two values by extension
-    mfxx = np.pad(mfx, [2, 2], 'edge')
+    mfxx = pad(mfx, [2, 2], 'edge')
 
     # Find binary lambda cut set
     lcutset = lambda_cut(mfxx, lambdacut)
