@@ -89,5 +89,11 @@ def test_lambda_cut_boundaries():
     assert_allclose(fuzz.lambda_cut_boundaries(x, mfx, 0.2), np.r_[1.2, 9.4])
 
 
+def test_lambda_cut_boundaries_degenerate():
+    x = np.arange(11)
+    mfx = fuzz.trimf(x, [0, 7, 10])
+    assert_allclose(fuzz.lambda_cut_boundaries(x, mfx, 1), np.r_[7])
+
+
 if __name__ == '__main__':
     np.testing.run_module_suite()

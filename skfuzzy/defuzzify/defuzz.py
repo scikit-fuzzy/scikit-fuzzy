@@ -292,7 +292,12 @@ def lambda_cut_boundaries(x, mfx, lambdacut):
 
     Note
     ----
-    This function will only calculate
+    The values returned by this function can be thought of as intersections
+    between a hypothetical horizontal line at ``lambdacut`` and the membership
+    function ``mfx``. This function assumes the end values of ``mfx`` continue
+    on forever in positive and negative directions. This means there will NOT
+    be crossings found exactly at the bounds of ``x`` unless the value of
+    ``mfx`` at the boundary is exactly ``lambdacut``.
 
     """
     # Pad binary set two values by extension
@@ -305,14 +310,15 @@ def lambda_cut_boundaries(x, mfx, lambdacut):
     crossings = np.convolve(lcutset, [1, -1])[1:-1]
     argcrossings = np.where(np.abs(crossings) > 0)[0] - 1
 
-    # Calculate exact crossing points
+    # Calculate exact crossing points, removing the last padded value
     boundaries = []
     for cross in argcrossings:
         idx = slice(cross - 1, cross + 1)
         boundaries.append(
             x[cross - 1] + _interp_universe(x[idx], mfx[idx], lambdacut))
 
-    return np.r_[boundaries]
+    # Eliminate degenerate points at peaks with np.unique
+    return np.unique(np.r_[boundaries])
 
 
 def _support(x, mfx):
