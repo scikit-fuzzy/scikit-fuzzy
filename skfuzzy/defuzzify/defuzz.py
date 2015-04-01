@@ -175,10 +175,6 @@ def _interp_universe(x, xmf, mf_val):
     """
     slope = (xmf[1] - xmf[0]) / float(x[1] - x[0])
 
-    if slope == 0:
-        raise ZeroDivisionError("Something went wrong, the membership "
-                                "function is not monotonically increasing.")
-
     x_interp = (mf_val - xmf[0]) / slope
 
     return x_interp
