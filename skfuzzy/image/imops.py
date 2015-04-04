@@ -11,35 +11,37 @@ from .shape import view_as_windows
 
 def defocus_local_means(im):
     """
-    Defocusing non-normalized image im using local arithmatic mean.
+    Defocusing non-normalized image ``im`` using local arithmatic mean.
 
     Parameters
     ----------
     im : ndarray
-        Input image; normalization not required.
+        Input image, normalization not required. NaN values unsupported.
 
     Returns
     -------
-    D : ndarray of floats, same shape as im
-        Defocused output image. By definition will not extend the range of `im`
-        but the result will be an array of floats.
+    D : ndarray of floats, same shape as ``im``
+        Defocused output image. By definition will not extend the range of
+        ``im``, but the result returned will be an array of floats
+        regardless of input dtype.
 
     Notes
     -----
     Reduces 'salt & pepper' noise in a quantized image by taking the
-    arithmatic mean of the 4-connected neighborhood. So the new value at X
+    arithmatic mean of the 4-connected neighborhood. So the new value at
+    ``X``, given the 4-connected neighborhood::
 
-            +---+
-            | c |
-        +---+---+---+
-        | a | X | b |
-        +---+---+---+
-            | d |
-            +---+
+          +---+
+          | c |
+      +---+---+---+
+      | a | X | b |
+      +---+---+---+
+          | d |
+          +---+
 
-    is defined by
+    is defined by the relationship::
 
-        X = 0.25 * (a + b + c + d)
+      X = 0.25 * (a + b + c + d)
 
     """
     # Pad input
