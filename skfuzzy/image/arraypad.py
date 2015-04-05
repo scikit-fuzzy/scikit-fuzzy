@@ -1218,7 +1218,8 @@ def pad(array, pad_width, mode=None, **kwargs):
 
     Notes
     -----
-    .. versionadded:: 1.7.0
+    This function exists in NumPy >= 1.7.0, but is included in
+    ``scikit-fuzzy`` for backwards compatibility with earlier versions.
 
     For an array with rank greater than 1, some of the padding of later
     axes is calculated from padding of previous axes.  This is easiest to
@@ -1249,26 +1250,26 @@ def pad(array, pad_width, mode=None, **kwargs):
     Examples
     --------
     >>> a = [1, 2, 3, 4, 5]
-    >>> np.lib.pad(a, (2,3), 'constant', constant_values=(4, 6))
+    >>> fuzz.pad(a, (2,3), 'constant', constant_values=(4, 6))
     array([4, 4, 1, 2, 3, 4, 5, 6, 6, 6])
 
-    >>> np.lib.pad(a, (2, 3), 'edge')
+    >>> fuzz.pad(a, (2, 3), 'edge')
     array([1, 1, 1, 2, 3, 4, 5, 5, 5, 5])
 
-    >>> np.lib.pad(a, (2, 3), 'linear_ramp', end_values=(5, -4))
+    >>> fuzz.pad(a, (2, 3), 'linear_ramp', end_values=(5, -4))
     array([ 5,  3,  1,  2,  3,  4,  5,  2, -1, -4])
 
-    >>> np.lib.pad(a, (2,), 'maximum')
+    >>> fuzz.pad(a, (2,), 'maximum')
     array([5, 5, 1, 2, 3, 4, 5, 5, 5])
 
-    >>> np.lib.pad(a, (2,), 'mean')
+    >>> fuzz.pad(a, (2,), 'mean')
     array([3, 3, 1, 2, 3, 4, 5, 3, 3])
 
-    >>> np.lib.pad(a, (2,), 'median')
+    >>> fuzz.pad(a, (2,), 'median')
     array([3, 3, 1, 2, 3, 4, 5, 3, 3])
 
     >>> a = [[1, 2], [3, 4]]
-    >>> np.lib.pad(a, ((3, 2), (2, 3)), 'minimum')
+    >>> fuzz.pad(a, ((3, 2), (2, 3)), 'minimum')
     array([[1, 1, 1, 2, 1, 1, 1],
            [1, 1, 1, 2, 1, 1, 1],
            [1, 1, 1, 2, 1, 1, 1],
@@ -1278,19 +1279,19 @@ def pad(array, pad_width, mode=None, **kwargs):
            [1, 1, 1, 2, 1, 1, 1]])
 
     >>> a = [1, 2, 3, 4, 5]
-    >>> np.lib.pad(a, (2, 3), 'reflect')
+    >>> fuzz.pad(a, (2, 3), 'reflect')
     array([3, 2, 1, 2, 3, 4, 5, 4, 3, 2])
 
-    >>> np.lib.pad(a, (2, 3), 'reflect', reflect_type='odd')
+    >>> fuzz.pad(a, (2, 3), 'reflect', reflect_type='odd')
     array([-1,  0,  1,  2,  3,  4,  5,  6,  7,  8])
 
-    >>> np.lib.pad(a, (2, 3), 'symmetric')
+    >>> fuzz.pad(a, (2, 3), 'symmetric')
     array([2, 1, 1, 2, 3, 4, 5, 5, 4, 3])
 
-    >>> np.lib.pad(a, (2, 3), 'symmetric', reflect_type='odd')
+    >>> fuzz.pad(a, (2, 3), 'symmetric', reflect_type='odd')
     array([0, 1, 1, 2, 3, 4, 5, 5, 6, 7])
 
-    >>> np.lib.pad(a, (2, 3), 'wrap')
+    >>> fuzz.pad(a, (2, 3), 'wrap')
     array([4, 5, 1, 2, 3, 4, 5, 1, 2, 3])
 
     >>> def padwithtens(vector, pad_width, iaxis, kwargs):
@@ -1301,7 +1302,7 @@ def pad(array, pad_width, mode=None, **kwargs):
     >>> a = np.arange(6)
     >>> a = a.reshape((2, 3))
 
-    >>> np.lib.pad(a, 2, padwithtens)
+    >>> fuzz.pad(a, 2, padwithtens)
     array([[10, 10, 10, 10, 10, 10, 10],
            [10, 10, 10, 10, 10, 10, 10],
            [10, 10,  0,  1,  2, 10, 10],
