@@ -39,7 +39,4 @@ or locally using::
   python setup.py install --prefix=${HOME}
 
 If you prefer, you can use it without installing, by simply adding
-this path to your ``PYTHONPATH`` variable and compiling extensions
-in-place::
-
-  python setup.py build_ext -i
+this path to your ``PYTHONPATH`` variable.

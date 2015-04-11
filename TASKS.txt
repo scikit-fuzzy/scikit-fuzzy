@@ -1,0 +1,27 @@
+ ..  role:: strike
+
+
+.. _howto_contribute:
+
+How to contribute to ``skimage``
+======================================
+
+.. toctree::
+   :hidden:
+
+   gitwash/index
+
+
+Developing Open Source is great fun!  Join us on the `scikit-fuzzy mailing
+list <http://groups.google.com/group/scikit-fuzzy>`_ and tell us which of the
+following challenges you'd like to solve.
+
+* Guidance is available for those new to scientific programming in Python.
+* If you're looking for something to implement, you can browse the `open issues
+  on GitHub <https://github.com/scikit-fuzzy/scikit-fuzzy/issues?state=open>`__
+  or suggest a new, useful feature.
+* The technical detail of the `development process`_ is summed up below.
+  Refer to the :doc:`gitwash <gitwash/index>` for a step-by-step tutorial.
+
+.. contents::
+   :local:

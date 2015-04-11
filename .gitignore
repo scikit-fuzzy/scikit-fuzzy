@@ -28,3 +28,4 @@ docs/source/_static/random.js
 *.ipynb_checkpoints*
 *_build*
 docs/logo/*.png
+docs/source/gitwash
