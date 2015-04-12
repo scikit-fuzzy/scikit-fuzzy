@@ -134,7 +134,8 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
     See Also
     --------
-    ``skfuzzy.fuzzymath.sigmoid``
+    skfuzzy.fuzzymath.sigmoid
+
     """
     # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)

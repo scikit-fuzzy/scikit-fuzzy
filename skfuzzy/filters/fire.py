@@ -34,8 +34,8 @@ def fire1d(x, l1=0, l2=1):
     Filtering occurs for `l1` < |`x`| < `l2`; for |`x`| < `l1` there is no
     effect.
 
-    Reference
-    ---------
+    References
+    ----------
     .. [1] Fabrizio Russo, Fuzzy Filtering of Noisy Sensor Data, IEEE
            Instrumentation and Measurement Technology Conference,
            Brussels, Belgium, June 4 - 6, 1996, pp 1281 - 1285.
@@ -119,8 +119,8 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     Filtering occurs for `l1` < |`x`| < `l2`; outside this range the data is
     unaffected.
 
-    Reference
-    ---------
+    References
+    ----------
     .. [1] Fabrizio Russo, Fuzzy Filtering of Noisy Sensor Data, IEEE
            Instrumentation and Measurement Technology Conference,
            Brussels, Belgium, June 4 - 6, 1996, pp 1281 - 1285.
