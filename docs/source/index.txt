@@ -14,13 +14,14 @@ Sections
 .. toctree::
    :hidden:
 
-    overview
-    api
-    install
-    user_guide
-    contribute
-    license
-    auto_examples/index
+   overview
+   api/api
+   install
+   user_guide
+   contribute
+   license
+   auto_examples/index
+   documentation
 
 .. list-table::
    :class: contentstable

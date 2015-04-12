@@ -295,6 +295,7 @@ def scaleval(q, interval):
     Multiplies scalar q with interval interval.
 
     Parameters
+    ----------
     q : float
         Scalar to multiply interval with.
     interval : 1d array, length 2
