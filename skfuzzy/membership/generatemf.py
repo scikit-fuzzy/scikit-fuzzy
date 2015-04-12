@@ -25,8 +25,8 @@ def _nearest(x, y0):
     x0 : float
         Value in `x` which is closest to `y0`.
 
-    Note
-    ----
+    Notes
+    -----
     This function does support extrapolation.
 
     """
@@ -143,8 +143,8 @@ def gbellmf(x, a, b, c):
     y : 1d array
         Generalized Bell fuzzy membership function.
 
-    Note
-    ----
+    Notes
+    -----
     Definition of Generalized Bell function is:
 
         y(x) = 1 / (1 + abs([x - c] / a) ** [2 * b])
@@ -170,8 +170,8 @@ def piecemf(x, abc):
     y : 1d array
         Piecewise fuzzy membership function for x.
 
-    Note
-    ----
+    Notes
+    -----
     Piecewise definition:
                 y = 0,                    min(x) <= x <= a
                 y = b(x - a)/c(b - a),    a <= x <= b
@@ -184,14 +184,14 @@ def piecemf(x, abc):
 
     assert a <= b and b <= c, '`abc` requires a <= b <= c.'
 
-    N = len(x)
-    y = np.zeros(N)
+    n = len(x)
+    y = np.zeros(n)
 
     idx0 = _nearest(x, 0)[0]
     idxa = _nearest(x, a)[0]
     idxb = _nearest(x, b)[0]
 
-    n = np.r_[0:N - idx0]
+    n = np.r_[0:n - idx0]
     y[idx0 + n] = n / float(c)
     y[idx0:idxa] = 0
     m = np.r_[0:idxb - idxa]
@@ -222,8 +222,8 @@ def pimf(x, a, b, c, d):
     y : 1d array
         Pi-function.
 
-    Note
-    ----
+    Notes
+    -----
     This is equivalently a product of smf and zmf.
 
     """
@@ -286,8 +286,8 @@ def psigmf(x, b1, c1, b2, c2):
             f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
             f2(x) = 1 / (1. + exp[- c2 * (x - b2)])
 
-    Note
-    ----
+    Notes
+    -----
     For a smoothed rect-like function, c2 < 0 < c1. For its inverse (zero in
     middle, one at edges) c1 < 0 < c2.
 
@@ -295,16 +295,16 @@ def psigmf(x, b1, c1, b2, c2):
     return sigmf(x, b1, c1) * sigmf(x, b2, c2)
 
 
-def sigmoid(WX, B):
+def sigmoid(wx, b):
     """
     Generates a sigmoid function.
 
     Parameters
     ----------
-    WX : 2d array, (K, N)
+    wx : 2d array, (K, N)
         Sum of the inner product of W and X, where W is a KxM data matrix
         and X is a MxN weight matrix.
-    B : 1d array, length K
+    b : 1d array, length K
         Bias or threshold.
 
     Returns
@@ -313,8 +313,8 @@ def sigmoid(WX, B):
         Sigmoid function result.
 
     """
-    return 1. / (1. + np.exp(-(WX + np.dot(np.atleast_2d(B).T,
-                                           np.ones((1, WX.shape[1]))))))
+    return 1. / (1. + np.exp(-(wx + np.dot(np.atleast_2d(b).T,
+                                           np.ones((1, wx.shape[1]))))))
 
 
 def sigmf(x, b, c):
@@ -339,8 +339,8 @@ def sigmf(x, b, c):
     y : 1d array
         Generated sigmoid values, defined as y = 1 / (1. + exp[- c * (x - b)])
 
-    Note
-    ----
+    Notes
+    -----
     These are the same values, provided separately and in the opposite order
     compared to the publicly available MathWorks' Fuzzy Logic Toolbox
     documentation. Pay close attention to above docstring!
@@ -367,8 +367,8 @@ def smf(x, a, b):
     y : 1d array
         S-function.
 
-    Note
-    ----
+    Notes
+    -----
     Named such because of its S-like shape.
 
     """
@@ -481,8 +481,8 @@ def zmf(x, a, b):
     y : 1d array
         Z-function.
 
-    Note
-    ----
+    Notes
+    -----
     Named such because of its Z-like shape.
 
     """

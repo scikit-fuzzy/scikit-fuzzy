@@ -29,8 +29,8 @@ def fire1d(x, l1=0, l2=1):
     y : 1d array
         FIRE filtered sequence.
 
-    Note
-    ----
+    Notes
+    -----
     Filtering occurs for `l1` < |`x`| < `l2`; for |`x`| < `l1` there is no
     effect.
 
@@ -114,8 +114,8 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     J : 2d array
         FIRE filtered image.
 
-    Note
-    ----
+    Notes
+    -----
     Filtering occurs for `l1` < |`x`| < `l2`; outside this range the data is
     unaffected.
 

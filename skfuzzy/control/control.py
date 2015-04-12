@@ -99,8 +99,8 @@ def fcontrol(x1, M1, x2, M2, u, Mu, rules, x10, x20, K, Ts, N, A=None, B=None,
     tt : 1d array, length N
         Discrete time index (sec)
 
-    Note
-    ----
+    Notes
+    -----
     While A, B, Phi, and Gamma are all technically optional kwargs, this
     function REQUIRES at one of the two pairs of arguments. Either BOTH A
     AND B are passed, OR BOTH Phi AND Gamma must be passed to define the
@@ -226,8 +226,8 @@ def inv_pen(x1, M1, x2, M2, u, Mu, rules, x10, x20, K):
     tt : 1d array, length N
         Discrete time index (sec).
 
-    Note
-    ----
+    Notes
+    -----
     This models the discrete-time model of an inverted pendulum, defined:
 
         x[k + 1] = Phi * x[k] + Gamma * u[k]
@@ -311,8 +311,8 @@ def inv_pend(x10, x20, K, Ts, N, plot=True):
     tt : 1d array
         Discrete time index (sec)
 
-    Note
-    ----
+    Notes
+    -----
     This function uses hardcoded values to set up the problem.
 
     See Ex. 13.2, Ross, Fuzzy Logic w/Engineering Applications, 1st ed,

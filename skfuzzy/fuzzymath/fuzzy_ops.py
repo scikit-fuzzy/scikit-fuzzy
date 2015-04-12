@@ -9,7 +9,7 @@ import numpy as np
 
 def cartadd(x, y):
     """
-    Cartesian addition of two fuzzy membership vectors; algebraic method.
+    Cartesian addition of fuzzy membership vectors using the algebraic method.
 
     Parameters
     ----------
@@ -21,7 +21,7 @@ def cartadd(x, y):
     Returns
     -------
     z : 2D array
-        Cartesian addition of x and y, of shape (M, N).
+        Cartesian addition of ``x`` and ``y``, of shape (M, N).
 
     """
     # Ensure rank-1 input
@@ -37,7 +37,7 @@ def cartadd(x, y):
 
 def cartprod(x, y):
     """
-    Cartesian product of two fuzzy membership vectors. Uses `min()`.
+    Cartesian product of two fuzzy membership vectors. Uses ``min()``.
 
     Parameters
     ----------
@@ -49,7 +49,7 @@ def cartprod(x, y):
     Returns
     -------
     z : 2D array
-        Cartesian product of x and y, of shape (M, N).
+        Cartesian product of ``x`` and ``y``, of shape (M, N).
 
     """
     # Ensure rank-1 input
@@ -65,8 +65,7 @@ def cartprod(x, y):
 
 def classic_relation(a, b):
     """
-    Determines the classic relation matrix, R, between fuzzy sets a and b,
-    on universes x and y, respectively.
+    Determines the classic relation matrix, ``R``, between two fuzzy sets.
 
     Parameters
     ----------
@@ -78,13 +77,15 @@ def classic_relation(a, b):
     Returns
     -------
     R : 2D array
-        Classic relation matrix between a and b, shape (M, N)
+        Classic relation matrix between ``a`` and ``b``, shape (M, N)
 
-    Note
-    ----
-    The classic relation is defined as
-    ::    r = [a x b] U [(1 - a) x ones(1, N)],
-    where x represents a cartesian product and N is len(`b`).
+    Notes
+    -----
+    The classic relation is defined as::
+
+      r = [a x b] U [(1 - a) x ones(1, N)],
+
+    where ``x`` represents a cartesian product and ``N`` is len(``b``).
 
     """
     a = np.asarray(a)
@@ -98,43 +99,42 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     Parameters
     ----------
     arr : ndarray
-        Input array (of floats on range [0, 1] if normalize=False). If values
-        exist outside this range, with `normalize=True` the image will be
-        normalized for calculation.
+        Input array (of floats on range [0, 1] if ``normalize=False``). If
+        values exist outside this range, with ``normalize=True`` the image
+        will be normalized for calculation.
     amount : float or length-2 iterable of floats
         Controls the exponential contrast mechanism for values above and below
-        `split` in `I`. If positive, the curve provides added contrast;
+        ``split`` in ``I``. If positive, the curve provides added contrast;
         if negative, the curve provides reduced contrast.
 
         If provided as a lenth-2 iterable of floats, they control the regions
-        (below, above) `split` separately.
+        (below, above) ``split`` separately.
     split : float
         Positive scalar, on range [0, 1], determining the midpoint of the
-        exponential contrast. The contrast below `split` is controlled by
-        `below`, while the contrast above `split` is controlled by `above`.
-        Default of 0.5 is reasonable for well-exposed images.
+        exponential contrast. Default of 0.5 is reasonable for well-exposed
+        images.
     normalize : bool, default True
-        Controls if intensities in `I` will be normalized to the range [0, 1].
+        Controls normalization to the range [0, 1].
 
     Returns
     -------
     focused : ndarray
         Contrast adjusted, normalized, floating-point image on range [0, 1].
 
-    Note
-    ----
+    Notes
+    -----
     The result of this algorithm is like applying a Curves adjustment in the
     GIMP or Photoshop.
 
-    Algorithm for curves adjustment at a given pixel, x, is given by:
+    Algorithm for curves adjustment at a given pixel, x, is given by::
 
              | split * (x/split)^below,                        0 <= x <= split
-    y(x)  =  |
+      y(x) = |
              | 1 - (1-split) * ((1-x) / (1-split))^above,   split < x <= 1.0
 
-    See also
+    See Also
     --------
-    SIGMOID
+    ``skfuzzy.fuzzymath.sigmoid``
     """
     # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
@@ -169,28 +169,28 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
 def fuzzy_add(x, a, y, b):
     """
-    Adds fuzzy set a in universe x with fuzzy set b in universe y.
+    Adds fuzzy set ``a`` to fuzzy set ``b``.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set a.
+        Universe variable for fuzzy set ``a``.
     a : 1d array, length N
-        Fuzzy set for universe x.
+        Fuzzy set for universe ``x``.
     y : 1d array, length M
-        Universe variable for fuzzy set b.
+        Universe variable for fuzzy set ``b``.
     b : 1d array, length M
-        Fuzzy set for universe y.
+        Fuzzy set for universe ``y``.
 
     Returns
     -------
     z : 1d array
         Output variable.
     mfz : 1d array
-        Fuzzy membership set for variable z.
+        Fuzzy membership set for variable ``z``.
 
-    Note
-    ----
+    Notes
+    -----
     Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
     Engineering Applications (2010), pp. 414, Eq. 12.17.
 
@@ -230,17 +230,17 @@ def fuzzy_add(x, a, y, b):
 
 def fuzzy_compare(q):
     """
-    Determines the comparison matrix, C, based on the fuzzy pairwise
-    comparison matrix, q, using Shimura's special relativity formula.
+    Determines the comparison matrix, ``c``, based on the fuzzy pairwise
+    comparison matrix, ``q``, using Shimura's special relativity formula.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     q : 2d array, (N, N)
         Fuzzy pairwise comparison matrix.
 
     Returns
     -------
-    C : 2d array, (N, N)
+    c : 2d array, (N, N)
         Comparison matrix.
 
     """
@@ -249,18 +249,18 @@ def fuzzy_compare(q):
 
 def fuzzy_div(x, a, y, b):
     """
-    Divides fuzzy set b in universe y into fuzzy set a in universe x.
+    Divides fuzzy set ``b`` into fuzzy set ``a``.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set a.
+        Universe variable for fuzzy set ``a``.
     a : 1d array, length N
-        Fuzzy set for universe x.
+        Fuzzy set for universe ``x``.
     y : 1d array, length M
-        Universe variable for fuzzy set b.
+        Universe variable for fuzzy set ``b``.
     b : 1d array, length M
-        Fuzzy set for universe y.
+        Fuzzy set for universe ``y``.
 
     Returns
     -------
@@ -269,8 +269,8 @@ def fuzzy_div(x, a, y, b):
     mfz : 1d array
         Fuzzy membership set for variable z.
 
-    Note
-    ----
+    Notes
+    -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
@@ -310,19 +310,18 @@ def fuzzy_div(x, a, y, b):
 
 def fuzzy_min(x, a, y, b):
     """
-    Finds minimum between fuzzy set a in universe x and fuzzy set b in
-    universe y.
+    Finds minimum between fuzzy set ``a`` fuzzy set ``b``.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set a.
+        Universe variable for fuzzy set ``a``.
     a : 1d array, length N
-        Fuzzy set for universe x.
+        Fuzzy set for universe ``x``.
     y : 1d array, length M
-        Universe variable for fuzzy set b.
+        Universe variable for fuzzy set ``b``.
     b : 1d array, length M
-        Fuzzy set for universe y.
+        Fuzzy set for universe ``y``.
 
     Returns
     -------
@@ -331,8 +330,8 @@ def fuzzy_min(x, a, y, b):
     mfz : 1d array
         Fuzzy membership set for variable z.
 
-    Note
-    ----
+    Notes
+    -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
@@ -372,18 +371,18 @@ def fuzzy_min(x, a, y, b):
 
 def fuzzy_mult(x, a, y, b):
     """
-    Multiplies fuzzy set A in universe x and fuzzy set b in universe y.
+    Multiplies fuzzy set ``a`` and fuzzy set ``b``.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set A.
+        Universe variable for fuzzy set ``a``.
     A : 1d array, length N
-        Fuzzy set for universe x.
+        Fuzzy set for universe ``x``.
     y : 1d array, length M
-        Universe variable for fuzzy set b.
+        Universe variable for fuzzy set ``b``.
     b : 1d array, length M
-        Fuzzy set for universe y.
+        Fuzzy set for universe ``y``.
 
     Returns
     -------
@@ -392,8 +391,8 @@ def fuzzy_mult(x, a, y, b):
     mfz : 1d array
         Fuzzy membership set for variable z.
 
-    Note
-    ----
+    Notes
+    -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
@@ -433,18 +432,18 @@ def fuzzy_mult(x, a, y, b):
 
 def fuzzy_sub(x, a, y, b):
     """
-    Subtracts fuzzy set b in universe y into fuzzy set A in universe x.
+    Subtracts fuzzy set ``b`` from fuzzy set ``a``.
 
     Parameters
     ----------
     x : 1d array, length N
-        Universe variable for fuzzy set A.
+        Universe variable for fuzzy set ``a``.
     A : 1d array, length N
-        Fuzzy set for universe x.
+        Fuzzy set for universe ``x``.
     y : 1d array, length M
-        Universe variable for fuzzy set b.
+        Universe variable for fuzzy set ``b``.
     b : 1d array, length M
-        Fuzzy set for universe y.
+        Fuzzy set for universe ``y``.
 
     Returns
     -------
@@ -453,8 +452,8 @@ def fuzzy_sub(x, a, y, b):
     mfz : 1d array
         Fuzzy membership set for variable z.
 
-    Note
-    ----
+    Notes
+    -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
@@ -533,7 +532,7 @@ def interp10(x):
 
 def maxmin_composition(s, r):
     """
-    Determines max-min composition `t` of fuzzy relation matrices `s` and `r`
+    The max-min composition ``t`` of two fuzzy relation matrices.
 
     Parameters
     ----------
@@ -545,7 +544,7 @@ def maxmin_composition(s, r):
     Returns
     -------
     T ; 2d array, (M, P)
-        Max-min composition, defined by T = s o r.
+        Max-min composition, defined by ``T = s o r``.
 
     """
     if s.ndim < 2:
@@ -565,7 +564,7 @@ def maxmin_composition(s, r):
 
 def maxprod_composition(s, r):
     """
-    Determines the max-product composition `t` of two fuzzy relation matrices
+    The max-product composition ``t`` of two fuzzy relation matrices.
 
     Parameters
     ----------
@@ -577,7 +576,7 @@ def maxprod_composition(s, r):
     Returns
     -------
     t : 2d array, (M, P)
-        max-product composition matrix.
+        Max-product composition matrix.
 
     """
     if s.ndim < 2:
@@ -597,29 +596,29 @@ def maxprod_composition(s, r):
 
 def interp_membership(x, xmf, xx):
     """
-    Finds the degree of membership `u(xx)` for a given value of x = xx.
+    Finds the degree of membership ``u(xx)`` for a given value of ``x = xx``.
 
     Parameters
     ----------
     x : 1d array
         Independent discrete variable vector.
     xmf : 1d array
-        Fuzzy membership function for x.  Same length as x.
+        Fuzzy membership function for ``x``.  Same length as ``x``.
     xx : float
-        Discrete singleton value on universe x.
+        Discrete singleton value on universe ``x``.
 
     Returns
     -------
     xxmf : float
-        Membership function value at xx, `u(xx)`.
+        Membership function value at ``xx``, ``u(xx)``.
 
-    Note
-    ----
+    Notes
+    -----
     For use in Fuzzy Logic, where an interpolated discrete membership function
-    u(x) for discrete values of x on the universe of x is given. Then, assume
-    that a new value x = xx, is considered whose value does not correspond to
-    any of the discrete values of x. The function computes the membership value
-    u(xx) corresponding to the value xx using a linear interpolation.
+    u(x) for discrete values of x on the universe of ``x`` is given. Then,
+    consider a new value x = xx, which does not correspond to any discrete
+    values of ``x``. This function computes the membership value ``u(xx)``
+    corresponding to the value ``xx`` using linear interpolation.
 
     """
     # Nearest discrete x-values
@@ -643,20 +642,20 @@ def interp_membership(x, xmf, xx):
 
 def modus_ponens(a, b, ap, c=None):
     """
-    Generalized modus ponens deduction to make approximate reasoning in a
+    Generalized *modus ponens* deduction to make approximate reasoning in a
     rules-base system.
 
     Parameters
     ----------
     a : 1d array
-        Fuzzy set a on universe x
+        Fuzzy set ``a`` on universe ``x``
     b : 1d array
-        Fuzzy set b on universe y
+        Fuzzy set ``b`` on universe ``y``
     ap : 1d array
         New fuzzy fact a' (a prime, not transpose)
     c : 1d array, OPTIONAL
-        Keyword argument representing fuzzy set c on universe y.
-        Default = None, which will use a np.ones() array instead.
+        Keyword argument representing fuzzy set ``c`` on universe ``y``.
+        Default = None, which will use ``np.ones()`` instead.
 
     Returns
     -------
@@ -695,8 +694,8 @@ def outer_product(a, b):
 
 def relation_min(a, b):
     """
-    Determines fuzzy relation matrix `R` using Mamdani implication for the
-    fuzzy antecedent `a` and consequent `b` inputs.
+    Determines fuzzy relation matrix ``R`` using Mamdani implication for the
+    fuzzy antecedent ``a`` and consequent ``b`` inputs.
 
     Parameters
     ----------
@@ -708,7 +707,7 @@ def relation_min(a, b):
     Returns
     -------
     R : 2d array
-        Fuzzy relation between a and b, of shape (M, N).
+        Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
     m = len(a)
@@ -720,8 +719,8 @@ def relation_min(a, b):
 
 def relation_product(a, b):
     """
-    Determines the fuzzy relation matrix, `R`, using product implication for
-    the fuzzy antecedent `a` and the fuzzy consequent `b`.
+    Determines the fuzzy relation matrix, ``R``, using product implication for
+    the fuzzy antecedent ``a`` and the fuzzy consequent ``b``.
 
     Parameters
     ----------
@@ -733,7 +732,7 @@ def relation_product(a, b):
     Returns
     -------
     R : 2d array
-        Fuzzy relation between a and b, of shape (M, N).
+        Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
     m = len(a)
@@ -745,19 +744,18 @@ def relation_product(a, b):
 
 def fuzzy_similarity(ai, b, mode='min'):
     """
-    Calculates the fuzzy similarity between the fuzzy set ai and observation
-    fuzzy set b.
+    The fuzzy similarity between set ``ai`` and observation set ``b``.
 
     Parameters
     ----------
     ai : 1d array
-        Fuzzy membership function of set ai.
+        Fuzzy membership function of set ``ai``.
     b : 1d array
-        Fuzzy membership function of set b.
+        Fuzzy membership function of set ``b``.
     mode : string
         Controls the method of similarity calculation.
-        * 'min' : Computed by array minimum operation.
-        * 'avg' : Computed by taking the array average.
+        * ``'min'`` : Computed by array minimum operation.
+        * ``'avg'`` : Computed by taking the array average.
 
     Returns
     -------
@@ -773,27 +771,34 @@ def fuzzy_similarity(ai, b, mode='min'):
 
 def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     """
-    Calculates the partial derivative of a given membership function.
+    Calculates the *partial derivative* of a specified membership function.
 
     Parameters
     ----------
     x : float
         input variable.
     mf_name : string
-        Membership function name, corresponding to the function names
-        available in generatemf.py
+        Membership function name as a string. The following are supported:
+        * ``'gaussmf'`` : parameters ``'sigma'`` or ``'mean'``
+        * ``'gbellmf'`` : parameters ``'a'``, ``'b'``, or ``'c'``
+        * ``'sigmf'`` : parameters ``'b'`` or ``'c'``
     mf_parameter_dict : dict
-        A dictionary of param : key-value pairs for that particular membership
-        function given in `mf_name`
+        A dictionary of ``{param : key-value, ...}`` pairs for a particular
+        membership function as defined above.
     partial_parameter : string
-        Name of the parameter against which we wish to take the partial
-        derivative.
+        Name of the parameter against which we take the partial derivative.
 
     Returns
     -------
     d : float
         Partial derivative of the membership function with respect to the
-        chosen parameter, at input point x.
+        chosen parameter, at input point ``x``.
+
+    Notes
+    -----
+    Partial derivatives of fuzzy membership functions are only meaningful for
+    continuous functions. Triangular, trapezoidal designs have no partial
+    derivatives to calculate. The following
 
     """
 
@@ -855,14 +860,14 @@ def sigmoid(x, power, split=0.5):
     Parameters
     ----------
     x : ndarray
-        Input vector or image array.  Should be pre-normalized to range [0, 1]
+        Input vector or image array. Should be pre-normalized to range [0, 1]
     p : float
         Power of the intensification (p > 0). Experiment with small, decimal
         values and increase as necessary.
     split : float
-        Threshold for intensification. Values above `split` will be
+        Threshold for intensification. Values above ``split`` will be
         intensified, while values below `split` will be deintensified. Note
-        range for `split` is (0, 1). Default of 0.5 is reasonable for many
+        range for ``split`` is (0, 1). Default of 0.5 is reasonable for many
         well-exposed images.
 
     Returns
@@ -870,11 +875,11 @@ def sigmoid(x, power, split=0.5):
     y : ndarray, same size as x
         Output vector or image with contrast adjusted.
 
-    Note
-    ----
-    The sigmoid used herein is defined as:
+    Notes
+    -----
+    The sigmoid used herein is defined as::
 
-        y = 1 / (1 + exp(- exp(- power * (x-split))))
+      y = 1 / (1 + exp(- exp(- power * (x-split))))
 
     """
     return 1. / (1. + np.exp(- power * (x - split)))
