@@ -14,12 +14,10 @@ def _cmeans0(data, u_old, c, m):
 
     Parameters inherited from cmeans()
 
-    This algorithm is a ripe target for Cython.
-
     """
     # Normalizing, then eliminating any potential zero values.
     u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
-    u_old = np.fmax(u_old, np.finfo(float).eps)
+    u_old = np.fmax(u_old, np.finfo(np.float64).eps)
 
     um = u_old ** m
 
@@ -29,7 +27,7 @@ def _cmeans0(data, u_old, c, m):
                                     1)).dot(np.atleast_2d(um.sum(axis=1))).T)
 
     d = _distance(data, cntr)
-    d = np.fmax(d, np.finfo(float).eps)
+    d = np.fmax(d, np.finfo(np.float64).eps)
 
     jm = (um * d ** 2).sum()
 
@@ -69,8 +67,8 @@ def _fp_coeff(u):
     Fuzzy partition coefficient `fpc` relative to fuzzy c-partitioned
     matrix u. Measures 'fuzziness' in partitioned clustering.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     u : 2d array (C, N)
         Fuzzy c-partitioned matrix; N = number of data points and C = number
         of clusters.
@@ -130,6 +128,11 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     fpc : float
         Final fuzzy partition coefficient.
 
+
+    Notes
+    -----
+    The algorithm implemented is from `Ross et al.`_
+
     References
     ----------
     .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
@@ -142,10 +145,11 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
             np.random.seed(seed=seed)
         n = data.shape[1]
         u0 = np.random.rand(c, n)
-        u0 /= np.ones((c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(float)
+        u0 /= np.ones(
+            (c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
         init = u0.copy()
     u0 = init
-    u = np.fmax(u0, np.finfo(float).eps)
+    u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
     jm = np.empty(0)
@@ -212,6 +216,13 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     fpc : float
         Final fuzzy partition coefficient.
 
+    Notes
+    -----
+    `Ross et al.`_ did not include a prediction algorithm to go along with
+    fuzzy c-means. This prediction algorithm works by repeating the clustering
+    with fixed centers; this efficiently finds the fuzzy membership at all
+    points.
+
     References
     ----------
     .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
@@ -226,10 +237,11 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
             np.random.seed(seed=seed)
         n = test_data.shape[1]
         u0 = np.random.rand(c, n)
-        u0 /= np.ones((c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(float)
+        u0 /= np.ones(
+            (c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
         init = u0.copy()
     u0 = init
-    u = np.fmax(u0, np.finfo(float).eps)
+    u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
     jm = np.empty(0)
@@ -268,7 +280,7 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
     """
     # Normalizing, then eliminating any potential zero values.
     u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
-    u_old = np.fmax(u_old, np.finfo(float).eps)
+    u_old = np.fmax(u_old, np.finfo(np.float64).eps)
 
     um = u_old ** m
     test_data = test_data.T
@@ -277,7 +289,7 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
     # forced to conform to the prior clustering.
 
     d = _distance(test_data, cntr)
-    d = np.fmax(d, np.finfo(float).eps)
+    d = np.fmax(d, np.finfo(np.float64).eps)
 
     jm = (um * d ** 2).sum()
 

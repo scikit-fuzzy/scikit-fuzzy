@@ -25,8 +25,8 @@ def arglcut(ms, lambdacut):
     lidx : 1d array
         Indices corresponding to the lambda-cut subset of `ms`.
 
-    Note
-    ----
+    Notes
+    -----
     This is a convenience function for `np.nonzero(lambdacut <= ms)` and only
     half of the indexing operation that can be more concisely accomplished via
         ms[lambdacut <= ms]
@@ -234,8 +234,8 @@ def _lcutinterval(x, mfx, lambdacut):
     z : 1d array
         Lambda-cut output.
 
-    Note
-    ----
+    Notes
+    -----
     Membership function mfx must be convex and monotonic in rise or fall.
 
     """
@@ -286,8 +286,8 @@ def lambda_cut_boundaries(x, mfx, lambdacut):
         Floating point values of `x` where `mfx` crosses `lambdacut`.
         Calculated using linear interpolation.
 
-    Note
-    ----
+    Notes
+    -----
     The values returned by this function can be thought of as intersections
     between a hypothetical horizontal line at ``lambdacut`` and the membership
     function ``mfx``. This function assumes the end values of ``mfx`` continue
