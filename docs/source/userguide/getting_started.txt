@@ -11,12 +11,15 @@ though the recommended import statement uses an alias: ::
     >>> import skfuzzy as fuzz
 
 Most functions of ``skfuzzy`` are brought into the base package namespace.
-You can introspect the functions available in ``fuzz`` when using IPython by
+You can introspect the functions available in ``fuzz`` when using IPython by::
 
     [1] import skfuzzy as fuzz
     [2] fuzz.
 
 and pressing the :strong:`Tab` key.
+
+Finding your way around
+-----------------------
 
 A list of submodules and functions is found on the `API reference
 <../../api/api.html>`_ webpage.
