@@ -103,14 +103,14 @@ def dsw_add(x, mfx, y, mfy, n):
         ff[n, [1, 2]] = addval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    ff = np.zeros((2 * n1, 2))
-    ff[0:n1, 1] = ff[:, 0]
-    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    ff[0:n1, 0] = ff[:, 1]
-    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
+    out = np.zeros((2 * n1, 2))
+    out[0:n1, 1] = ff[:, 0]
+    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    out[0:n1, 0] = ff[:, 1]
+    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return ff[:, 0], ff[:, 1]
+    return out[:, 0], out[:, 1]
 
 
 def dsw_div(x, mfx, y, mfy, n):
@@ -151,14 +151,14 @@ def dsw_div(x, mfx, y, mfy, n):
         ff[n, [1, 2]] = divval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    ff = np.zeros((2 * n1, 2))
-    ff[0:n1, 1] = ff[:, 0]
-    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    ff[0:n1, 0] = ff[:, 1]
-    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
+    out = np.zeros((2 * n1, 2))
+    out[0:n1, 1] = ff[:, 0]
+    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    out[0:n1, 0] = ff[:, 1]
+    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return ff[:, 0], ff[:, 1]
+    return out[:, 0], out[:, 1]
 
 
 def dsw_mult(x, mfx, y, mfy, n):
@@ -199,14 +199,14 @@ def dsw_mult(x, mfx, y, mfy, n):
         ff[n, [1, 2]] = multval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    ff = np.zeros((2 * n1, 2))
-    ff[0:n1, 1] = ff[:, 0]
-    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    ff[0:n1, 0] = ff[:, 1]
-    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
+    out = np.zeros((2 * n1, 2))
+    out[0:n1, 1] = ff[:, 0]
+    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    out[0:n1, 0] = ff[:, 1]
+    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return ff[:, 0], ff[:, 1]
+    return out[:, 0], out[:, 1]
 
 
 def dsw_sub(x, mfx, y, mfy, n):
@@ -247,14 +247,14 @@ def dsw_sub(x, mfx, y, mfy, n):
         ff[n, [1, 2]] = subval(x[n, [1, 2]], y[n, [1, 2]])
 
     # Arrange for output or plotting
-    ff = np.zeros((2 * n1, 2))
-    ff[0:n1, 1] = ff[:, 0]
-    ff[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    ff[0:n1, 0] = ff[:, 1]
-    ff[n1:2 * n1, 0] = np.flipud(ff[:, 2])
+    out = np.zeros((2 * n1, 2))
+    out[0:n1, 1] = ff[:, 0]
+    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
+    out[0:n1, 0] = ff[:, 1]
+    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
 
     # No need for transposes; rank-1 arrays have no transpose in Python
-    return ff[:, 0], ff[:, 1]
+    return out[:, 0], out[:, 1]
 
 
 def multval(interval1, interval2):
