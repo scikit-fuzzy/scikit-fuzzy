@@ -4,13 +4,13 @@ Fuzzy c-means clustering
 ========================
 
 Fuzzy logic principles can be used to cluster multidimensional data, assigning
-each point a _membership_ in each cluster center from 0 to 100 percent. This
+each point a *membership* in each cluster center from 0 to 100 percent. This
 can be very powerful compared to traditional hard-thresholded clustering where
 every point is assigned a crisp, exact label.
 
 Fuzzy c-means clustering is accomplished via ``skfuzzy.cmeans``, and the
 output from this function can be repurposed to classify new data according to
-the calculated clusters (also known as _prediction_) via
+the calculated clusters (also known as *prediction*) via
 ``skfuzzy.cmeans_predict``
 
 Data generation and setup
@@ -121,7 +121,7 @@ As we can see, the ideal number of centers is 3. This isn't news for our
 contrived example, but having the FPC available can be very useful when the
 structure of your data is unclear.
 
-Note that we started with _two_ centers, not one; clustering a dataset with
+Note that we started with *two* centers, not one; clustering a dataset with
 only one cluster center is the trivial solution and will by definition return
 FPC == 1.
 
@@ -190,3 +190,8 @@ for j in range(3):
 ax3.legend()
 
 plt.show()
+
+"""
+.. image:: PLOT2RST.current_figure
+
+"""
