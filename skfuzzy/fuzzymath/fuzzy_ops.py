@@ -195,6 +195,10 @@ def fuzzy_add(x, a, y, b):
     Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
     Engineering Applications (2010), pp. 414, Eq. 12.17.
 
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
@@ -275,6 +279,10 @@ def fuzzy_div(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
@@ -335,6 +343,10 @@ def fuzzy_min(x, a, y, b):
     -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
@@ -397,6 +409,10 @@ def fuzzy_mult(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
@@ -457,6 +473,10 @@ def fuzzy_sub(x, a, y, b):
     -----
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
@@ -881,6 +901,10 @@ def sigmoid(x, power, split=0.5):
     The sigmoid used herein is defined as::
 
       y = 1 / (1 + exp(- exp(- power * (x-split))))
+
+    See Also
+    --------
+    skfuzzy.fuzzymath.contrast
 
     """
     return 1. / (1. + np.exp(- power * (x - split)))

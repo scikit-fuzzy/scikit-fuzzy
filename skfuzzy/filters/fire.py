@@ -10,7 +10,7 @@ from ..membership import trimf
 
 def fire1d(x, l1=0, l2=1):
     """
-    1-D fuzzy filtering using Fuzzy Inference Ruled by Else-action (FIRE)
+    1-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1]_
 
     FIRE filtering is nonlinear, and is specifically designed to remove
     impulse (salt and pepper) noise.
@@ -18,11 +18,11 @@ def fire1d(x, l1=0, l2=1):
     Parameters
     ----------
     x : 1d array or iterable
-        Input sequence, filtered range limited by `l1` and `l2`.
+        Input sequence, filtered range limited by ``l1`` and ``l2``.
     l1 : float
-        Lower input range limit for `x`.
+        Lower input range limit for ``x``.
     l2 : float
-        Upper input range limit for `x`.
+        Upper input range limit for ``x``.
 
     Returns
     -------
@@ -31,7 +31,7 @@ def fire1d(x, l1=0, l2=1):
 
     Notes
     -----
-    Filtering occurs for `l1` < |`x`| < `l2`; for |`x`| < `l1` there is no
+    Filtering occurs for ``l1 < |x| < l2``; for ``|x| < l1`` there is no
     effect.
 
     References
@@ -91,7 +91,7 @@ def fire1d(x, l1=0, l2=1):
 
 def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     """
-    2-D fuzzy filtering using Fuzzy Inference Ruled by Else-action (FIRE)
+    2-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1]_
 
     FIRE filtering is nonlinear, and is specifically designed to remove
     impulse (salt and pepper) noise.
@@ -116,7 +116,7 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
 
     Notes
     -----
-    Filtering occurs for `l1` < |`x`| < `l2`; outside this range the data is
+    Filtering occurs for ``l1 < |x| < l2``; outside this range the data is
     unaffected.
 
     References

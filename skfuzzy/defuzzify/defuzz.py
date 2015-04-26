@@ -28,8 +28,10 @@ def arglcut(ms, lambdacut):
     Notes
     -----
     This is a convenience function for `np.nonzero(lambdacut <= ms)` and only
-    half of the indexing operation that can be more concisely accomplished via
-        ms[lambdacut <= ms]
+    half of the indexing operation that can be more concisely accomplished
+    via::
+
+      ms[lambdacut <= ms]
 
     """
     return np.nonzero(lambdacut <= ms)
@@ -53,7 +55,7 @@ def centroid(x, mfx):
 
     See also
     --------
-    DCENTROID, DEFUZZ
+    skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.dcentroid
 
     """
     return (x * mfx).sum() / np.fmax(mfx.sum(),
@@ -80,7 +82,7 @@ def dcentroid(x, mfx, x0):
 
     See also
     --------
-    CENTROID, DEFUZZ
+    skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.centroid
 
     """
     x = x - x0
@@ -104,18 +106,18 @@ def defuzz(x, mfx, mode):
         Controls which defuzzification method will be used.
         * 'centroid': Centroid of area
         * 'bisector': bisector of area
-        * 'mom'        : mean of maximum
-        * 'som'        : min of maximum
-        * 'lom'        : max of maximum
+        * 'mom'     : mean of maximum
+        * 'som'     : min of maximum
+        * 'lom'     : max of maximum
 
     Returns
     -------
     u : float or int
         Defuzzified result.
 
-    See also
+    See Also
     --------
-    CENTROID, DCENTROID
+    skfuzzy.defuzzify.centroid, skfuzzy.defuzzify.dcentroid
 
     """
     mode = mode.lower()

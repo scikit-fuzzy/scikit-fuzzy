@@ -56,7 +56,7 @@ def _distance(data, centers):
 
     See Also
     --------
-    ``scipy.spatial.distance.cdist``
+    scipy.spatial.distance.cdist
 
     """
     return cdist(data, centers).T
@@ -86,7 +86,7 @@ def _fp_coeff(u):
 
 def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     """
-    Fuzzy c-means clustering algorithm for training.
+    Fuzzy c-means clustering algorithm [1]_.
 
     Parameters
     ----------
@@ -131,7 +131,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
 
     Notes
     -----
-    The algorithm implemented is from `Ross et al.`_
+    The algorithm implemented is from Ross et al. [1]_.
 
     References
     ----------
@@ -176,14 +176,14 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
 def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
                    seed=None):
     """
-    Fuzzy c-means clustering algorithm for training.
+    Prediction of new data in given a trained fuzzy c-means framework [1]_.
 
     Parameters
     ----------
     test_data : 2d array, size (S, N)
-        New, independent data set to be predicted based on trained c-means.
-        N is the number of data sets; S is the number of features within each
-        sample vector.
+        New, independent data set to be predicted based on trained c-means
+        from ``cmeans``. N is the number of data sets; S is the number of
+        features within each sample vector.
     cntr_trained : 2d array, size (S, c)
         Location of trained centers from prior training c-means.
     m : float
@@ -218,9 +218,9 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
 
     Notes
     -----
-    `Ross et al.`_ did not include a prediction algorithm to go along with
+    Ross et al. [1]_ did not include a prediction algorithm to go along with
     fuzzy c-means. This prediction algorithm works by repeating the clustering
-    with fixed centers; this efficiently finds the fuzzy membership at all
+    with fixed centers, then efficiently finds the fuzzy membership at all
     points.
 
     References

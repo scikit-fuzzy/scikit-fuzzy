@@ -52,6 +52,7 @@ def divval(interval1, interval2):
     Returns
     -------
     z : 2-element array
+        Interval result of interval1 / interval2.
 
     """
     # Handle arrays
@@ -67,29 +68,39 @@ def divval(interval1, interval2):
 
 def dsw_add(x, mfx, y, mfy, n):
     """
-    Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically add
-    two fuzzy variables together.
+    Add two fuzzy variables together using the restricted DSW method [1]_.
 
     Parameters
     ----------
     x : 1d array
-        Universe for first fuzzy variable
+        Universe for first fuzzy variable.
     mfx : 1d array
-        Fuzzy membership for universe `x`
+        Fuzzy membership for universe ``x``. Must be convex.
     y : 1d array
-        Universe for second fuzzy variable
+        Universe for second fuzzy variable.
     mfy : 1d array
-        Fuzzy membership for universe `y`
+        Fuzzy membership for universe ``y``. Must be convex.
     n : int
-        Number of lambda-cuts to use.
+        Number of lambda-cuts to use; a higher number will have greater
+        resolution toward the limit imposed by input sets ``x`` and ``y``.
 
     Returns
     -------
     z : 1d array
-        Output universe variable
+        Output universe variable.
     mfz : 1d array
-        Output fuzzy membership on universe `z`
+        Output fuzzy membership on universe ``z``.
 
+    Notes
+    -----
+    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership
+    functions. The ``dsw_*`` functions return results similar to Matplotlib's
+    ``fuzarith`` function.
+
+    References
+    ----------
+    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and
+           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
     """
     # Restricted DSW w/n lambda cuts
     x = lambda_cut_series(x, mfx, n)
@@ -115,28 +126,39 @@ def dsw_add(x, mfx, y, mfy, n):
 
 def dsw_div(x, mfx, y, mfy, n):
     """
-    Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
-    divide two fuzzy variables, yielding z = x / y.
+    Divide one fuzzy variable by another using the restricted DSW method [1]_.
 
     Parameters
     ----------
     x : 1d array
-        Universe for first fuzzy variable
+        Universe for first fuzzy variable.
     mfx : 1d array
-        Fuzzy membership for universe `x`
+        Fuzzy membership for universe ``x``. Must be convex.
     y : 1d array
-        Universe for second fuzzy variable
+        Universe for second fuzzy variable.
     mfy : 1d array
-        Fuzzy membership for universe `y`
+        Fuzzy membership for universe ``y``. Must be convex.
     n : int
-        Number of lambda-cuts to use.
+        Number of lambda-cuts to use; a higher number will have greater
+        resolution toward the limit imposed by input sets ``x`` and ``y``.
 
     Returns
     -------
     z : 1d array
-        Output universe variable
+        Output universe variable.
     mfz : 1d array
-        Output fuzzy membership on universe `z`
+        Output fuzzy membership on universe ``z``.
+
+    Notes
+    -----
+    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership
+    functions. The ``dsw_*`` functions return results similar to Matplotlib's
+    ``fuzarith`` function.
+
+    References
+    ----------
+    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and
+           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
     # Restricted DSW w/n lambda cuts
@@ -163,28 +185,39 @@ def dsw_div(x, mfx, y, mfy, n):
 
 def dsw_mult(x, mfx, y, mfy, n):
     """
-    Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
-    multiply two fuzzy variables, i.e. z = x * y.
+    Multiply two fuzzy variables using the restricted DSW method [1]_.
 
     Parameters
     ----------
     x : 1d array
-        Universe for first fuzzy variable
+        Universe for first fuzzy variable.
     mfx : 1d array
-        Fuzzy membership for universe `x`
+        Fuzzy membership for universe ``x``. Must be convex.
     y : 1d array
-        Universe for second fuzzy variable
+        Universe for second fuzzy variable.
     mfy : 1d array
-        Fuzzy membership for universe `y`
+        Fuzzy membership for universe ``y``. Must be convex.
     n : int
-        Number of lambda-cuts to use.
+        Number of lambda-cuts to use; a higher number will have greater
+        resolution toward the limit imposed by input sets ``x`` and ``y``.
 
     Returns
     -------
     z : 1d array
-        Output universe variable
+        Output universe variable.
     mfz : 1d array
-        Output fuzzy membership on universe `z`
+        Output fuzzy membership on universe ``z``.
+
+    Notes
+    -----
+    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership
+    functions. The ``dsw_*`` functions return results similar to Matplotlib's
+    ``fuzarith`` function.
+
+    References
+    ----------
+    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and
+           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
     # Restricted DSW w/n lambda cuts
@@ -211,28 +244,40 @@ def dsw_mult(x, mfx, y, mfy, n):
 
 def dsw_sub(x, mfx, y, mfy, n):
     """
-    Uses the restricted Dong, Shah, & Wong (DSW) method to arithmetically
-    divide two fuzzy variables, yielding z = x - y.
+    Subtract a fuzzy variable from another by the restricted DSW method [1]_.
 
     Parameters
     ----------
     x : 1d array
-        Universe for first fuzzy variable
+        Universe for first fuzzy variable.
     mfx : 1d array
-        Fuzzy membership for universe `x`
+        Fuzzy membership for universe ``x``. Must be convex.
     y : 1d array
-        Universe for second fuzzy variable
+        Universe for second fuzzy variable, which will be subtracted from
+        ``x``.
     mfy : 1d array
-        Fuzzy membership for universe `y`
+        Fuzzy membership for universe ``y``. Must be convex.
     n : int
-        Number of lambda-cuts to use.
+        Number of lambda-cuts to use; a higher number will have greater
+        resolution toward the limit imposed by input sets ``x`` and ``y``.
 
     Returns
     -------
     z : 1d array
-        Output universe variable
+        Output universe variable.
     mfz : 1d array
-        Output fuzzy membership on universe `z`
+        Output fuzzy membership on universe ``z``.
+
+    Notes
+    -----
+    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership
+    functions. The ``dsw_*`` functions return results similar to Matplotlib's
+    ``fuzarith`` function.
+
+    References
+    ----------
+    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and
+           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
     # Restricted DSW w/n lambda cuts
@@ -299,7 +344,7 @@ def scaleval(q, interval):
     q : float
         Scalar to multiply interval with.
     interval : 1d array, length 2
-        Interval.  Must have exactly two elements.
+        Interval. Must have exactly two elements.
 
     Returns
     -------
