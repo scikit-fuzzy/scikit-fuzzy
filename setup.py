@@ -113,6 +113,10 @@ if __name__ == '__main__':
         license=LICENSE,
         download_url=DOWNLOAD_URL,
         version=VERSION,
+        package_data={
+            # Include saved test image
+            '': ['*.npy', ],
+        },
 
         classifiers=[
             'Development Status :: 4 - Beta',
@@ -131,12 +135,5 @@ if __name__ == '__main__':
         configuration=configuration,
 
         packages=setuptools.find_packages(),
-        include_package_data=True,
         zip_safe=False
     )
-
-# Not included as this package has no post-install scripts or build req:
-      # entry_points={
-      #     'console_scripts': ['skivi = skimage.scripts.skivi:main'],
-      # },
-      # cmdclass={'build_py': build_py},
