@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
-descr = """scikit-fuzzy (a.k.a. `skfuzzy`): Fuzzy Logic Toolbox for Python.
+descr = """scikit-fuzzy (a.k.a. `skfuzzy`): Fuzzy logic toolbox for Python.
 
-This package implements many useful tools and functions for computation and
-projects involving fuzzy logic, also known as grey logic.
+This package implements many useful tools for projects involving fuzzy logic,
+also known as grey logic.
 
 """
 
@@ -13,7 +13,8 @@ LONG_DESCRIPTION    = descr
 MAINTAINER          = 'Joshua Warner'
 MAINTAINER_EMAIL    = 'joshua.dale.warner@gmail.com'
 LICENSE             = 'Modified BSD'
-DOWNLOAD_URL        = 'http://github.com/scikit-fuzzy/scikit-fuzzy'
+URL                 = 'https://pypi.python.org/pypi/scikit-fuzzy'
+DOWNLOAD_URL        = 'https://github.com/scikit-fuzzy/scikit-fuzzy'
 VERSION             = '0.2dev'
 PYTHON_VERSION      = (2, 5)
 DEPENDENCIES        = {'numpy': (1, 6),
@@ -111,11 +112,12 @@ if __name__ == '__main__':
         maintainer=MAINTAINER,
         maintainer_email=MAINTAINER_EMAIL,
         license=LICENSE,
+        url=URL,
         download_url=DOWNLOAD_URL,
         version=VERSION,
         package_data={
             # Include saved test image
-            '': ['*.npy', ],
+            '': ['*.npy', '*.md', ],
         },
 
         classifiers=[
