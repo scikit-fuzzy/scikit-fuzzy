@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 DEST = build
-.PHONY: all api help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery
+.PHONY: all api help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery logo
 
 all: html
 
@@ -36,6 +36,11 @@ clean:
 	-rm -rf $(DEST)/*
 	-rm -rf ./source/api
 	-find ./source/auto_examples/* -type f | grep -v blank | xargs rm -f
+	-find . -type f -name "*.pyc" | xargs rm -f
+
+logo:
+	cd logo; python skfuzzy_logo.py; rm -f ./logo/temp.py
+	cd logo; python skfuzzy_icon.py; rm -f ./logo/temp.py
 
 api:
 	@mkdir -p source/api
@@ -45,7 +50,7 @@ api:
 random_gallery:
 	@cd source && $(PYTHON) random_gallery.py
 
-html: api random_gallery gitwash
+html: api logo random_gallery gitwash
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(DEST)/html
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
