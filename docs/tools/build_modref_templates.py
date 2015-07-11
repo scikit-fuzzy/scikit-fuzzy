@@ -43,8 +43,8 @@ if __name__ == '__main__':
             source_version = LooseVersion(l.split("'")[1])
             break
 
-    if source_version != installed_version:
-        abort("Installed version does not match source version")
+    # if source_version != installed_version:
+    #     abort("Installed version does not match source version")
 
     outdir = 'source/api'
     docwriter = ApiDocWriter(package)
