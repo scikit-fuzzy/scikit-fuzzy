@@ -44,7 +44,7 @@ clone this repository then install SciKit-Fuzzy by running
 
 or locally by running
 
-	$ python setup.py install --prefix=${HOME}
+	$ python setup.py develop
 
 If you prefer, you can use SciKit-Fuzzy without installing by simply exporting
 this path to your PYTHONPATH variable.
