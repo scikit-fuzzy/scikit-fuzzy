@@ -1,0 +1,6 @@
+####################################################################
+# Additional dependencies necessary to build package documentation #
+####################################################################
+-r DEPENDS.txt
+scikit-image
+matplotlib
