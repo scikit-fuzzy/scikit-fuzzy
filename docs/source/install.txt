@@ -32,7 +32,7 @@ If you do not have git installed, you can also download a zipball from
 
 The SciKit can be installed globally using::
 
-  python setup.py install
+  pip install -e .
 
 or locally using::
 
