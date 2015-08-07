@@ -21,3 +21,6 @@
 
 - Tim Meggs
   Functions for calculating partial derivatives of membership functions
+
+- Guilherme Castelão
+  Minor bugfix on plot_tipping_problem.py
