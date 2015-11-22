@@ -18,7 +18,8 @@ DOWNLOAD_URL        = 'https://github.com/scikit-fuzzy/scikit-fuzzy'
 VERSION             = '0.2dev'
 PYTHON_VERSION      = (2, 5)
 DEPENDENCIES        = {'numpy': (1, 6),
-                       'scipy': (0, 9)}
+                       'scipy': (0, 9),
+                       'networkx': (1, 9)}
 
 
 import os
@@ -123,7 +124,7 @@ if __name__ == '__main__':
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
-            'Intended Audience :: Developers',
+            'Intended Audience :: Developers, scientists',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
             'Programming Language :: Python',
