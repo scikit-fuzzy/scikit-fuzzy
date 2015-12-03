@@ -118,7 +118,8 @@ class Consequent(FuzzyVariable):
 
     Notes
     -----
-    Customized subclass of ``FuzzyVariable``.
+    The ``label`` string chosen must be unique among Antecedents and
+    Consequents in the ``ControlSystem``.
     """
     def __init__(self, universe, label):
         super(Consequent, self).__init__(universe, label)
