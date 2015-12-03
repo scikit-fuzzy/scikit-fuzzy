@@ -16,10 +16,13 @@ except ImportError:
     # python 2.6
     pass
 import sys
+version = sys.version_info[:2]
+
+from numpy.testing.decorators import skipif
 
 
 class TestOrderedDict(unittest.TestCase):
-
+    @skipif(version != (2, 7))
     def test_init(self):
         with self.assertRaises(TypeError):
             OrderedDict([('a', 1), ('b', 2)], None)                                 # too many args
@@ -42,6 +45,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(list(d.items()),
             [('a', 1), ('b', 2), ('c', 3), ('d', 4), ('e', 5), ('f', 6), ('g', 7)])
 
+    @skipif(version != (2, 7))
     def test_update(self):
         with self.assertRaises(TypeError):
             OrderedDict().update([('a', 1), ('b', 2)], None)                        # too many args
@@ -82,10 +86,12 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(list(d.items()),
             [('a', 1), ('b', 2), ('c', 3), ('d', 4), ('e', 5), ('f', 6), ('g', 7)])
 
+    @skipif(version != (2, 7))
     def test_abc(self):
         self.assertIsInstance(OrderedDict(), MutableMapping)
         self.assertTrue(issubclass(OrderedDict, MutableMapping))
 
+    @skipif(version != (2, 7))
     def test_clear(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -94,6 +100,7 @@ class TestOrderedDict(unittest.TestCase):
         od.clear()
         self.assertEqual(len(od), 0)
 
+    @skipif(version != (2, 7))
     def test_delitem(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         od = OrderedDict(pairs)
@@ -103,6 +110,7 @@ class TestOrderedDict(unittest.TestCase):
             del od['a']
         self.assertEqual(list(od.items()), pairs[:2] + pairs[3:])
 
+    @skipif(version != (2, 7))
     def test_setitem(self):
         od = OrderedDict([('d', 1), ('b', 2), ('c', 3), ('a', 4), ('e', 5)])
         od['c'] = 10           # existing element
@@ -110,6 +118,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(list(od.items()),
                          [('d', 1), ('b', 2), ('c', 10), ('a', 4), ('e', 5), ('f', 20)])
 
+    @skipif(version != (2, 7))
     def test_iterators(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -124,6 +133,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(list(reversed(od)),
                          [t[0] for t in reversed(pairs)])
 
+    @skipif(version != (2, 7))
     def test_popitem(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -134,6 +144,7 @@ class TestOrderedDict(unittest.TestCase):
             od.popitem()
         self.assertEqual(len(od), 0)
 
+    @skipif(version != (2, 7))
     def test_pop(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -158,6 +169,7 @@ class TestOrderedDict(unittest.TestCase):
         with self.assertRaises(KeyError):
             m.pop('a')
 
+    @skipif(version != (2, 7))
     def test_equality(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -173,6 +185,7 @@ class TestOrderedDict(unittest.TestCase):
         # different length implied inequality
         self.assertNotEqual(od1, OrderedDict(pairs[:-1]))
 
+    @skipif(version != (2, 7))
     def test_copying(self):
         # Check that ordered dicts are copyable, deepcopyable, picklable,
         # and have a repr/eval round-trip
@@ -197,6 +210,7 @@ class TestOrderedDict(unittest.TestCase):
             self.assertEqual(len(dup), len(od))
             self.assertEqual(type(dup), type(od))
 
+    @skipif(version != (2, 7))
     def test_yaml_linkage(self):
         # Verify that __reduce__ is setup in a way that supports PyYAML's dump() feature.
         # In yaml, lists are native but tuples are not.
@@ -206,6 +220,7 @@ class TestOrderedDict(unittest.TestCase):
         # '!!python/object/apply:__main__.OrderedDict\n- - [a, 1]\n  - [b, 2]\n'
         self.assertTrue(all(type(pair)==list for pair in od.__reduce__()[1]))
 
+    @skipif(version != (2, 7))
     def test_reduce_not_too_fat(self):
         # do not save instance dictionary if not needed
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
@@ -216,6 +231,7 @@ class TestOrderedDict(unittest.TestCase):
         # od.x = 10
         # self.assertEqual(len(od.__reduce__()), 3)
 
+    @skipif(version != (2, 7))
     def test_repr(self):
         od = OrderedDict([('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)])
         self.assertEqual(repr(od),
@@ -223,6 +239,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(eval(repr(od)), od)
         self.assertEqual(repr(OrderedDict()), "OrderedDict()")
 
+    @skipif(version != (2, 7))
     def test_repr_recursive(self):
         # See issue #9826
         od = OrderedDict.fromkeys('abc')
@@ -230,6 +247,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(repr(od),
             "OrderedDict([('a', None), ('b', None), ('c', None), ('x', ...)])")
 
+    @skipif(version != (2, 7))
     def test_setdefault(self):
         pairs = [('c', 1), ('b', 2), ('a', 3), ('d', 4), ('e', 5), ('f', 6)]
         shuffle(pairs)
@@ -248,6 +266,7 @@ class TestOrderedDict(unittest.TestCase):
                 return 0
         self.assertEqual(Missing().setdefault(5, 9), 9)
 
+    @skipif(version != (2, 7))
     def test_reinsert(self):
         # Given insert a, insert b, delete a, re-insert a,
         # verify that a is now later than b.
@@ -258,6 +277,7 @@ class TestOrderedDict(unittest.TestCase):
         od['a'] = 1
         self.assertEqual(list(od.items()), [('b', 2), ('a', 1)])
 
+    @skipif(version != (2, 7))
     def test_views(self):
         s = 'the quick brown fox jumped over a lazy dog yesterday before dawn'.split()
         od = OrderedDict.fromkeys(s)
@@ -265,6 +285,7 @@ class TestOrderedDict(unittest.TestCase):
         self.assertEqual(list(od.viewvalues()), [None for k in s])
         self.assertEqual(list(od.viewitems()), [(k, None) for k in s])
 
+    @skipif(version != (2, 7))
     def test_override_update(self):
         # Verify that subclasses can override update() without breaking __init__()
         class MyOD(OrderedDict):
@@ -278,6 +299,7 @@ if sys.version_info[:2] > (2, 6):
     class GeneralMappingTests(mapping_tests.BasicTestMappingProtocol):
         type2test = OrderedDict
 
+        @skipif(version != (2, 7))
         def test_popitem(self):
             d = self._empty_mapping()
             self.assertRaises(KeyError, d.popitem)
@@ -288,6 +310,7 @@ if sys.version_info[:2] > (2, 6):
     class SubclassMappingTests(mapping_tests.BasicTestMappingProtocol):
         type2test = MyOrderedDict
 
+        @skipif(version != (2, 7))
         def test_popitem(self):
             d = self._empty_mapping()
             self.assertRaises(KeyError, d.popitem)
