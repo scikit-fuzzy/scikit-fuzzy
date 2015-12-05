@@ -32,6 +32,7 @@ class Antecedent(FuzzyVariable):
         super(Antecedent, self).__init__(universe, label)
         self.input = None
         self.output = OrderedDict()
+        self.__name__ = 'Antecedent'
 
     def __repr__(self):
         if self.label is not None:
@@ -127,6 +128,7 @@ class Consequent(FuzzyVariable):
         self.cut_mfs = OrderedDict()
         self.output_mf = np.zeros_like(universe, dtype=np.float64)
         self.output = None
+        self.__name__ = 'Consequent'
 
     def __repr__(self):
         if self.label is not None:

@@ -51,8 +51,9 @@ class Rule(object):
 
     def __repr__(self):
         """
-        All this for a pretty printed representation of the rule...
+        Print a concise, readable summary of the fuzzy rule.
         """
+        # All this for a pretty printed representation of the rule...
         antlen = len(self.antecedents)
         conlen = len(self.consequents)
 
@@ -78,6 +79,9 @@ class Rule(object):
             self.kind.upper(), ant_str, con_str)
 
     def _chk_obj(self, var, obj):
+        """
+        Argument checking to ensure every element of ``var`` is type ``obj``.
+        """
         temp = self._iter(var)
         for element in temp:
             if not isinstance(element, obj):
@@ -93,13 +97,10 @@ class Rule(object):
             return [var, ]
         else:
             return var
-        # raise ValueError("Accepted arguments are Antecedent/"
-        #                  "Consequent or an iterable of these "
-        #                  "objects.")
 
     def _chk_kind(self, string):
         """
-        The only accepted kinds are 'or', or 'and'.
+        The only accepted kinds of fuzzy rules are 'or', or 'and'.
         """
         string = string.lower()
         if string == 'or' or string == 'and':

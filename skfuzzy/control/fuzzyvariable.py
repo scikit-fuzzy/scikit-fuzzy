@@ -55,8 +55,26 @@ class FuzzyVariable(object):
         """
         Calling variable['label'] will activate 'label' membership function.
         """
-        self.active = key
-        return self
+        if key in self.mf:
+            self.active = key
+            return self
+        else:
+            # Build a pretty list of available mf labels and raise an
+            # informative error message
+            options = ''
+            i0 = len(self.mf) - 1
+            i1 = len(self.mf) - 2
+            for i, available_key in enumerate(self.mf.iterkeys()):
+                if i == i1:
+                    options += "'" + str(available_key) + "', or "
+                elif i == i0:
+                    options += "'" + str(available_key) + "'."
+                else:
+                    options += "'" + str(available_key) + "'; "
+            raise ValueError("Membership function '{0}' does not exist for "
+                             "{1} {2}.\n"
+                             "Available options: {3}".format(
+                                 key, self.__name__, self.label, options))
 
     def __setitem__(self, key, item):
         """
@@ -184,7 +202,10 @@ class FuzzyVariable(object):
 
         # Clear existing membership functions, if any
         self.mf = OrderedDict()
-        self.output = OrderedDict()
+        if self.__name__ == 'Antecedent':
+            self.output = OrderedDict()
+        else:
+            self.output = None
 
         # Repopulate
         for name, abc in zip(names, abcs):
