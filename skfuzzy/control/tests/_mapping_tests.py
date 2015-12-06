@@ -1,8 +1,11 @@
 # a direct copy of Lib/test/mapping_tests.py from Python 2.7
 
 # tests common to dict and UserDict
-import unittest
-import UserDict
+try:
+    # python 2.6
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 import _test_support as test_support
 
 
