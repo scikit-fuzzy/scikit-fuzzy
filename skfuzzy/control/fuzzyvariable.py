@@ -51,6 +51,12 @@ class FuzzyVariable(object):
         self._id = id(self)
         self.output = None
 
+    def __repr__(self):
+        return "{0}: {1}".format(self.__name__, self.label)
+
+    def __len__(self):
+        return self.universe.size
+
     def __getitem__(self, key):
         """
         Calling variable['label'] will activate 'label' membership function.
@@ -83,21 +89,35 @@ class FuzzyVariable(object):
           variable['new_label'] = new_mf
         """
         mf = np.asarray(item)
+
         if mf.size != self.universe.size:
             raise ValueError("New membership function {0} must be equivalent "
                              "in length to the universe variable.\n"
                              "Expected {1}, got {2}.".format(
                                  key, self.universe.size, item.size))
+
+        if (mf.max() > 1. + 1e-6) or (mf.min() < 0 - 1e-6):
+            raise ValueError("Membership function {0} contains values out of "
+                             "range. Allowed range is [0, 1].".format(key))
+
+        # If above pass, add the new membership function
         self.mf[key] = item
 
     def _variable_figure_generator(self, *args, **kwargs):
+        """
+        Creates a base figure representation of this fuzzy variable.
+        """
+        # Assign plot to hidden attributes for bookkeeping in child classes
         self._fig, self._ax = plt.subplots()
         self._plots = {}
 
+        # Formatting: limits
         self._ax.set_ylim([0, 1])
         self._ax.set_xlim([self.universe.min(), self.universe.max()])
 
+        # Make the plots
         for key, value in self.mf.iteritems():
+            # Plot the active membership function (if any) heavier
             if key == self.active:
                 lw = 2
             else:
@@ -108,16 +128,18 @@ class FuzzyVariable(object):
                                              label=key,
                                              lw=lw)
 
+        # Place legend in upper left
         self._ax.legend(framealpha=0.5)
+
+        # Ticks outside the axes
         self._ax.tick_params(direction='out')
 
-        if self.label is None:
-            label = ''
-        else:
-            label = self.label
-
+        # Label the axes
         self._ax.set_ylabel('Membership')
-        self._ax.set_xlabel(label)
+        self._ax.set_xlabel(self.label)
+
+        # Not returned - child classes use these attributes in .view() methods
+        return None
 
     def automf(self, number=5, variable_type='quality', invert=False):
         """
@@ -128,12 +150,13 @@ class FuzzyVariable(object):
         number : [3, 5, 7]
             Number of membership functions to create. Must be an odd integer.
             At present, only 3, 5, or 7 are supported.
-        type : string
+        variable_type : string
             Type of variable this is. Accepted arguments are
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
         invert : bool
-            Reverses the naming order if True.
+            Reverses the naming order if True. Membership function peaks still
+            march from lowest to highest.
 
         Notes
         -----
@@ -181,17 +204,18 @@ class FuzzyVariable(object):
                      'highest']
 
         if number == 3:
-            names = names[1:6:2]
+            if variable_type.lower() == 'quality':
+                names = names[1:6:2]
+            else:
+                names = names[2:5]
         if number == 5:
             names = names[1:6]
 
         if invert is True:
             names = names[::-1]
 
-        if number != 3:
-            if number != 5:
-                if number != 7:
-                    return ValueError("Only number = 3, 5, or 7 supported.")
+        if number not in [3, 5, 7]:
+            raise ValueError("Only number = 3, 5, or 7 supported.")
 
         limits = [self.universe.min(), self.universe.max()]
         universe_range = limits[1] - limits[0]

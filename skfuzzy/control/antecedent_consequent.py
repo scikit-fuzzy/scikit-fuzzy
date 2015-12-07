@@ -23,23 +23,14 @@ class Antecedent(FuzzyVariable):
         array.
     label : string
         Name of the universe variable.
-
-    Notes
-    -----
-    Customized subclass of ``FuzzyVariable``.
     """
+    # Customized subclass of `FuzzyVariable`
     def __init__(self, universe, label):
+        """""" + Antecedent.__doc__
         super(Antecedent, self).__init__(universe, label)
         self.input = None
         self.output = OrderedDict()
         self.__name__ = 'Antecedent'
-
-    def __repr__(self):
-        if self.label is not None:
-            name = ': ' + self.label
-        else:
-            name = ' ' + id(self)
-        return "Antecedent{0}".format(name)
 
     def _chk(self):
         """
@@ -48,9 +39,8 @@ class Antecedent(FuzzyVariable):
         if (len(self.mf.keys()) is 0 or
                 self.input is None):
 
-            import warnings
-            warnings.warn("Membership function(s) and an input must be set "
-                          "before this operation is called.")
+            raise ValueError("Membership function(s) and an input must be "
+                             "set before computing.")
 
     def set_input(self, variable):
         self.input = variable
@@ -64,7 +54,6 @@ class Antecedent(FuzzyVariable):
         active : str, optional
             If provided, the firing for specific membership function
             ``'active'`` will be calculated and returned.
-
 
         Notes
         -----
@@ -122,7 +111,9 @@ class Consequent(FuzzyVariable):
     The ``label`` string chosen must be unique among Antecedents and
     Consequents in the ``ControlSystem``.
     """
+    # Customized subclass of `FuzzyVariable`
     def __init__(self, universe, label):
+        """""" + Consequent.__doc__
         super(Consequent, self).__init__(universe, label)
         self.cuts = OrderedDict()
         self.cut_mfs = OrderedDict()
@@ -130,23 +121,15 @@ class Consequent(FuzzyVariable):
         self.output = None
         self.__name__ = 'Consequent'
 
-    def __repr__(self):
-        if self.label is not None:
-            name = ': ' + self.label
-        else:
-            name = ' ' + id(self)
-        return "Consequent{0}".format(name)
-
     def _chk(self):
         """
         Guarantee a compute operation can be attempted.
         """
         if (len(self.mf.keys()) is 0 or
-                len(self.cuts) is None):
+                len(self.cuts) is 0):
 
-            import warnings
-            warnings.warn("Membership function(s) and results from at least "
-                          "one fuzzy rule must be set before computing.")
+            raise ValueError("Membership function(s) and results from at "
+                             "least one rule must be set before computing.")
 
     def set_patch(self, label, cut):
         """
@@ -163,6 +146,7 @@ class Consequent(FuzzyVariable):
         # Add a new cut if none related exist
         if label not in self.cuts:
             self.cuts[label] = cut
+
         # Update existing cut if new one is greater
         else:
             if self.cuts[label] < cut:
@@ -186,6 +170,8 @@ class Consequent(FuzzyVariable):
         --------
         SKFUZZY.DEFUZZ
         """
+        self._chk()
+
         # Build the cut output membership functions
         self.update()
 
@@ -193,6 +179,8 @@ class Consequent(FuzzyVariable):
         self.output = defuzz(self.universe, self.output_mf, mode)
 
     def update(self):
+        self._chk()
+
         # Clear prior output, if any
         self.output_mf = np.zeros_like(self.universe, dtype=np.float64)
 
@@ -214,7 +202,7 @@ class Consequent(FuzzyVariable):
 
         for label, mf_plot in self._plots.iteritems():
             # Only attempt to plot those with cuts
-            if label in self.cuts:
+            if label in self.cuts and label in self.cut_mfs:
                 # Harmonize color between mf plots and filled overlays
                 color = mf_plot[0].get_color()
                 self._cut_plots[label] = self._ax.fill_between(
