@@ -34,9 +34,10 @@ class Rule(object):
     """
     def __init__(self, antecedents=None, consequents=None, kind='or',
                  modifiers={}):
+        self._chk_kind(kind)
+        self.kind = kind.lower()
         self.antecedents = self._chk_obj(antecedents, Antecedent)
         self.consequents = self._chk_obj(consequents, Consequent)
-        self.kind = kind.lower()
         self.modifiers = modifiers
         self.graph = nx.DiGraph()
         self.graph.add_node(self)
@@ -114,7 +115,7 @@ class Rule(object):
         """
         variable_id = antecedent._id
         unique_id = ' {0}'.format(variable_id)
-        for label, mf in antecedent.mf.iteritems():
+        for label, mf in antecedent.mf.items():
             unique_label = label + unique_id
             self.graph.add_path([antecedent, unique_label])
             self.graph.node[unique_label]['mf'] = mf
@@ -132,7 +133,7 @@ class Rule(object):
         """
         variable_id = consequent._id
         unique_id = ' {0}'.format(variable_id)
-        for label, mf in consequent.mf.iteritems():
+        for label, mf in consequent.mf.items():
             unique_label = label + unique_id
             self.graph.add_path([unique_label, consequent])
             self.graph.node[unique_label]['mf'] = mf
@@ -203,7 +204,7 @@ class ControlSystem(object):
             try:
                 for rule in rules:
                     self.addrule(rule)
-            except TypeError:
+            except AttributeError or TypeError:
                 try:
                     self.addrule(rules)
                 except:
@@ -251,13 +252,13 @@ class ControlSystem(object):
         Compute the fuzzy system.
         """
         # Check if any fuzzy variables lack input values
-        for _, antecedent in self.antecedents.iteritems():
+        for _, antecedent in self.antecedents.items():
             if antecedent.input is None:
                 raise ValueError("All antecedents must have input values!")
 
         # Compute antecedents if not already computed
         # This will usually only happen once
-        for _, antecedent in self.antecedents.iteritems():
+        for _, antecedent in self.antecedents.items():
             if antecedent._id not in self._cached:
                 antecedent.compute()
                 self._cached.add(antecedent._id)
@@ -283,11 +284,11 @@ class ControlSystem(object):
         self._changed = set()
 
         # (Re)calculate only changed rules, taking inputs and capping outputs
-        for _, changed_rule in changed_rules.iteritems():
+        for _, changed_rule in changed_rules.items():
             changed_rule.compute()
 
         # Collect the results and present them as a dict
-        for _, consequent in self.consequents.iteritems():
+        for _, consequent in self.consequents.items():
             consequent.compute()
             self.output[consequent.label] = consequent.output
 
@@ -301,5 +302,5 @@ class ControlSystem(object):
             Contains key:value pairs where the key is the label for a
             connected Antecedent and the value is the input.
         """
-        for label, value in input_dict:
+        for label, value in input_dict.items():
             self.input[label] = value
