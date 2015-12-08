@@ -91,18 +91,18 @@ def test_automf3():
 
     # Test Antecedent
     ant.automf(3)
-    assert ant.mf.keys() == label3
+    assert list(ant.mf.keys()) == label3
     for arr0, arr1 in zip(ant.mf.values(), mfs3):
         tst.assert_allclose(arr0, arr1)
 
     ant.automf(3, variable_type='quant')
-    assert ant.mf.keys() == alt_label3
+    assert list(ant.mf.keys()) == alt_label3
 
     ant.automf(3, invert=True)
-    assert ant.mf.keys() == label3[::-1]
+    assert list(ant.mf.keys()) == label3[::-1]
 
     ant.automf(3, variable_type='quant', invert=True)
-    assert ant.mf.keys() == alt_label3[::-1]
+    assert list(ant.mf.keys()) == alt_label3[::-1]
 
     # Test Consequent
     mfs3b = [np.r_[1., 7/9., 5/9., 3/9., 1/9., 0., 0., 0., 0., 0.],
@@ -110,18 +110,18 @@ def test_automf3():
              np.r_[0., 0., 0., 0., 0., 1/9., 3/9., 5/9., 7/9., 1.]]
 
     con.automf(3)
-    assert con.mf.keys() == label3
+    assert list(con.mf.keys()) == label3
     for arr0, arr1 in zip(con.mf.values(), mfs3b):
         tst.assert_allclose(arr0, arr1)
 
     con.automf(3, variable_type='quant')
-    assert con.mf.keys() == alt_label3
+    assert list(con.mf.keys()) == alt_label3
 
     con.automf(3, invert=True)
-    assert con.mf.keys() == label3[::-1]
+    assert list(con.mf.keys()) == label3[::-1]
 
     con.automf(3, variable_type='quant', invert=True)
-    assert con.mf.keys() == alt_label3[::-1]
+    assert list(con.mf.keys()) == alt_label3[::-1]
 
 
 @nose.with_setup(setup)
@@ -139,18 +139,18 @@ def test_automf5():
 
     # Test Antecedent
     ant.automf(5)
-    assert ant.mf.keys() == label5
+    assert list(ant.mf.keys()) == label5
     for arr0, arr1 in zip(ant.mf.values(), mfs5):
         tst.assert_allclose(arr0, arr1)
 
     ant.automf(5, variable_type='quant')
-    assert ant.mf.keys() == alt_label5
+    assert list(ant.mf.keys()) == alt_label5
 
     ant.automf(5, invert=True)
-    assert ant.mf.keys() == label5[::-1]
+    assert list(ant.mf.keys()) == label5[::-1]
 
     ant.automf(5, variable_type='quant', invert=True)
-    assert ant.mf.keys() == alt_label5[::-1]
+    assert list(ant.mf.keys()) == alt_label5[::-1]
 
     # Test Consequent
     mfs5b = [np.r_[1., 5/9., 1/9., 0., 0., 0., 0., 0., 0., 0.],
@@ -160,18 +160,18 @@ def test_automf5():
              np.r_[0., 0., 0., 0., 0., 0., 0., 1/9., 5/9., 1.]]
 
     con.automf(5)
-    assert con.mf.keys() == label5
+    assert list(con.mf.keys()) == label5
     for arr0, arr1 in zip(con.mf.values(), mfs5b):
         tst.assert_allclose(arr0, arr1)
 
     con.automf(5, variable_type='quant')
-    assert con.mf.keys() == alt_label5
+    assert list(con.mf.keys()) == alt_label5
 
     con.automf(5, invert=True)
-    assert con.mf.keys() == label5[::-1]
+    assert list(con.mf.keys()) == label5[::-1]
 
     con.automf(5, variable_type='quant', invert=True)
-    assert con.mf.keys() == alt_label5[::-1]
+    assert list(con.mf.keys()) == alt_label5[::-1]
 
 
 @nose.with_setup(setup)
@@ -193,18 +193,18 @@ def test_automf7():
 
     # Test Antecedent
     ant.automf(7)
-    assert ant.mf.keys() == label7
+    assert list(ant.mf.keys()) == label7
     for arr0, arr1 in zip(ant.mf.values(), mfs7):
         tst.assert_allclose(arr0, arr1)
 
     ant.automf(7, variable_type='quant')
-    assert ant.mf.keys() == alt_label7
+    assert list(ant.mf.keys()) == alt_label7
 
     ant.automf(7, invert=True)
-    assert ant.mf.keys() == label7[::-1]
+    assert list(ant.mf.keys()) == label7[::-1]
 
     ant.automf(7, variable_type='quant', invert=True)
-    assert ant.mf.keys() == alt_label7[::-1]
+    assert list(ant.mf.keys()) == alt_label7[::-1]
 
     # Test Consequent
     mfs7b = [np.r_[1., 3/9., 0., 0., 0., 0., 0., 0., 0., 0.],
@@ -216,18 +216,18 @@ def test_automf7():
              np.r_[0., 0., 0., 0., 0., 0., 0., 0., 3/9., 1.]]
 
     con.automf(7)
-    assert con.mf.keys() == label7
+    assert list(con.mf.keys()) == label7
     for arr0, arr1 in zip(con.mf.values(), mfs7b):
         tst.assert_allclose(arr0, arr1)
 
     con.automf(7, variable_type='quant')
-    assert con.mf.keys() == alt_label7
+    assert list(con.mf.keys()) == alt_label7
 
     con.automf(7, invert=True)
-    assert con.mf.keys() == label7[::-1]
+    assert list(con.mf.keys()) == label7[::-1]
 
     con.automf(7, variable_type='quant', invert=True)
-    assert con.mf.keys() == alt_label7[::-1]
+    assert list(con.mf.keys()) == alt_label7[::-1]
 
 
 @nose.with_setup(setup)
@@ -250,12 +250,12 @@ def test_set_active():
     con = Consequent(universe, con_label)
 
     ant.automf(5)
-    for label in ant.mf.keys():
+    for label in list(ant.mf.keys()):
         ant[label]
         assert ant.active == label
 
     con.automf(7)
-    for label in con.mf.keys():
+    for label in list(con.mf.keys()):
         con[label]
         assert con.active == label
 
@@ -286,7 +286,7 @@ def test_add_mf():
     ant['high'] = mf1
 
     # Ensure they were added correctly
-    assert ant.mf.keys() == ['wavy', 'high']
+    assert list(ant.mf.keys()) == ['wavy', 'high']
     tst.assert_equal(ant.mf['wavy'], mf0)
     tst.assert_equal(ant.mf['high'], mf1)
 
@@ -295,7 +295,7 @@ def test_add_mf():
     con['high'] = mf1
 
     # Ensure they were added correctly
-    assert con.mf.keys() == ['wavy', 'high']
+    assert list(con.mf.keys()) == ['wavy', 'high']
     tst.assert_equal(con.mf['wavy'], mf0)
     tst.assert_equal(con.mf['high'], mf1)
 

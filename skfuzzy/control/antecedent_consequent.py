@@ -64,7 +64,7 @@ class Antecedent(FuzzyVariable):
         """
         self._chk()
         if active is None:
-            for label, value in self.mf.iteritems():
+            for label, value in self.mf.items():
                 self.output[label] = (
                     interp_membership(self.universe, value, self.input))
             return None
@@ -85,7 +85,7 @@ class Antecedent(FuzzyVariable):
                 self.compute()
 
             max_activity = 0
-            for label, activity in self.output.iteritems():
+            for label, activity in self.output.items():
                 if activity > max_activity:
                     max_activity = activity
 
@@ -185,7 +185,7 @@ class Consequent(FuzzyVariable):
         self.output_mf = np.zeros_like(self.universe, dtype=np.float64)
 
         # Build output membership function
-        for label, cut in self.cuts.iteritems():
+        for label, cut in self.cuts.items():
             self.cut_mfs[label] = np.minimum(cut, self.mf[label])
             np.maximum(self.output_mf, self.cut_mfs[label], self.output_mf)
 
@@ -200,7 +200,7 @@ class Consequent(FuzzyVariable):
         self._cut_plots = {}
         zeros = np.zeros_like(self.universe, dtype=np.float64)
 
-        for label, mf_plot in self._plots.iteritems():
+        for label, mf_plot in self._plots.items():
             # Only attempt to plot those with cuts
             if label in self.cuts and label in self.cut_mfs:
                 # Harmonize color between mf plots and filled overlays

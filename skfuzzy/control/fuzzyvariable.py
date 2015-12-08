@@ -70,7 +70,7 @@ class FuzzyVariable(object):
             options = ''
             i0 = len(self.mf) - 1
             i1 = len(self.mf) - 2
-            for i, available_key in enumerate(self.mf.iterkeys()):
+            for i, available_key in enumerate(self.mf.keys()):
                 if i == i1:
                     options += "'" + str(available_key) + "', or "
                 elif i == i0:
@@ -116,7 +116,7 @@ class FuzzyVariable(object):
         self._ax.set_xlim([self.universe.min(), self.universe.max()])
 
         # Make the plots
-        for key, value in self.mf.iteritems():
+        for key, value in self.mf.items():
             # Plot the active membership function (if any) heavier
             if key == self.active:
                 lw = 2
