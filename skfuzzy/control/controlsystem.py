@@ -252,13 +252,13 @@ class ControlSystem(object):
         Compute the fuzzy system.
         """
         # Check if any fuzzy variables lack input values
-        for _, antecedent in self.antecedents.items():
+        for antecedent in self.antecedents.values():
             if antecedent.input is None:
                 raise ValueError("All antecedents must have input values!")
 
         # Compute antecedents if not already computed
         # This will usually only happen once
-        for _, antecedent in self.antecedents.items():
+        for antecedent in self.antecedents.values():
             if antecedent._id not in self._cached:
                 antecedent.compute()
                 self._cached.add(antecedent._id)
@@ -279,16 +279,17 @@ class ControlSystem(object):
 
             for rule in connected_rules:
                 if rule not in changed_rules:
-                    changed_rules[rule] = self.rules[rule]
+                    changed_rules[rule] = rule
 
+        # Reset the hidden tracker for changed rules
         self._changed = set()
 
         # (Re)calculate only changed rules, taking inputs and capping outputs
-        for _, changed_rule in changed_rules.items():
+        for changed_rule in changed_rules.values():
             changed_rule.compute()
 
         # Collect the results and present them as a dict
-        for _, consequent in self.consequents.items():
+        for consequent in self.consequents.values():
             consequent.compute()
             self.output[consequent.label] = consequent.output
 
