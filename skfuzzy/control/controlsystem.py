@@ -274,8 +274,8 @@ class ControlSystem(object):
             for mf in connected_mfs:
                 # Pass by unconnected membership functions
                 if len(self.graph.successors(mf)) != 0:
-                    connected_rules.add(
-                        *[s._id for s in self.graph.successors(mf)])
+                    for succesor in self.graph.successors(mf):
+                        connected_rules.add(succesor)
 
             for rule in connected_rules:
                 if rule not in changed_rules:
