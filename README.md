@@ -1,5 +1,5 @@
-Readme
-======
+scikit-fuzzy
+============
 
 `scikit-fuzzy` is a fuzzy logic toolkit for SciPy.
 
@@ -11,6 +11,11 @@ Source
 ------
 
 https://github.com/scikit-fuzzy/scikit-fuzzy
+
+Documentation
+-------------
+
+The documentation of the library can be found here : http://pythonhosted.org/scikit-fuzzy
 
 Online Discussion & Mailing List
 --------------------------------
