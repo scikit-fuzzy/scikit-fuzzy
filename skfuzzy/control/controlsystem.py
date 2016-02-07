@@ -7,6 +7,7 @@ import networkx as nx
 import matplotlib.pylab as plt
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
 from .fuzzyvariable import FuzzyVariable, FuzzyVariableAdjective
+from .visualization import ControlSystemVisualizer
 
 try:
     from collections import OrderedDict
@@ -185,9 +186,7 @@ class Rule(object):
                 consequent_adj.label, final_firing)
 
     def view(self):
-        plt.figure()
-        nx.draw(self.graph)
-        plt.show()
+        ControlSystemVisualizer(self).view().show()
 
 class ControlSystem(object):
     """
@@ -326,9 +325,8 @@ class ControlSystem(object):
             self.input[label] = value
 
     def view(self):
-        plt.figure()
-        nx.draw(self.graph)
-        plt.show()
+        fig = ControlSystemVisualizer(self).view()
+        fig.show()
 
     def print_state(self):
         for v in self.fuzzy_variables:

@@ -2,6 +2,7 @@
 visualization.py : Contains classes to help with visualizing a control system
 """
 import numpy as np
+import networkx as nx
 import matplotlib.pyplot as plt
 from .. import defuzz, interp_membership
 
@@ -18,6 +19,8 @@ class FuzzyVariableVisualizer(object):
         -------
 
         """
+        from .fuzzyvariable import FuzzyVariable
+        assert isinstance(fuzzy_var, FuzzyVariable)
         self.fuzzy_var = fuzzy_var
         self.fig, self.ax = plt.subplots()
         self.plots = {}
@@ -85,3 +88,27 @@ class FuzzyVariableVisualizer(object):
         # Label the axes
         self.ax.set_ylabel('Membership')
         self.ax.set_xlabel(self.fuzzy_var.label)
+
+
+class ControlSystemVisualizer(object):
+
+    def __init__(self, control_system):
+        """
+
+        Parameters
+        ----------
+        control_system : ControlSystem
+
+        Returns
+        -------
+
+        """
+        self.ctrl = control_system
+
+
+        self.fig = plt.figure()
+        self.ax = self.fig.add_axes((0,0,1,1))
+
+    def view(self):
+        nx.draw(self.ctrl.graph, ax=self.ax)
+        return self.fig

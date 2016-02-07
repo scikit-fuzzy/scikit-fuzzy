@@ -1,7 +1,5 @@
 import numpy as np
 import skfuzzy as fuzz
-from networkx import draw
-from matplotlib.pylab import plot
 
 # New Antecedent/Consequent objects hold universe variables and membership functions
 quality = fuzz.Antecedent(np.arange(0, 11, 1), 'quality')
@@ -19,8 +17,8 @@ tip['good'] = fuzz.trimf(tip.universe, [13, 25, 25])
 
 # You can see how these look with .view()
 quality['average'].view()
-#service.view()
-#tip.view()
+service.view()
+tip.view()
 
 # Rule objects connect one or more antecedent membership functions with
 # one or more consequent membership functions, using 'or' or 'and' to combine the antecedents.
@@ -36,7 +34,7 @@ rule3 = fuzz.Rule([service['good'], quality['good']], tip['good'])
 tipping = fuzz.ControlSystem([rule1, rule2, rule3])
 
 # View the whole system
-#tipping.view()
+tipping.view()
 
 # Pass inputs to the ControlSystem using Antecedent labels with Pythonic API
 # Note: if you like passing many inputs all at once, use .inputs(dict_of_data)
@@ -66,6 +64,7 @@ ambiance.automf(3)
 
 # If service is poor and decor is not good, ambiance is poor
 rule4 = fuzz.Rule([service['poor'], decor.not_['good']], ambiance['poor'])
+rule2.view()
 
 # If ambiance is poor, tip is poor
 rule5 = fuzz.Rule(ambiance['poor'], tip['poor'])
@@ -79,7 +78,6 @@ sys2.compute()
 print sys2.output
 print ambiance.crisp_value
 sys2.view()
-from matplotlib.pylab import figure
-figure()
+sys2.print_state()
 
 a = 5
