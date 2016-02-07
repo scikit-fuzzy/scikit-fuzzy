@@ -29,22 +29,6 @@ class FuzzyVariableAdjective(object):
         self.membership_value = None
 
     @property
-    def not_(self):
-        """
-        Complement of this adjective.
-
-        Returns
-        -------
-        not self
-        """
-        lbl = "NOT-" + self.label
-        result = FuzzyVariableAdjective(lbl, 1. - self.mf)
-        if self.membership_value is not None:
-            result.membership_value = 1. - self.membership_value
-        self.parent_variable[lbl] = result
-        return result
-
-    @property
     def full_label(self):
         """Adjective with parent.  Ex: velocity['fast']"""
         if self.parent_variable is None:
@@ -100,9 +84,24 @@ class FuzzyVariable(object):
         self.label = label
         self.defuzzy_method = defuzzy_method
         self.adjectives = OrderedDict()
+
         self._id = id(self)
         self._crisp_value_accessed = False
 
+        class _NotGenerator(object):
+            def __init__(self, var):
+                self.var = var
+
+            def __getitem__(self, key):
+                # Get the positive version of the adjective
+                posadj = self.var[key]
+                lbl = "NOT-" + posadj.label
+                negadj = FuzzyVariableAdjective(lbl, 1. - posadj.mf)
+                if posadj.membership_value is not None:
+                    negadj.membership_value = 1. - posadj.membership_value
+                self.var[lbl] = negadj
+                return negadj
+        self.not_ = _NotGenerator(self)
 
     def __repr__(self):
         return "{0}: {1}".format(self.__name__, self.label)
@@ -211,6 +210,8 @@ class FuzzyVariable(object):
             np.maximum(output_mf, cut_mfs[label], output_mf)
 
         return output_mf, cut_mfs
+
+
 
     def view(self, *args, **kwargs):
         """

@@ -231,7 +231,7 @@ class ControlSystem(object):
         #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
         #  if we expose rule2 before rule1, we won't calculate correctly
         exposed_intermediaries = [] # Could also contain consequences
-        
+
         def _process_rules(rules):
             len_rules = len(rules)
             skipped_rules = []

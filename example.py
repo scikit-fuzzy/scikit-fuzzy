@@ -65,7 +65,7 @@ ambiance = fuzz.Intermediary(np.arange(0, 11, 1), 'ambiance')
 ambiance.automf(3)
 
 # If service is poor and decor is not good, ambiance is poor
-rule4 = fuzz.Rule([service['poor'], decor['good'].not_], ambiance['poor'])
+rule4 = fuzz.Rule([service['poor'], decor.not_['good']], ambiance['poor'])
 
 # If ambiance is poor, tip is poor
 rule5 = fuzz.Rule(ambiance['poor'], tip['poor'])
