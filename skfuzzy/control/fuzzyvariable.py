@@ -40,6 +40,8 @@ class FuzzyVariableAdjective(object):
     @property
     def full_label(self):
         """Adjective with parent.  Ex: velocity['fast']"""
+        if self.parent_variable is None:
+            raise ValueError("This adjective must be bound to a parent first")
         return self.parent_variable.label + "['" + self.label + "']"
 
     def view(self, *args, **kwargs):

@@ -121,18 +121,17 @@ class Rule(object):
         antecedent = antecedent_adj.parent_variable
         assert isinstance(antecedent, Antecedent)
 
-        variable_id = antecedent._id
-        unique_id = ' {0}'.format(variable_id)
+        # Connect all the adjectives for this fuzzy variable
         for label, adj in antecedent.adjectives.items():
-            unique_label = label + unique_id
+            unique_label = adj.full_label
             self.graph.add_path([antecedent, unique_label])
             self.graph.node[unique_label]['mf'] = adj.mf
             self.graph.node[unique_label]['shortlabel'] = label
             self.graph.node[unique_label]['parent'] = antecedent.label
 
-
-        self.graph.add_path([antecedent_adj.label + unique_id, self])
-        antecedent.connections[antecedent_adj.label] = self
+        # Add the connecting between the given adjective and this rule
+        self.graph.add_path([antecedent_adj.full_label, self])
+        antecedent.connections[antecedent_adj.full_label] = self
 
     def add_consequent(self, consequent_adj):
         """
@@ -142,17 +141,17 @@ class Rule(object):
         consequent = consequent_adj.parent_variable
         assert isinstance(consequent, Consequent)
 
-        variable_id = consequent._id
-        unique_id = ' {0}'.format(variable_id)
+        # Connect all the adjectives for this fuzzy variable
         for label, adj in consequent.adjectives.items():
-            unique_label = label + unique_id
+            unique_label = adj.full_label
             self.graph.add_path([unique_label, consequent])
             self.graph.node[unique_label]['mf'] = adj.mf
             self.graph.node[unique_label]['shortlabel'] = label
             self.graph.node[unique_label]['parent'] = consequent.label
 
-        self.graph.add_path([self, consequent_adj.label + unique_id])
-        consequent.connections[consequent_adj.label] = self
+        # Add the connecting between the given adjective and this rule
+        self.graph.add_path([self, consequent_adj.full_label])
+        consequent.connections[consequent_adj.full_label] = self
 
 
     def _connect(self, antecedents=None, consequents=None, kind='or',
