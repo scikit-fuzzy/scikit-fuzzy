@@ -11,6 +11,47 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
+class FuzzyVariableAdjective(object):
+    """
+    An adjective and associated member function for a fuzzy varaible.
+    For example, if one were creating a FuzzyVariable with a simple three-point
+    liker scale, three `FuzzyVariableAdjective` would be created: poor, average,
+    and good.
+    """
+
+    def __init__(self, label, membership_function):
+        self.label = label
+        self.mf = membership_function
+        self.parent_variable = None
+
+    @property
+    def not_(self):
+        """
+        Complement of this adjective.
+
+        Returns
+        -------
+        not self
+        """
+        result = FuzzyVariableAdjective(self.label, 1. - self.mf)
+        result.parent_variable = self.parent_variable
+        return result
+
+    @property
+    def full_label(self):
+        """Adjective with parent.  Ex: velocity['fast']"""
+        return self.parent_variable.label + "['" + self.label + "']"
+
+    def view(self, *args, **kwargs):
+        raise NotImplementedError()
+        # TODO: Implement this aspect of the code that was in FuzzyVariable
+        # Plot the active membership function (if any) heavier
+        if key == self.active:
+            lw = 2
+        else:
+            lw = 1
+
+
 class FuzzyVariable(object):
     """
     Base class containing universe variable & associated membership functions.
@@ -44,10 +85,9 @@ class FuzzyVariable(object):
             Unique name of the universe variable, e.g., 'food' or 'velocity'.
         """
         self.universe = np.asarray(universe)
-        self.active = None
-        self.mf = OrderedDict()
         self.label = label
         self.connections = OrderedDict()
+        self.adjectives = OrderedDict()
         self._id = id(self)
         self.output = None
 
@@ -61,16 +101,15 @@ class FuzzyVariable(object):
         """
         Calling variable['label'] will activate 'label' membership function.
         """
-        if key in self.mf:
-            self.active = key
-            return self
+        if key in self.adjectives.keys():
+            return self.adjectives[key]
         else:
             # Build a pretty list of available mf labels and raise an
             # informative error message
             options = ''
-            i0 = len(self.mf) - 1
-            i1 = len(self.mf) - 2
-            for i, available_key in enumerate(self.mf.keys()):
+            i0 = len(self.adjectives) - 1
+            i1 = len(self.adjectives) - 2
+            for i, available_key in enumerate(self.adjectives.keys()):
                 if i == i1:
                     options += "'" + str(available_key) + "', or "
                 elif i == i0:
@@ -84,24 +123,35 @@ class FuzzyVariable(object):
 
     def __setitem__(self, key, item):
         """
-        Enables new membership functions to be added with the syntax::
+        Enables new membership functions or adjectives to be added with the
+        syntax::
 
           variable['new_label'] = new_mf
         """
-        mf = np.asarray(item)
+        if isinstance(item, FuzzyVariableAdjective):
+            if item.label != key:
+                raise ValueError("Adjective's label must match new key")
+            if item.parent_variable is not None:
+                raise ValueError("Adjective must not already have a parent")
+        else:
+            # Try to create an adjective
+            item = FuzzyVariableAdjective(key, np.asarray(item))
+
+        mf = item.mf
 
         if mf.size != self.universe.size:
             raise ValueError("New membership function {0} must be equivalent "
                              "in length to the universe variable.\n"
                              "Expected {1}, got {2}.".format(
-                                 key, self.universe.size, item.size))
+                                 key, self.universe.size, mf.size))
 
         if (mf.max() > 1. + 1e-6) or (mf.min() < 0 - 1e-6):
             raise ValueError("Membership function {0} contains values out of "
                              "range. Allowed range is [0, 1].".format(key))
 
         # If above pass, add the new membership function
-        self.mf[key] = item
+        item.parent_variable = self
+        self.adjectives[key] = item
 
     def _variable_figure_generator(self, *args, **kwargs):
         """
@@ -116,17 +166,11 @@ class FuzzyVariable(object):
         self._ax.set_xlim([self.universe.min(), self.universe.max()])
 
         # Make the plots
-        for key, value in self.mf.items():
-            # Plot the active membership function (if any) heavier
-            if key == self.active:
-                lw = 2
-            else:
-                lw = 1
-
+        for key, adj in self.adjectives.items():
             self._plots[key] = self._ax.plot(self.universe,
-                                             value,
+                                             adj.mf,
                                              label=key,
-                                             lw=lw)
+                                             lw=1)
 
         # Place legend in upper left
         self._ax.legend(framealpha=0.5)
@@ -224,8 +268,8 @@ class FuzzyVariable(object):
 
         abcs = [[c - w / 2, c, c + w / 2] for c, w in zip(centers, widths)]
 
-        # Clear existing membership functions, if any
-        self.mf = OrderedDict()
+        # Clear existing adjectives, if any
+        self.adjectives = OrderedDict()
         if self.__name__ == 'Antecedent':
             self.output = OrderedDict()
         else:

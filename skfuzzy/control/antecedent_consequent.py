@@ -36,7 +36,7 @@ class Antecedent(FuzzyVariable):
         """
         Guarantee a compute operation can be attempted.
         """
-        if (len(self.mf.keys()) is 0 or
+        if (len(self.adjectives.keys()) is 0 or
                 self.input is None):
 
             raise ValueError("Membership function(s) and an input must be "
@@ -64,14 +64,14 @@ class Antecedent(FuzzyVariable):
         """
         self._chk()
         if active is None:
-            for label, value in self.mf.items():
+            for label, adj in self.adjectives.items():
                 self.output[label] = (
-                    interp_membership(self.universe, value, self.input))
+                    interp_membership(self.universe, adj.mf, self.input))
             return None
 
         else:
             return interp_membership(self.universe,
-                                     self.mf[active], self.input)
+                                     self.adjectives[active].mf, self.input)
 
     def view(self, *args, **kwargs):
         """
@@ -125,7 +125,7 @@ class Consequent(FuzzyVariable):
         """
         Guarantee a compute operation can be attempted.
         """
-        if (len(self.mf.keys()) is 0 or
+        if (len(self.adjectives.keys()) is 0 or
                 len(self.cuts) is 0):
 
             raise ValueError("Membership function(s) and results from at "
@@ -186,7 +186,7 @@ class Consequent(FuzzyVariable):
 
         # Build output membership function
         for label, cut in self.cuts.items():
-            self.cut_mfs[label] = np.minimum(cut, self.mf[label])
+            self.cut_mfs[label] = np.minimum(cut, self.adjectives[label].mf)
             np.maximum(self.output_mf, self.cut_mfs[label], self.output_mf)
 
     def view(self, *args, **kwargs):

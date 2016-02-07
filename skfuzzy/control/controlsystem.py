@@ -5,7 +5,7 @@ controlsystem.py : Contains framework for fuzzy logic control systems.
 import numpy as np
 import networkx as nx
 from .antecedent_consequent import Antecedent, Consequent
-from .fuzzyvariable import FuzzyVariable
+from .fuzzyvariable import FuzzyVariable, FuzzyVariableAdjective
 
 try:
     from collections import OrderedDict
@@ -62,10 +62,10 @@ class Rule(object):
         con_str = ''
 
         for antecedent in self.antecedents:
-            ant_str += antecedent.label + ', '
+            ant_str += antecedent.full_label + ', '
 
         for consequent in self.consequents:
-            con_str += consequent.label + ', '
+            con_str += consequent.full_label + ', '
 
         ant_str = ant_str[:-2]
         con_str = con_str[:-2]
@@ -81,12 +81,16 @@ class Rule(object):
 
     def _chk_obj(self, var, obj):
         """
-        Argument checking to ensure every element of ``var`` is type ``obj``.
+        Argument checking to ensure every adjective's parent is type ``obj``.
         """
         temp = self._iter(var)
-        for element in temp:
-            if not isinstance(element, obj):
-                raise ValueError("All elements input must be of type "
+        for adj in temp:
+            if not isinstance(adj, FuzzyVariableAdjective):
+                raise ValueError("All elements must be adjectives")
+            if adj.parent_variable is None:
+                raise ValueError("All adjectives must have a parent")
+            if not isinstance(adj.parent_variable, obj):
+                raise ValueError("All adjective's variables must be of type "
                                  "{0}".format(obj))
         return temp
 
@@ -94,7 +98,7 @@ class Rule(object):
         """
         Ensure a variable is iterable; wrap in a list if necessary.
         """
-        if issubclass(var.__class__, FuzzyVariable):
+        if issubclass(var.__class__, FuzzyVariableAdjective):
             return [var, ]
         else:
             return var
@@ -109,41 +113,47 @@ class Rule(object):
         else:
             raise ValueError("Incorrect kind. Options are 'or' or 'and'.")
 
-    def add_antecedent(self, antecedent):
+    def add_antecedent(self, antecedent_adj):
         """
         Populate the graph with a new antecedent, connecting it to this rule.
         """
+        assert isinstance(antecedent_adj, FuzzyVariableAdjective)
+        antecedent = antecedent_adj.parent_variable
+        assert isinstance(antecedent, Antecedent)
+
         variable_id = antecedent._id
         unique_id = ' {0}'.format(variable_id)
-        for label, mf in antecedent.mf.items():
+        for label, adj in antecedent.adjectives.items():
             unique_label = label + unique_id
             self.graph.add_path([antecedent, unique_label])
-            self.graph.node[unique_label]['mf'] = mf
+            self.graph.node[unique_label]['mf'] = adj.mf
             self.graph.node[unique_label]['shortlabel'] = label
             self.graph.node[unique_label]['parent'] = antecedent.label
 
-        if antecedent.active is not None:
-            self.graph.add_path([antecedent.active + unique_id, self])
-            antecedent.connections[antecedent.active] = self
-            antecedent.active = None
 
-    def add_consequent(self, consequent):
+        self.graph.add_path([antecedent_adj.label + unique_id, self])
+        antecedent.connections[antecedent_adj.label] = self
+
+    def add_consequent(self, consequent_adj):
         """
         Populate the graph with a new consequent, connecting it to this rule.
         """
+        assert isinstance(consequent_adj, FuzzyVariableAdjective)
+        consequent = consequent_adj.parent_variable
+        assert isinstance(consequent, Consequent)
+
         variable_id = consequent._id
         unique_id = ' {0}'.format(variable_id)
-        for label, mf in consequent.mf.items():
+        for label, adj in consequent.adjectives.items():
             unique_label = label + unique_id
             self.graph.add_path([unique_label, consequent])
-            self.graph.node[unique_label]['mf'] = mf
+            self.graph.node[unique_label]['mf'] = adj.mf
             self.graph.node[unique_label]['shortlabel'] = label
             self.graph.node[unique_label]['parent'] = consequent.label
 
-        if consequent.active is not None:
-            self.graph.add_path([self, consequent.active + unique_id])
-            consequent.connections[consequent.active] = self
-            consequent.active = None
+        self.graph.add_path([self, consequent_adj.label + unique_id])
+        consequent.connections[consequent_adj.label] = self
+
 
     def _connect(self, antecedents=None, consequents=None, kind='or',
                  modifiers={}):
@@ -162,8 +172,8 @@ class Rule(object):
         """
         # Calculate firing for all connected antecedents if needed
         for antecedent in self.antecedents:
-            if antecedent.output is None:
-                antecedent.compute()
+            if antecedent.parent_variable.output is None:
+                antecedent.parent_variable.compute()
 
         # Collect the firing of all input membership functions
         collected_firing = []
@@ -233,13 +243,15 @@ class ControlSystem(object):
         self.rules[id(rule)] = (rule)
 
         # Track antecedents connected to rule, deduplicate
-        for antecedent in rule.antecedents:
+        for antecedent_adj in rule.antecedents:
+            antecedent = antecedent_adj.parent_variable
             if id(antecedent) not in self.antecedents:
                 self.antecedents[id(antecedent)] = antecedent
                 self._mapping[antecedent.label] = id(antecedent)
 
         # Track consequents connected to rule, deduplicate
-        for consequent in rule.consequents:
+        for consequent_adj in rule.consequents:
+            consequent = consequent_adj.parent_variable
             if id(consequent) not in self.consequents:
                 self.consequents[id(consequent)] = consequent
                 self._mapping[consequent.label] = id(consequent)
