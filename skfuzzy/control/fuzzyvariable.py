@@ -34,7 +34,7 @@ class FuzzyVariableAdjective(object):
         """Adjective with parent.  Ex: velocity['fast']"""
         if self.parent_variable is None:
             raise ValueError("This adjective must be bound to a parent first")
-        return self.parent_variable.label + "['" + self.label + "']"
+        return self.parent_variable.label + "[" + self.label + "]"
 
     def __repr__(self):
         return self.full_label
@@ -95,7 +95,7 @@ class FuzzyVariable(object):
 
             def __getitem__(self, key):
                 # Get the positive version of the adjective
-                lbl = "NOT-" + key.label
+                lbl = "NOT-" + key
                 if lbl in self.var.adjectives.keys():
                     return self.var[lbl]
 

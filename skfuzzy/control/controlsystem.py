@@ -45,8 +45,11 @@ class Rule(object):
         self.graph = nx.DiGraph()
         self.graph.add_node(self)
         self.graph.node[self]['kind'] = kind
-        self.inputs = OrderedDict()
         self._id = id(self)
+
+        # Debugging state
+        self.collected_firing = {}
+        self.final_firing = None
 
         if self.label is None:
             self.label = "Rule %d" % self._id
@@ -164,26 +167,26 @@ class Rule(object):
         """
 
         # Collect the firing of all input membership functions
-        collected_firing = []
+        self.collected_firing = {}
         for antecedent_adj in self.graph.predecessors(self):
             mv = antecedent_adj.membership_value
             if mv is None:
                 raise Exception("Membership value missing for " +
                                 antecedent_adj.full_label)
-            collected_firing.append(mv)
+            self.collected_firing[antecedent_adj.full_label] = mv
 
         # Combine membership function firing as appropriate for this rule
         if self.kind == 'or':
-            final_firing = np.asarray(collected_firing).max()
+            self.final_firing = np.asarray(self.collected_firing.values()).max()
         elif self.kind == 'and':
-            final_firing = np.asarray(collected_firing).min()
+            self.final_firing = np.asarray(self.collected_firing.values()).min()
         else:
             raise NotImplementedError("Unexpected kind: " + self.kind)
 
         # Cap output membership function(s) in consequents
         for consequent_adj in self.graph.successors(self):
             consequent_adj.parent_variable.set_patch(
-                consequent_adj.label, final_firing)
+                consequent_adj.label, self.final_firing)
 
     def view(self):
         ControlSystemVisualizer(self).view().show()
@@ -246,7 +249,6 @@ class ControlSystem(object):
                     # We have not calculated the predecsors for this rule yet.
                     #  Skip it for now
                     skipped_rules.append(rule)
-                    print "*** moving %s to end of list" % rule
                 else:
                     yield rule
                     exposed_intermediaries.extend(self.graph.successors(rule))
@@ -304,8 +306,8 @@ class ControlSystem(object):
 
         # Calculate rules, taking inputs and accumulating outputs
         for rule in self.rules:
-            print "computing rule %s" % rule
             rule.compute()
+
 
         # Collect the results and present them as a dict
         for consequent in self.consequents:
@@ -329,7 +331,23 @@ class ControlSystem(object):
         fig.show()
 
     def print_state(self):
+        print "==========="
+        print " Variables "
+        print "==========="
         for v in self.fuzzy_variables:
             print "{0:<25} = {1}".format(v, v.crisp_value)
             for adj in v.adjectives.values():
-                print "  - {0:<15}:{1}".format(adj.label, adj.membership_value)
+                print "  - {0:<22}: {1}".format(adj.label, adj.membership_value)
+        print ""
+        print "======="
+        print " Rules "
+        print "======="
+        for r in self.rules:
+            print r
+            for fname, fvalue in r.collected_firing.items():
+                print "  - {0:<25}: {1}".format(fname, fvalue)
+
+            print "    {0:>21}-ed = {1}".format(r.kind.upper(), r.final_firing)
+            for c in r.consequents:
+                print "    {0:>24} : {1}".format(c.full_label,
+                                                 c.membership_value)
