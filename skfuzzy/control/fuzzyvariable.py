@@ -95,8 +95,11 @@ class FuzzyVariable(object):
 
             def __getitem__(self, key):
                 # Get the positive version of the adjective
+                lbl = "NOT-" + key.label
+                if lbl in self.var.adjectives.keys():
+                    return self.var[lbl]
+
                 posadj = self.var[key]
-                lbl = "NOT-" + posadj.label
                 negadj = FuzzyVariableAdjective(lbl, 1. - posadj.mf)
                 if posadj.membership_value is not None:
                     negadj.membership_value = 1. - posadj.membership_value
