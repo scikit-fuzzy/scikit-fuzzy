@@ -218,19 +218,24 @@ class FuzzyVariable(object):
         fig.show()
 
 
-    def automf(self, number=5, variable_type='quality', invert=False):
+    def automf(self, number=5, variable_type='quality', names=None,
+               invert=False):
         """
         Automatically populates the universe with membership functions.
 
         Parameters
         ----------
-        number : [3, 5, 7]
+        number : [3, 5, 7] or list of names
             Number of membership functions to create. Must be an odd integer.
             At present, only 3, 5, or 7 are supported.
+            If a list of names is given, then those are used
         variable_type : string
             Type of variable this is. Accepted arguments are
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
+        names : list
+            List of names to use when creating mebership functions (if you don't
+            want to use the default ones)
         invert : bool
             Reverses the naming order if True. Membership function peaks still
             march from lowest to highest.
@@ -263,36 +268,42 @@ class FuzzyVariable(object):
         where the names on either side of ``'average'`` are used as needed to
         create 3, 5, or 7 membership functions.
         """
-        if variable_type.lower() == 'quality':
-            names = ['dismal',
-                     'poor',
-                     'mediocre',
-                     'average',
-                     'decent',
-                     'good',
-                     'excellent']
+        if names is not None:
+            # set number based on names passed
+            number = len(names)
+            if len(number) % 2 != 1:
+                raise ValueError("Must provide an odd number of names")
         else:
-            names = ['lowest',
-                     'lower',
-                     'low',
-                     'average',
-                     'high',
-                     'higher',
-                     'highest']
+            if number not in [3, 5, 7]:
+                raise ValueError("Only number = 3, 5, or 7 supported.")
 
-        if number == 3:
             if variable_type.lower() == 'quality':
-                names = names[1:6:2]
+                names = ['dismal',
+                         'poor',
+                         'mediocre',
+                         'average',
+                         'decent',
+                         'good',
+                         'excellent']
             else:
-                names = names[2:5]
-        if number == 5:
-            names = names[1:6]
+                names = ['lowest',
+                         'lower',
+                         'low',
+                         'average',
+                         'high',
+                         'higher',
+                         'highest']
+
+            if number == 3:
+                if variable_type.lower() == 'quality':
+                    names = names[1:6:2]
+                else:
+                    names = names[2:5]
+            if number == 5:
+                names = names[1:6]
 
         if invert is True:
             names = names[::-1]
-
-        if number not in [3, 5, 7]:
-            raise ValueError("Only number = 3, 5, or 7 supported.")
 
         limits = [self.universe.min(), self.universe.max()]
         universe_range = limits[1] - limits[0]
