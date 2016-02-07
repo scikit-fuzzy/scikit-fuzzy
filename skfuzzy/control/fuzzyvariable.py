@@ -3,6 +3,8 @@ fuzzyvariable.py : Contains base fuzzy variable class.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+
+from skfuzzy import defuzz, interp_membership
 from ..membership import trimf
 
 try:
@@ -24,7 +26,7 @@ class FuzzyVariableAdjective(object):
         self.mf = membership_function
 
         self.parent_variable = None
-        self.membership_value = 0
+        self.membership_value = None
 
     @property
     def not_(self):
@@ -35,9 +37,11 @@ class FuzzyVariableAdjective(object):
         -------
         not self
         """
-        result = FuzzyVariableAdjective("NOT-" + self.label, 1. - self.mf)
-        result.parent_variable = self.parent_variable
-        result.membership_value = 1. - self.membership_value
+        lbl = "NOT-" + self.label
+        result = FuzzyVariableAdjective(lbl, 1. - self.mf)
+        if self.membership_value is not None:
+            result.membership_value = 1. - self.membership_value
+        self.parent_variable[lbl] = result
         return result
 
     @property
@@ -80,7 +84,7 @@ class FuzzyVariable(object):
     This class is designed as the base class underlying the Antecedent and
     Consequent classes, not for individual use.
     """
-    def __init__(self, universe, label):
+    def __init__(self, universe, label, defuzzy_method='centroid'):
         """
         Initialization of fuzzy variable
 
@@ -94,9 +98,11 @@ class FuzzyVariable(object):
         """
         self.universe = np.asarray(universe)
         self.label = label
+        self.defuzzy_method = defuzzy_method
         self.adjectives = OrderedDict()
         self._id = id(self)
-        self.output = None
+        self._crisp_value_accessed = False
+
 
     def __repr__(self):
         return "{0}: {1}".format(self.__name__, self.label)
@@ -144,6 +150,11 @@ class FuzzyVariable(object):
             # Try to create an adjective
             item = FuzzyVariableAdjective(key, np.asarray(item))
 
+        if self._crisp_value_accessed:
+            # TODO: Overcome this limitation
+            raise ValueError("Cannot add adjectives after accessing the "
+                             "crisp value of this variable.")
+
         mf = item.mf
 
         if mf.size != self.universe.size:
@@ -159,6 +170,78 @@ class FuzzyVariable(object):
         # If above pass, add the new membership function
         item.parent_variable = self
         self.adjectives[key] = item
+
+    @property
+    def crisp_value(self):
+        """Derive crisp value based on membership of adjectives"""
+        output_mf, cut_mfs = self._find_crisp_value()
+        if len(cut_mfs) == 0:
+            raise ValueError("No adjectives have memberships.  Make sure you "
+                             "have at least one rule connected to this "
+                             "variable and have run the rules calculation.")
+        self._crisp_value_accessed = True
+        return defuzz(self.universe, output_mf, self.defuzzy_method)
+
+    @crisp_value.setter
+    def crisp_value(self, value):
+        """Propagate crisp value down to adjectives by calculating membership"""
+        if len(self.adjectives) == 0:
+            raise ValueError("Set Adjective membership function(s) first")
+
+        for label, adj in self.adjectives.items():
+            adj.membership_value = \
+                                interp_membership(self.universe, adj.mf, value)
+        self._crisp_value_accessed = True
+
+    def _find_crisp_value(self):
+        # Check we have some adjectives
+        if len(self.adjectives.keys()) == 0:
+            raise ValueError("Set Adjective membership function(s) first")
+
+        # Initilize membership
+        output_mf = np.zeros_like(self.universe, dtype=np.float64)
+
+        # Build output membership function
+        cut_mfs = {}
+        for label, adj in self.adjectives.items():
+            cut = adj.membership_value
+            if cut is None:
+                continue # No membership defined for this adjective
+            cut_mfs[label] = np.minimum(cut, adj.mf)
+            np.maximum(output_mf, cut_mfs[label], output_mf)
+
+        return output_mf, cut_mfs
+
+    def view(self, *args, **kwargs):
+        """
+        Visualize this variable and its membership functions with Matplotlib.
+        Additionally, show the current output membership functions.
+        """
+        self._variable_figure_generator(self, *args, **kwargs)
+        output_mf, cut_mfs = self._find_crisp_value()
+
+        # Plot the output membership functions
+        cut_plots = {}
+        zeros = np.zeros_like(self.universe, dtype=np.float64)
+
+        for label, mf_plot in self._plots.items():
+            # Only attempt to plot those with cuts
+            if label in cut_mfs:
+                # Harmonize color between mf plots and filled overlays
+                color = mf_plot[0].get_color()
+                cut_plots[label] = self._ax.fill_between(
+                    self.universe, zeros, cut_mfs[label],
+                    facecolor=color, alpha=0.4)
+
+        # Plot defuzzified output if available
+        if len(cut_mfs) > 0:
+            crip_value = defuzz(self.universe, output_mf, self.defuzzy_method)
+            if crip_value is not None:
+                y = interp_membership(self.universe, output_mf, crip_value)
+                self._ax.plot([crip_value] * 2, [0, y],
+                              color='k', lw=3, label='crisp value')
+
+        self._fig.show()
 
     def _variable_figure_generator(self, *args, **kwargs):
         """

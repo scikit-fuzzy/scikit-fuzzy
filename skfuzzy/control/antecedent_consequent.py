@@ -28,72 +28,19 @@ class Antecedent(FuzzyVariable):
     def __init__(self, universe, label):
         """""" + Antecedent.__doc__
         super(Antecedent, self).__init__(universe, label)
-        self.input = None
-        self.output = OrderedDict()
         self.__name__ = 'Antecedent'
+        self._input_set = False
 
-    def _chk(self):
-        """
-        Guarantee a compute operation can be attempted.
-        """
-        if (len(self.adjectives.keys()) is 0 or
-                self.input is None):
-
-            raise ValueError("Membership function(s) and an input must be "
-                             "set before computing.")
-
-    def set_input(self, variable):
-        self.input = variable
-
-    def compute(self, active=None):
-        """
-        Computes the activity of each membership function at the current input.
-
-        Parameters
-        ----------
-        active : str, optional
-            If provided, the firing for specific membership function
-            ``'active'`` will be calculated and returned.
-
-        Notes
-        -----
-        If ``active`` is None or not provided, this method calculates the
-        firing for every membership function in the ``FuzzyVariable``,
-        storing results in dictionary form as ``FuzzyVariable.output``.
-        Nothing is returned.
-        """
-        self._chk()
-        if active is None:
-            # Calculate the fuzzy memebership of all my adjectives
-            for label, adj in self.adjectives.items():
-                adj.membership_value = interp_membership(
-                                        self.universe, adj.mf, self.input)
-                self.output[label] = adj.membership_value
+    @property
+    def input(self):
+        if not self._input_set:
             return None
+        return self.crisp_value
 
-        else:
-            return interp_membership(self.universe,
-                                     self.adjectives[active].mf, self.input)
-
-    def view(self, *args, **kwargs):
-        """
-        Visualize this antecedent and its membership functions with Matplotlib.
-        """
-        self._variable_figure_generator(self, *args, **kwargs)
-
-        # If input is available, draw the input as well
-        if self.input is not None:
-            if self.output is None:
-                self.compute()
-
-            max_activity = 0
-            for label, activity in self.output.items():
-                if activity > max_activity:
-                    max_activity = activity
-
-            self._ax.plot([self.input] * 2, [0, max_activity],
-                          color='k', lw=3, label='input')
-        self._fig.show()
+    @input.setter
+    def input(self, value):
+        self.crisp_value = value
+        self._input_set = True
 
 
 class Consequent(FuzzyVariable):
@@ -117,21 +64,15 @@ class Consequent(FuzzyVariable):
     def __init__(self, universe, label):
         """""" + Consequent.__doc__
         super(Consequent, self).__init__(universe, label)
-        self.cuts = OrderedDict()
-        self.cut_mfs = OrderedDict()
-        self.output_mf = np.zeros_like(universe, dtype=np.float64)
-        self.output = None
         self.__name__ = 'Consequent'
 
-    def _chk(self):
-        """
-        Guarantee a compute operation can be attempted.
-        """
-        if (len(self.adjectives.keys()) is 0 or
-                len(self.cuts) is 0):
+    @property
+    def output(self):
+        return self.crisp_value
 
-            raise ValueError("Membership function(s) and results from at "
-                             "least one rule must be set before computing.")
+    @FuzzyVariable.crisp_value.setter
+    def crisp_value(self):
+        raise AttributeError("Cannot set the crisp value of a Consequent")
 
     def set_patch(self, label, cut):
         """
@@ -145,81 +86,13 @@ class Consequent(FuzzyVariable):
             Floating-point value from 0 to 1 calculated from current inputs
             via a fuzzy rule.
         """
-        # Add a new cut if none related exist
-        if label not in self.cuts:
-            self.cuts[label] = cut
-
-        # Update existing cut using an accumulation method
-        #  (this is assuming ACCU = max)
-        # TODO: Multiple accumulation methods
-        else:
-            if self.cuts[label] < cut:
-                self.cuts[label] = cut
-
-    def compute(self, mode='centroid'):
-        """
-        Calculates the output of the system for this consequent variable.
-
-        Parameters
-        ----------
-        mode : string, optional
-            Defuzzification method to be used. Default: 'centroid'.
-            See ``skfuzzy.defuzz`` for additional defuzzification methods.
-
-        Notes
-        -----
-        Result is stored in the ``.output`` variable.
-
-        See Also
-        --------
-        SKFUZZY.DEFUZZ
-        """
-        self._chk()
-
-        # Build the cut output membership functions
-        self.update()
-
-        # Defuzzify
-        self.output = defuzz(self.universe, self.output_mf, mode)
-
-    def update(self):
-        self._chk()
-
-        # Clear prior output, if any
-        self.output_mf = np.zeros_like(self.universe, dtype=np.float64)
-
-        # Build output membership function
-        for label, cut in self.cuts.items():
-            self.cut_mfs[label] = np.minimum(cut, self.adjectives[label].mf)
-            np.maximum(self.output_mf, self.cut_mfs[label], self.output_mf)
-
-    def view(self, *args, **kwargs):
-        """
-        Visualize this consequent and its membership functions with Matplotlib.
-        Additionally, show the current output membership functions.
-        """
-        self._variable_figure_generator(self, *args, **kwargs)
-
-        # Plot the output membership functions
-        self._cut_plots = {}
-        zeros = np.zeros_like(self.universe, dtype=np.float64)
-
-        for label, mf_plot in self._plots.items():
-            # Only attempt to plot those with cuts
-            if label in self.cuts and label in self.cut_mfs:
-                # Harmonize color between mf plots and filled overlays
-                color = mf_plot[0].get_color()
-                self._cut_plots[label] = self._ax.fill_between(
-                    self.universe, zeros, self.cut_mfs[label],
-                    facecolor=color, alpha=0.4)
-
-        # Plot defuzzified output if available
-        if self.output is not None:
-            y = interp_membership(self.universe, self.output_mf, self.output)
-            self._ax.plot([self.output] * 2, [0, y],
-                          color='k', lw=3, label='output')
-
-        self._fig.show()
+        if self.adjectives[label].membership_value is None:
+            self.adjectives[label].membership_value = cut
+        elif self.adjectives[label].membership_value < cut:
+            # Update existing cut using an accumulation method
+            #  (this is assuming ACCU = max)
+            # TODO: Multiple accumulation methods
+            self.adjectives[label].membership_value = cut
 
 
 class Intermediary(FuzzyVariable):
@@ -230,31 +103,17 @@ class Intermediary(FuzzyVariable):
 
     def set_patch(self, label, cut):
         ### Consequent mocking
-
         if self.adjectives[label].membership_value is None:
             self.adjectives[label].membership_value = cut
-
-        # Update existing cut using an accumulation method
-        #  (this is assuming ACCU = max)
-        # TODO: Multiple accumulation methods
         elif self.adjectives[label].membership_value < cut:
+            # Update existing cut using an accumulation method
+            #  (this is assuming ACCU = max)
+            # TODO: Multiple accumulation methods
             self.adjectives[label].membership_value = cut
 
-    def compute(self, active=None):
-        # Not needed because I live purely in a fuzzy world
-        pass
-
-    def crisp_value(self, mode='centroid'):
-        # Defuzzify (useful for debugging)
-
-        # Clear prior output, if any
-        output_mf = np.zeros_like(self.universe, dtype=np.float64)
-
-        # Build output membership function
-        cut_mfs = {}
-        for label, adj in self.adjectives.items():
-            cut = adj.membership_value
-            cut_mfs[label] = np.minimum(cut, adj.mf)
-            np.maximum(output_mf, cut_mfs[label], output_mf)
-
-        return defuzz(self.universe, output_mf, mode)
+        # Update my crisp value given this new patch
+        output_mf, cut_mfs = self._find_crisp_value()
+        assert len(cut_mfs) > 0
+        crisp = defuzz(self.universe, output_mf, self.defuzzy_method)
+        self.crisp_value = crisp
+        print "%s is now %s" % (self, crisp)

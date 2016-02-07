@@ -35,13 +35,12 @@ class Rule(object):
     """
 
     def __init__(self, antecedents=None, consequents=None, kind='or',
-                 label=None, modifiers={}):
+                 label=None):
         self._chk_kind(kind)
         self.kind = kind.lower()
         self.antecedents = self._chk_obj(antecedents, Antecedent)
         self.consequents = self._chk_obj(consequents, Consequent)
         self.label = label
-        self.modifiers = modifiers
         self.graph = nx.DiGraph()
         self.graph.add_node(self)
         self.graph.node[self]['kind'] = kind
@@ -54,7 +53,7 @@ class Rule(object):
         if antecedents is None or consequents is None:
             self.connections = None
         else:
-            self._connect(antecedents, consequents, kind, modifiers)
+            self._connect(antecedents, consequents, kind)
 
     def __repr__(self):
         """
@@ -148,8 +147,7 @@ class Rule(object):
 
 
 
-    def _connect(self, antecedents=None, consequents=None, kind='or',
-                 modifiers={}):
+    def _connect(self, antecedents=None, consequents=None, kind='or'):
         """
         Private method used when arguments provided on rule instantiation.
         """
@@ -167,11 +165,11 @@ class Rule(object):
         # Collect the firing of all input membership functions
         collected_firing = []
         for antecedent_adj in self.graph.predecessors(self):
-            # Calculate firing for all connected antecedents if needed
-            if antecedent_adj.parent_variable.output is None:
-                antecedent_adj.parent_variable.compute()
-
-            collected_firing.append(antecedent_adj.membership_value)
+            mv = antecedent_adj.membership_value
+            if mv is None:
+                raise Exception("Membership value missing for " +
+                                antecedent_adj.full_label)
+            collected_firing.append(mv)
 
         # Combine membership function firing as appropriate for this rule
         if self.kind == 'or':
@@ -226,23 +224,65 @@ class ControlSystem(object):
             assert len(matches) == 1
             matches[0].input = value
 
+    @property
+    def rules(self):
+        # We have to expose the rules in the order from antecedents to
+        #  consequences.  For example if we have:
+        #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
+        #  if we expose rule2 before rule1, we won't calculate correctly
+        exposed_intermediaries = [] # Could also contain consequences
+        
+        def _process_rules(rules):
+            len_rules = len(rules)
+            skipped_rules = []
+            while len(rules) > 0:
+                rule = rules.pop(0)
+                # Check that we've exposed all inputs to this rule
+                predecesors = self.graph.predecessors(rule)
+                p2 = filter(lambda p: isinstance(p.parent_variable,
+                                                 Intermediary), predecesors)
+                p3 = filter(lambda p: p not in exposed_intermediaries, p2)
+
+                if len(p3) > 0:
+                    # We have not calculated the predecsors for this rule yet.
+                    #  Skip it for now
+                    skipped_rules.append(rule)
+                    print "*** moving %s to end of list" % rule
+                else:
+                    yield rule
+                    exposed_intermediaries.extend(self.graph.successors(rule))
+
+            if len(skipped_rules) > 0:
+                if len(skipped_rules) == len_rules:
+                    raise Exception("Unable to resolve rule execution order")
+                else:
+                    _process_rules(skipped_rules)
+            else:
+                raise StopIteration()
+
+        rules = []
+
+        for node in self.graph.nodes():
+            if isinstance(node, Rule):
+                rules.append(node)
+        return _process_rules(rules)
+
+
 
     @property
     def antecedents(self):
         for node in self.graph.nodes():
             if isinstance(node, Antecedent):
                 yield node
-
-    @property
-    def rules(self):
-        for node in self.graph.nodes():
-            if isinstance(node, Rule):
-                yield node
-
     @property
     def consequents(self):
         for node in self.graph.nodes():
             if isinstance(node, Consequent):
+                yield node
+    @property
+    def fuzzy_variables(self):
+        for node in self.graph.nodes():
+            if isinstance(node, FuzzyVariable):
                 yield node
 
     def addrule(self, rule):
@@ -262,15 +302,14 @@ class ControlSystem(object):
         for antecedent in self.antecedents:
             if antecedent.input is None:
                 raise ValueError("All antecedents must have input values!")
-            antecedent.compute()
 
         # Calculate rules, taking inputs and accumulating outputs
         for rule in self.rules:
+            print "computing rule %s" % rule
             rule.compute()
 
         # Collect the results and present them as a dict
         for consequent in self.consequents:
-            consequent.compute()
             self.output[consequent.label] = consequent.output
 
     def inputs(self, input_dict):
@@ -290,3 +329,9 @@ class ControlSystem(object):
         plt.figure()
         nx.draw(self.graph)
         plt.show()
+
+    def print_state(self):
+        for v in self.fuzzy_variables:
+            print "{0:<25} = {1}".format(v, v.crisp_value)
+            for adj in v.adjectives.values():
+                print "  - {0:<15}:{1}".format(adj.label, adj.membership_value)
