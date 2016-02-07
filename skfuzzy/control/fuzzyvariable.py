@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from skfuzzy import defuzz, interp_membership
 from ..membership import trimf
+from .visualization import FuzzyVariableVisualizer
 
 try:
     from collections import OrderedDict
@@ -39,13 +40,13 @@ class FuzzyVariableAdjective(object):
         return self.full_label
 
     def view(self, *args, **kwargs):
-        raise NotImplementedError()
-        # TODO: Implement this aspect of the code that was in FuzzyVariable
-        # Plot the active membership function (if any) heavier
-        if key == self.active:
-            lw = 2
-        else:
-            lw = 1
+        """""" + FuzzyVariableVisualizer.view.__doc__
+        viz = FuzzyVariableVisualizer(self.parent_variable)
+        viz.view(*args, **kwargs)
+
+        # Emphasize my membership function
+        viz.plots[self.label][0].set_linewidth(3)
+        viz.fig.show()
 
 
 class FuzzyVariable(object):
@@ -211,70 +212,11 @@ class FuzzyVariable(object):
 
         return output_mf, cut_mfs
 
-
-
     def view(self, *args, **kwargs):
-        """
-        Visualize this variable and its membership functions with Matplotlib.
-        Additionally, show the current output membership functions.
-        """
-        self._variable_figure_generator(self, *args, **kwargs)
-        output_mf, cut_mfs = self._find_crisp_value()
+        """""" + FuzzyVariableVisualizer.view.__doc__
+        fig = FuzzyVariableVisualizer(self).view(*args, **kwargs)
+        fig.show()
 
-        # Plot the output membership functions
-        cut_plots = {}
-        zeros = np.zeros_like(self.universe, dtype=np.float64)
-
-        for label, mf_plot in self._plots.items():
-            # Only attempt to plot those with cuts
-            if label in cut_mfs:
-                # Harmonize color between mf plots and filled overlays
-                color = mf_plot[0].get_color()
-                cut_plots[label] = self._ax.fill_between(
-                    self.universe, zeros, cut_mfs[label],
-                    facecolor=color, alpha=0.4)
-
-        # Plot defuzzified output if available
-        if len(cut_mfs) > 0:
-            crip_value = defuzz(self.universe, output_mf, self.defuzzy_method)
-            if crip_value is not None:
-                y = interp_membership(self.universe, output_mf, crip_value)
-                self._ax.plot([crip_value] * 2, [0, y],
-                              color='k', lw=3, label='crisp value')
-
-        self._fig.show()
-
-    def _variable_figure_generator(self, *args, **kwargs):
-        """
-        Creates a base figure representation of this fuzzy variable.
-        """
-        # Assign plot to hidden attributes for bookkeeping in child classes
-        self._fig, self._ax = plt.subplots()
-        self._plots = {}
-
-        # Formatting: limits
-        self._ax.set_ylim([0, 1])
-        self._ax.set_xlim([self.universe.min(), self.universe.max()])
-
-        # Make the plots
-        for key, adj in self.adjectives.items():
-            self._plots[key] = self._ax.plot(self.universe,
-                                             adj.mf,
-                                             label=key,
-                                             lw=1)
-
-        # Place legend in upper left
-        self._ax.legend(framealpha=0.5)
-
-        # Ticks outside the axes
-        self._ax.tick_params(direction='out')
-
-        # Label the axes
-        self._ax.set_ylabel('Membership')
-        self._ax.set_xlabel(self.label)
-
-        # Not returned - child classes use these attributes in .view() methods
-        return None
 
     def automf(self, number=5, variable_type='quality', invert=False):
         """

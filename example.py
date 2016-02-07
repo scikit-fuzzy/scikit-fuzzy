@@ -18,7 +18,7 @@ tip['average'] = fuzz.trimf(tip.universe, [0, 13, 25])
 tip['good'] = fuzz.trimf(tip.universe, [13, 25, 25])
 
 # You can see how these look with .view()
-#quality.view()
+quality['average'].view()
 #service.view()
 #tip.view()
 

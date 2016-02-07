@@ -71,7 +71,7 @@ class Consequent(FuzzyVariable):
         return self.crisp_value
 
     @FuzzyVariable.crisp_value.setter
-    def crisp_value(self):
+    def crisp_value(self, value):
         raise AttributeError("Cannot set the crisp value of a Consequent")
 
     def set_patch(self, label, cut):
