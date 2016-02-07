@@ -314,10 +314,6 @@ class FuzzyVariable(object):
 
         # Clear existing adjectives, if any
         self.adjectives = OrderedDict()
-        if self.__name__ == 'Antecedent':
-            self.output = OrderedDict()
-        else:
-            self.output = None
 
         # Repopulate
         for name, abc in zip(names, abcs):
