@@ -22,7 +22,9 @@ class FuzzyVariableAdjective(object):
     def __init__(self, label, membership_function):
         self.label = label
         self.mf = membership_function
+
         self.parent_variable = None
+        self.membership_value = 0
 
     @property
     def not_(self):
@@ -33,8 +35,9 @@ class FuzzyVariableAdjective(object):
         -------
         not self
         """
-        result = FuzzyVariableAdjective(self.label, 1. - self.mf)
+        result = FuzzyVariableAdjective("NOT-" + self.label, 1. - self.mf)
         result.parent_variable = self.parent_variable
+        result.membership_value = 1. - self.membership_value
         return result
 
     @property
@@ -43,6 +46,9 @@ class FuzzyVariableAdjective(object):
         if self.parent_variable is None:
             raise ValueError("This adjective must be bound to a parent first")
         return self.parent_variable.label + "['" + self.label + "']"
+
+    def __repr__(self):
+        return self.full_label
 
     def view(self, *args, **kwargs):
         raise NotImplementedError()
@@ -88,7 +94,6 @@ class FuzzyVariable(object):
         """
         self.universe = np.asarray(universe)
         self.label = label
-        self.connections = OrderedDict()
         self.adjectives = OrderedDict()
         self._id = id(self)
         self.output = None

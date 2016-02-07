@@ -64,9 +64,11 @@ class Antecedent(FuzzyVariable):
         """
         self._chk()
         if active is None:
+            # Calculate the fuzzy memebership of all my adjectives
             for label, adj in self.adjectives.items():
-                self.output[label] = (
-                    interp_membership(self.universe, adj.mf, self.input))
+                adj.membership_value = interp_membership(
+                                        self.universe, adj.mf, self.input)
+                self.output[label] = adj.membership_value
             return None
 
         else:
@@ -147,7 +149,9 @@ class Consequent(FuzzyVariable):
         if label not in self.cuts:
             self.cuts[label] = cut
 
-        # Update existing cut if new one is greater
+        # Update existing cut using an accumulation method
+        #  (this is assuming ACCU = max)
+        # TODO: Multiple accumulation methods
         else:
             if self.cuts[label] < cut:
                 self.cuts[label] = cut
@@ -216,3 +220,41 @@ class Consequent(FuzzyVariable):
                           color='k', lw=3, label='output')
 
         self._fig.show()
+
+
+class Intermediary(FuzzyVariable):
+    def __init__(self, universe, label):
+        super(Intermediary, self).__init__(universe, label)
+        self.__name__ = "Intermediary"
+
+
+    def set_patch(self, label, cut):
+        ### Consequent mocking
+
+        if self.adjectives[label].membership_value is None:
+            self.adjectives[label].membership_value = cut
+
+        # Update existing cut using an accumulation method
+        #  (this is assuming ACCU = max)
+        # TODO: Multiple accumulation methods
+        elif self.adjectives[label].membership_value < cut:
+            self.adjectives[label].membership_value = cut
+
+    def compute(self, active=None):
+        # Not needed because I live purely in a fuzzy world
+        pass
+
+    def crisp_value(self, mode='centroid'):
+        # Defuzzify (useful for debugging)
+
+        # Clear prior output, if any
+        output_mf = np.zeros_like(self.universe, dtype=np.float64)
+
+        # Build output membership function
+        cut_mfs = {}
+        for label, adj in self.adjectives.items():
+            cut = adj.membership_value
+            cut_mfs[label] = np.minimum(cut, adj.mf)
+            np.maximum(output_mf, cut_mfs[label], output_mf)
+
+        return defuzz(self.universe, output_mf, mode)
