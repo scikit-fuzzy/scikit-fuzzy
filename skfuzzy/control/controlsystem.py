@@ -6,7 +6,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pylab as plt
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
-from .fuzzyvariable import FuzzyVariable, FuzzyVariableAdjective
+from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm
 from .visualization import ControlSystemVisualizer
 
 try:
@@ -51,9 +51,6 @@ class Rule(object):
         self.collected_firing = {}
         self.final_firing = None
 
-        if self.label is None:
-            self.label = "Rule %d" % self._id
-
         if antecedents is None or consequents is None:
             self.connections = None
         else:
@@ -63,6 +60,8 @@ class Rule(object):
         """
         Print a concise, readable summary of the fuzzy rule.
         """
+        if self.label is not None:
+            return self.label
         # All this for a pretty printed representation of the rule...
         antlen = len(self.antecedents)
         conlen = len(self.consequents)
@@ -93,15 +92,15 @@ class Rule(object):
         Argument checking to ensure every adjective's parent is type ``obj``.
         """
         temp = self._iter(var)
-        for adj in temp:
-            parent = adj.parent_variable
-            if not isinstance(adj, FuzzyVariableAdjective):
-                raise ValueError("All elements must be adjectives")
+        for term in temp:
+            parent = term.parent_variable
+            if not isinstance(term, FuzzyVariableTerm):
+                raise ValueError("All elements must be terms")
             if parent is None:
-                raise ValueError("All adjectives must have a parent")
+                raise ValueError("All terms must have a parent")
             if not isinstance(parent, obj) and \
                not isinstance(parent, Intermediary):
-                raise ValueError("All adjective's variables must be of type "
+                raise ValueError("All term's variables must be of type "
                                  "{0}".format(obj))
         return temp
 
@@ -109,7 +108,7 @@ class Rule(object):
         """
         Ensure a variable is iterable; wrap in a list if necessary.
         """
-        if issubclass(var.__class__, FuzzyVariableAdjective):
+        if issubclass(var.__class__, FuzzyVariableTerm):
             return [var, ]
         else:
             return var
@@ -124,30 +123,30 @@ class Rule(object):
         else:
             raise ValueError("Incorrect kind. Options are 'or' or 'and'.")
 
-    def add_antecedent(self, antecedent_adj):
+    def add_antecedent(self, antecedent_term):
         """
         Populate the graph with a new antecedent, connecting it to this rule.
         """
-        assert isinstance(antecedent_adj, FuzzyVariableAdjective)
-        antecedent = antecedent_adj.parent_variable
+        assert isinstance(antecedent_term, FuzzyVariableTerm)
+        antecedent = antecedent_term.parent_variable
         assert isinstance(antecedent, Antecedent) or isinstance(antecedent, Intermediary)
 
-        # Antecedent -> Antecedent_Adj -> Rule
-        self.graph.add_path([antecedent, antecedent_adj])
-        self.graph.add_path([antecedent_adj, self])
+        # Antecedent -> Antecedent_Term -> Rule
+        self.graph.add_path([antecedent, antecedent_term])
+        self.graph.add_path([antecedent_term, self])
 
 
-    def add_consequent(self, consequent_adj):
+    def add_consequent(self, consequent_term):
         """
         Populate the graph with a new consequent, connecting it to this rule.
         """
-        assert isinstance(consequent_adj, FuzzyVariableAdjective)
-        consequent = consequent_adj.parent_variable
+        assert isinstance(consequent_term, FuzzyVariableTerm)
+        consequent = consequent_term.parent_variable
         assert isinstance(consequent, Consequent) or isinstance(consequent, Intermediary)
 
-        # Rule -> Consequent_Adjective -> Consequent
-        self.graph.add_path([self, consequent_adj])
-        self.graph.add_path([consequent_adj, consequent])
+        # Rule -> Consequent_Term -> Consequent
+        self.graph.add_path([self, consequent_term])
+        self.graph.add_path([consequent_term, consequent])
 
 
 
@@ -168,12 +167,12 @@ class Rule(object):
 
         # Collect the firing of all input membership functions
         self.collected_firing = {}
-        for antecedent_adj in self.graph.predecessors(self):
-            mv = antecedent_adj.membership_value
+        for antecedent_term in self.graph.predecessors(self):
+            mv = antecedent_term.membership_value
             if mv is None:
                 raise Exception("Membership value missing for " +
-                                antecedent_adj.full_label)
-            self.collected_firing[antecedent_adj.full_label] = mv
+                                antecedent_term.full_label)
+            self.collected_firing[antecedent_term.full_label] = mv
 
         # Combine membership function firing as appropriate for this rule
         if self.kind == 'or':
@@ -184,9 +183,9 @@ class Rule(object):
             raise NotImplementedError("Unexpected kind: " + self.kind)
 
         # Cap output membership function(s) in consequents
-        for consequent_adj in self.graph.successors(self):
-            consequent_adj.parent_variable.set_patch(
-                consequent_adj.label, self.final_firing)
+        for consequent_term in self.graph.successors(self):
+            consequent_term.parent_variable.set_patch(
+                consequent_term.label, self.final_firing)
 
     def view(self):
         ControlSystemVisualizer(self).view().show()
@@ -336,8 +335,8 @@ class ControlSystem(object):
         print "==========="
         for v in self.fuzzy_variables:
             print "{0:<25} = {1}".format(v, v.crisp_value)
-            for adj in v.adjectives.values():
-                print "  - {0:<22}: {1}".format(adj.label, adj.membership_value)
+            for term in v.terms.values():
+                print "  - {0:<22}: {1}".format(term.label, term.membership_value)
         print ""
         print "======="
         print " Rules "

@@ -14,11 +14,11 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
-class FuzzyVariableAdjective(object):
+class FuzzyVariableTerm(object):
     """
-    An adjective and associated member function for a fuzzy varaible.
+    An term and associated member function for a fuzzy varaible.
     For example, if one were creating a FuzzyVariable with a simple three-point
-    liker scale, three `FuzzyVariableAdjective` would be created: poor, average,
+    liker scale, three `FuzzyVariableTerm` would be created: poor, average,
     and good.
     """
 
@@ -31,9 +31,9 @@ class FuzzyVariableAdjective(object):
 
     @property
     def full_label(self):
-        """Adjective with parent.  Ex: velocity['fast']"""
+        """Term with parent.  Ex: velocity['fast']"""
         if self.parent_variable is None:
-            raise ValueError("This adjective must be bound to a parent first")
+            raise ValueError("This term must be bound to a parent first")
         return self.parent_variable.label + "[" + self.label + "]"
 
     def __repr__(self):
@@ -69,7 +69,7 @@ class FuzzyVariable(object):
     This class is designed as the base class underlying the Antecedent and
     Consequent classes, not for individual use.
     """
-    def __init__(self, universe, label, defuzzy_method='centroid'):
+    def __init__(self, universe, label, defuzzify_method='centroid'):
         """
         Initialization of fuzzy variable
 
@@ -83,8 +83,8 @@ class FuzzyVariable(object):
         """
         self.universe = np.asarray(universe)
         self.label = label
-        self.defuzzy_method = defuzzy_method
-        self.adjectives = OrderedDict()
+        self.defuzzify_method = defuzzify_method
+        self.terms = OrderedDict()
 
         self._id = id(self)
         self._crisp_value_accessed = False
@@ -94,17 +94,17 @@ class FuzzyVariable(object):
                 self.var = var
 
             def __getitem__(self, key):
-                # Get the positive version of the adjective
+                # Get the positive version of the term
                 lbl = "NOT-" + key
-                if lbl in self.var.adjectives.keys():
+                if lbl in self.var.terms.keys():
                     return self.var[lbl]
 
-                posadj = self.var[key]
-                negadj = FuzzyVariableAdjective(lbl, 1. - posadj.mf)
-                if posadj.membership_value is not None:
-                    negadj.membership_value = 1. - posadj.membership_value
-                self.var[lbl] = negadj
-                return negadj
+                posterm = self.var[key]
+                negterm = FuzzyVariableTerm(lbl, 1. - posterm.mf)
+                if posterm.membership_value is not None:
+                    negterm.membership_value = 1. - posterm.membership_value
+                self.var[lbl] = negterm
+                return negterm
         self.not_ = _NotGenerator(self)
 
     def __repr__(self):
@@ -115,17 +115,17 @@ class FuzzyVariable(object):
 
     def __getitem__(self, key):
         """
-        Calling variable['label'] will activate 'label' membership function.
+        Calling variable['label'] will return the 'label' term
         """
-        if key in self.adjectives.keys():
-            return self.adjectives[key]
+        if key in self.terms.keys():
+            return self.terms[key]
         else:
             # Build a pretty list of available mf labels and raise an
             # informative error message
             options = ''
-            i0 = len(self.adjectives) - 1
-            i1 = len(self.adjectives) - 2
-            for i, available_key in enumerate(self.adjectives.keys()):
+            i0 = len(self.terms) - 1
+            i1 = len(self.terms) - 2
+            for i, available_key in enumerate(self.terms.keys()):
                 if i == i1:
                     options += "'" + str(available_key) + "', or "
                 elif i == i0:
@@ -139,19 +139,20 @@ class FuzzyVariable(object):
 
     def __setitem__(self, key, item):
         """
-        Enables new membership functions or adjectives to be added with the
+        Enables new membership functions or term to be added with the
         syntax::
 
           variable['new_label'] = new_mf
         """
-        if isinstance(item, FuzzyVariableAdjective):
+        if isinstance(item, FuzzyVariableTerm):
             if item.label != key:
-                raise ValueError("Adjective's label must match new key")
+                raise ValueError("Term's label must match new key")
             if item.parent_variable is not None:
-                raise ValueError("Adjective must not already have a parent")
+                raise ValueError("Term must not already have a parent")
         else:
-            # Try to create an adjective
-            item = FuzzyVariableAdjective(key, np.asarray(item))
+            # Try to create a term from item, assuming it is a membership
+            # function
+            item = FuzzyVariableTerm(key, np.asarray(item))
 
         if self._crisp_value_accessed:
             # TODO: Overcome this limitation
@@ -172,45 +173,45 @@ class FuzzyVariable(object):
 
         # If above pass, add the new membership function
         item.parent_variable = self
-        self.adjectives[key] = item
+        self.terms[key] = item
 
     @property
     def crisp_value(self):
         """Derive crisp value based on membership of adjectives"""
         output_mf, cut_mfs = self._find_crisp_value()
         if len(cut_mfs) == 0:
-            raise ValueError("No adjectives have memberships.  Make sure you "
+            raise ValueError("No terms have memberships.  Make sure you "
                              "have at least one rule connected to this "
                              "variable and have run the rules calculation.")
         self._crisp_value_accessed = True
-        return defuzz(self.universe, output_mf, self.defuzzy_method)
+        return defuzz(self.universe, output_mf, self.defuzzify_method)
 
     @crisp_value.setter
     def crisp_value(self, value):
         """Propagate crisp value down to adjectives by calculating membership"""
-        if len(self.adjectives) == 0:
-            raise ValueError("Set Adjective membership function(s) first")
+        if len(self.terms) == 0:
+            raise ValueError("Set Term membership function(s) first")
 
-        for label, adj in self.adjectives.items():
+        for label, adj in self.terms.items():
             adj.membership_value = \
                                 interp_membership(self.universe, adj.mf, value)
         self._crisp_value_accessed = True
 
     def _find_crisp_value(self):
         # Check we have some adjectives
-        if len(self.adjectives.keys()) == 0:
-            raise ValueError("Set Adjective membership function(s) first")
+        if len(self.terms.keys()) == 0:
+            raise ValueError("Set term membership function(s) first")
 
         # Initilize membership
         output_mf = np.zeros_like(self.universe, dtype=np.float64)
 
         # Build output membership function
         cut_mfs = {}
-        for label, adj in self.adjectives.items():
-            cut = adj.membership_value
+        for label, term in self.terms.items():
+            cut = term.membership_value
             if cut is None:
                 continue # No membership defined for this adjective
-            cut_mfs[label] = np.minimum(cut, adj.mf)
+            cut_mfs[label] = np.minimum(cut, term.mf)
             np.maximum(output_mf, cut_mfs[label], output_mf)
 
         return output_mf, cut_mfs
@@ -316,7 +317,7 @@ class FuzzyVariable(object):
         abcs = [[c - w / 2, c, c + w / 2] for c, w in zip(centers, widths)]
 
         # Clear existing adjectives, if any
-        self.adjectives = OrderedDict()
+        self.terms = OrderedDict()
 
         # Repopulate
         for name, abc in zip(names, abcs):

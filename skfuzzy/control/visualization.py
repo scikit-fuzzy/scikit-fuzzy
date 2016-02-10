@@ -51,7 +51,7 @@ class FuzzyVariableVisualizer(object):
         # Plot defuzzified output if available
         if len(cut_mfs) > 0:
             crip_value = defuzz(self.fuzzy_var.universe, output_mf,
-                                self.fuzzy_var.defuzzy_method)
+                                self.fuzzy_var.defuzzify_method)
             if crip_value is not None:
                 y = interp_membership(self.fuzzy_var.universe,
                                       output_mf, crip_value)
@@ -67,9 +67,9 @@ class FuzzyVariableVisualizer(object):
                      self.fuzzy_var.universe.max()])
 
         # Make the plots
-        for key, adj in self.fuzzy_var.adjectives.items():
+        for key, term in self.fuzzy_var.terms.items():
             self.plots[key] = self.ax.plot(self.fuzzy_var.universe,
-                                             adj.mf,
+                                             term.mf,
                                              label=key,
                                              lw=1)
 
