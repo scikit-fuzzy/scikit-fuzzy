@@ -234,6 +234,7 @@ class ControlSystem(object):
         exposed_intermediaries = [] # Could also contain consequences
 
         def _process_rules(rules):
+            # Recursive funcion to process rules in the correct firing order
             len_rules = len(rules)
             skipped_rules = []
             while len(rules) > 0:
@@ -289,6 +290,9 @@ class ControlSystem(object):
         """
         Add a new rule to the graph.
         """
+        if not isinstance(rule, Rule):
+            raise ValueError("rule is not a Rule object")
+
         # Combine the two graphs, which may not be disjoint
         self.graph = nx.compose(self.graph, rule.graph)
 
