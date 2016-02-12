@@ -3,12 +3,50 @@ fuzzyvariable.py : Contains base fuzzy variable class.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+
+from skfuzzy import defuzz, interp_membership
 from ..membership import trimf
+from .visualization import FuzzyVariableVisualizer
 
 try:
     from collections import OrderedDict
 except ImportError:
     from .ordereddict import OrderedDict
+
+
+class FuzzyVariableTerm(object):
+    """
+    An term and associated member function for a fuzzy varaible.
+    For example, if one were creating a FuzzyVariable with a simple three-point
+    liker scale, three `FuzzyVariableTerm` would be created: poor, average,
+    and good.
+    """
+
+    def __init__(self, label, membership_function):
+        self.label = label
+        self.mf = membership_function
+
+        self.parent_variable = None
+        self.membership_value = None
+
+    @property
+    def full_label(self):
+        """Term with parent.  Ex: velocity['fast']"""
+        if self.parent_variable is None:
+            raise ValueError("This term must be bound to a parent first")
+        return self.parent_variable.label + "[" + self.label + "]"
+
+    def __repr__(self):
+        return self.full_label
+
+    def view(self, *args, **kwargs):
+        """""" + FuzzyVariableVisualizer.view.__doc__
+        viz = FuzzyVariableVisualizer(self.parent_variable)
+        viz.view(*args, **kwargs)
+
+        # Emphasize my membership function
+        viz.plots[self.label][0].set_linewidth(3)
+        viz.fig.show()
 
 
 class FuzzyVariable(object):
@@ -31,7 +69,7 @@ class FuzzyVariable(object):
     This class is designed as the base class underlying the Antecedent and
     Consequent classes, not for individual use.
     """
-    def __init__(self, universe, label):
+    def __init__(self, universe, label, defuzzify_method='centroid'):
         """
         Initialization of fuzzy variable
 
@@ -44,12 +82,30 @@ class FuzzyVariable(object):
             Unique name of the universe variable, e.g., 'food' or 'velocity'.
         """
         self.universe = np.asarray(universe)
-        self.active = None
-        self.mf = OrderedDict()
         self.label = label
-        self.connections = OrderedDict()
+        self.defuzzify_method = defuzzify_method
+        self.terms = OrderedDict()
+
         self._id = id(self)
-        self.output = None
+        self._crisp_value_accessed = False
+
+        class _NotGenerator(object):
+            def __init__(self, var):
+                self.var = var
+
+            def __getitem__(self, key):
+                # Get the positive version of the term
+                lbl = "NOT-" + key
+                if lbl in self.var.terms.keys():
+                    return self.var[lbl]
+
+                posterm = self.var[key]
+                negterm = FuzzyVariableTerm(lbl, 1. - posterm.mf)
+                if posterm.membership_value is not None:
+                    negterm.membership_value = 1. - posterm.membership_value
+                self.var[lbl] = negterm
+                return negterm
+        self.not_ = _NotGenerator(self)
 
     def __repr__(self):
         return "{0}: {1}".format(self.__name__, self.label)
@@ -59,18 +115,17 @@ class FuzzyVariable(object):
 
     def __getitem__(self, key):
         """
-        Calling variable['label'] will activate 'label' membership function.
+        Calling variable['label'] will return the 'label' term
         """
-        if key in self.mf:
-            self.active = key
-            return self
+        if key in self.terms.keys():
+            return self.terms[key]
         else:
             # Build a pretty list of available mf labels and raise an
             # informative error message
             options = ''
-            i0 = len(self.mf) - 1
-            i1 = len(self.mf) - 2
-            for i, available_key in enumerate(self.mf.keys()):
+            i0 = len(self.terms) - 1
+            i1 = len(self.terms) - 2
+            for i, available_key in enumerate(self.terms.keys()):
                 if i == i1:
                     options += "'" + str(available_key) + "', or "
                 elif i == i0:
@@ -84,76 +139,107 @@ class FuzzyVariable(object):
 
     def __setitem__(self, key, item):
         """
-        Enables new membership functions to be added with the syntax::
+        Enables new membership functions or term to be added with the
+        syntax::
 
           variable['new_label'] = new_mf
         """
-        mf = np.asarray(item)
+        if isinstance(item, FuzzyVariableTerm):
+            if item.label != key:
+                raise ValueError("Term's label must match new key")
+            if item.parent_variable is not None:
+                raise ValueError("Term must not already have a parent")
+        else:
+            # Try to create a term from item, assuming it is a membership
+            # function
+            item = FuzzyVariableTerm(key, np.asarray(item))
+
+        if self._crisp_value_accessed:
+            # TODO: Overcome this limitation
+            raise ValueError("Cannot add adjectives after accessing the "
+                             "crisp value of this variable.")
+
+        mf = item.mf
 
         if mf.size != self.universe.size:
             raise ValueError("New membership function {0} must be equivalent "
                              "in length to the universe variable.\n"
                              "Expected {1}, got {2}.".format(
-                                 key, self.universe.size, item.size))
+                                 key, self.universe.size, mf.size))
 
         if (mf.max() > 1. + 1e-6) or (mf.min() < 0 - 1e-6):
             raise ValueError("Membership function {0} contains values out of "
                              "range. Allowed range is [0, 1].".format(key))
 
         # If above pass, add the new membership function
-        self.mf[key] = item
+        item.parent_variable = self
+        self.terms[key] = item
 
-    def _variable_figure_generator(self, *args, **kwargs):
-        """
-        Creates a base figure representation of this fuzzy variable.
-        """
-        # Assign plot to hidden attributes for bookkeeping in child classes
-        self._fig, self._ax = plt.subplots()
-        self._plots = {}
+    @property
+    def crisp_value(self):
+        """Derive crisp value based on membership of adjectives"""
+        output_mf, cut_mfs = self._find_crisp_value()
+        if len(cut_mfs) == 0:
+            raise ValueError("No terms have memberships.  Make sure you "
+                             "have at least one rule connected to this "
+                             "variable and have run the rules calculation.")
+        self._crisp_value_accessed = True
+        return defuzz(self.universe, output_mf, self.defuzzify_method)
 
-        # Formatting: limits
-        self._ax.set_ylim([0, 1])
-        self._ax.set_xlim([self.universe.min(), self.universe.max()])
+    @crisp_value.setter
+    def crisp_value(self, value):
+        """Propagate crisp value down to adjectives by calculating membership"""
+        if len(self.terms) == 0:
+            raise ValueError("Set Term membership function(s) first")
 
-        # Make the plots
-        for key, value in self.mf.items():
-            # Plot the active membership function (if any) heavier
-            if key == self.active:
-                lw = 2
-            else:
-                lw = 1
+        for label, adj in self.terms.items():
+            adj.membership_value = \
+                                interp_membership(self.universe, adj.mf, value)
+        self._crisp_value_accessed = True
 
-            self._plots[key] = self._ax.plot(self.universe,
-                                             value,
-                                             label=key,
-                                             lw=lw)
+    def _find_crisp_value(self):
+        # Check we have some adjectives
+        if len(self.terms.keys()) == 0:
+            raise ValueError("Set term membership function(s) first")
 
-        # Place legend in upper left
-        self._ax.legend(framealpha=0.5)
+        # Initilize membership
+        output_mf = np.zeros_like(self.universe, dtype=np.float64)
 
-        # Ticks outside the axes
-        self._ax.tick_params(direction='out')
+        # Build output membership function
+        cut_mfs = {}
+        for label, term in self.terms.items():
+            cut = term.membership_value
+            if cut is None:
+                continue # No membership defined for this adjective
+            cut_mfs[label] = np.minimum(cut, term.mf)
+            np.maximum(output_mf, cut_mfs[label], output_mf)
 
-        # Label the axes
-        self._ax.set_ylabel('Membership')
-        self._ax.set_xlabel(self.label)
+        return output_mf, cut_mfs
 
-        # Not returned - child classes use these attributes in .view() methods
-        return None
+    def view(self, *args, **kwargs):
+        """""" + FuzzyVariableVisualizer.view.__doc__
+        fig = FuzzyVariableVisualizer(self).view(*args, **kwargs)
+        fig.show()
 
-    def automf(self, number=5, variable_type='quality', invert=False):
+
+    def automf(self, number=5, variable_type='quality', names=None,
+               invert=False):
         """
         Automatically populates the universe with membership functions.
 
         Parameters
         ----------
-        number : [3, 5, 7]
+        number : [3, 5, 7] or list of names
             Number of membership functions to create. Must be an odd integer.
             At present, only 3, 5, or 7 are supported.
+            If a list of names is given, then those are used
         variable_type : string
             Type of variable this is. Accepted arguments are
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
+        names : list
+            List of names to use when creating mebership functions (if you don't
+            want to use the default ones)
         invert : bool
             Reverses the naming order if True. Membership function peaks still
             march from lowest to highest.
@@ -186,36 +272,42 @@ class FuzzyVariable(object):
         where the names on either side of ``'average'`` are used as needed to
         create 3, 5, or 7 membership functions.
         """
-        if variable_type.lower() == 'quality':
-            names = ['dismal',
-                     'poor',
-                     'mediocre',
-                     'average',
-                     'decent',
-                     'good',
-                     'excellent']
+        if names is not None:
+            # set number based on names passed
+            number = len(names)
+            if number % 2 != 1:
+                raise ValueError("Must provide an odd number of names")
         else:
-            names = ['lowest',
-                     'lower',
-                     'low',
-                     'average',
-                     'high',
-                     'higher',
-                     'highest']
+            if number not in [3, 5, 7]:
+                raise ValueError("Only number = 3, 5, or 7 supported.")
 
-        if number == 3:
             if variable_type.lower() == 'quality':
-                names = names[1:6:2]
+                names = ['dismal',
+                         'poor',
+                         'mediocre',
+                         'average',
+                         'decent',
+                         'good',
+                         'excellent']
             else:
-                names = names[2:5]
-        if number == 5:
-            names = names[1:6]
+                names = ['lowest',
+                         'lower',
+                         'low',
+                         'average',
+                         'high',
+                         'higher',
+                         'highest']
+
+            if number == 3:
+                if variable_type.lower() == 'quality':
+                    names = names[1:6:2]
+                else:
+                    names = names[2:5]
+            if number == 5:
+                names = names[1:6]
 
         if invert is True:
             names = names[::-1]
-
-        if number not in [3, 5, 7]:
-            raise ValueError("Only number = 3, 5, or 7 supported.")
 
         limits = [self.universe.min(), self.universe.max()]
         universe_range = limits[1] - limits[0]
@@ -224,12 +316,8 @@ class FuzzyVariable(object):
 
         abcs = [[c - w / 2, c, c + w / 2] for c, w in zip(centers, widths)]
 
-        # Clear existing membership functions, if any
-        self.mf = OrderedDict()
-        if self.__name__ == 'Antecedent':
-            self.output = OrderedDict()
-        else:
-            self.output = None
+        # Clear existing adjectives, if any
+        self.terms = OrderedDict()
 
         # Repopulate
         for name, abc in zip(names, abcs):

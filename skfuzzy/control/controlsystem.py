@@ -4,8 +4,10 @@ controlsystem.py : Contains framework for fuzzy logic control systems.
 """
 import numpy as np
 import networkx as nx
-from .antecedent_consequent import Antecedent, Consequent
-from .fuzzyvariable import FuzzyVariable
+import matplotlib.pylab as plt
+from .antecedent_consequent import Antecedent, Consequent, Intermediary
+from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm
+from .visualization import ControlSystemVisualizer
 
 try:
     from collections import OrderedDict
@@ -32,28 +34,34 @@ class Rule(object):
     -----
     Boolean logic order of operations (NOT > AND > OR) is followed.
     """
+
     def __init__(self, antecedents=None, consequents=None, kind='or',
-                 modifiers={}):
+                 label=None):
         self._chk_kind(kind)
         self.kind = kind.lower()
         self.antecedents = self._chk_obj(antecedents, Antecedent)
         self.consequents = self._chk_obj(consequents, Consequent)
-        self.modifiers = modifiers
+        self.label = label
         self.graph = nx.DiGraph()
         self.graph.add_node(self)
         self.graph.node[self]['kind'] = kind
-        self.inputs = OrderedDict()
         self._id = id(self)
+
+        # Debugging state
+        self.collected_firing = {}
+        self.final_firing = None
 
         if antecedents is None or consequents is None:
             self.connections = None
         else:
-            self._connect(antecedents, consequents, kind, modifiers)
+            self._connect(antecedents, consequents, kind)
 
     def __repr__(self):
         """
         Print a concise, readable summary of the fuzzy rule.
         """
+        if self.label is not None:
+            return self.label
         # All this for a pretty printed representation of the rule...
         antlen = len(self.antecedents)
         conlen = len(self.consequents)
@@ -62,10 +70,10 @@ class Rule(object):
         con_str = ''
 
         for antecedent in self.antecedents:
-            ant_str += antecedent.label + ', '
+            ant_str += antecedent.full_label + ', '
 
         for consequent in self.consequents:
-            con_str += consequent.label + ', '
+            con_str += consequent.full_label + ', '
 
         ant_str = ant_str[:-2]
         con_str = con_str[:-2]
@@ -81,12 +89,18 @@ class Rule(object):
 
     def _chk_obj(self, var, obj):
         """
-        Argument checking to ensure every element of ``var`` is type ``obj``.
+        Argument checking to ensure every adjective's parent is type ``obj``.
         """
         temp = self._iter(var)
-        for element in temp:
-            if not isinstance(element, obj):
-                raise ValueError("All elements input must be of type "
+        for term in temp:
+            parent = term.parent_variable
+            if not isinstance(term, FuzzyVariableTerm):
+                raise ValueError("All elements must be terms")
+            if parent is None:
+                raise ValueError("All terms must have a parent")
+            if not isinstance(parent, obj) and \
+               not isinstance(parent, Intermediary):
+                raise ValueError("All term's variables must be of type "
                                  "{0}".format(obj))
         return temp
 
@@ -94,7 +108,7 @@ class Rule(object):
         """
         Ensure a variable is iterable; wrap in a list if necessary.
         """
-        if issubclass(var.__class__, FuzzyVariable):
+        if issubclass(var.__class__, FuzzyVariableTerm):
             return [var, ]
         else:
             return var
@@ -109,44 +123,34 @@ class Rule(object):
         else:
             raise ValueError("Incorrect kind. Options are 'or' or 'and'.")
 
-    def add_antecedent(self, antecedent):
+    def add_antecedent(self, antecedent_term):
         """
         Populate the graph with a new antecedent, connecting it to this rule.
         """
-        variable_id = antecedent._id
-        unique_id = ' {0}'.format(variable_id)
-        for label, mf in antecedent.mf.items():
-            unique_label = label + unique_id
-            self.graph.add_path([antecedent, unique_label])
-            self.graph.node[unique_label]['mf'] = mf
-            self.graph.node[unique_label]['shortlabel'] = label
-            self.graph.node[unique_label]['parent'] = antecedent.label
+        assert isinstance(antecedent_term, FuzzyVariableTerm)
+        antecedent = antecedent_term.parent_variable
+        assert isinstance(antecedent, Antecedent) or isinstance(antecedent, Intermediary)
 
-        if antecedent.active is not None:
-            self.graph.add_path([antecedent.active + unique_id, self])
-            antecedent.connections[antecedent.active] = self
-            antecedent.active = None
+        # Antecedent -> Antecedent_Term -> Rule
+        self.graph.add_path([antecedent, antecedent_term])
+        self.graph.add_path([antecedent_term, self])
 
-    def add_consequent(self, consequent):
+
+    def add_consequent(self, consequent_term):
         """
         Populate the graph with a new consequent, connecting it to this rule.
         """
-        variable_id = consequent._id
-        unique_id = ' {0}'.format(variable_id)
-        for label, mf in consequent.mf.items():
-            unique_label = label + unique_id
-            self.graph.add_path([unique_label, consequent])
-            self.graph.node[unique_label]['mf'] = mf
-            self.graph.node[unique_label]['shortlabel'] = label
-            self.graph.node[unique_label]['parent'] = consequent.label
+        assert isinstance(consequent_term, FuzzyVariableTerm)
+        consequent = consequent_term.parent_variable
+        assert isinstance(consequent, Consequent) or isinstance(consequent, Intermediary)
 
-        if consequent.active is not None:
-            self.graph.add_path([self, consequent.active + unique_id])
-            consequent.connections[consequent.active] = self
-            consequent.active = None
+        # Rule -> Consequent_Term -> Consequent
+        self.graph.add_path([self, consequent_term])
+        self.graph.add_path([consequent_term, consequent])
 
-    def _connect(self, antecedents=None, consequents=None, kind='or',
-                 modifiers={}):
+
+
+    def _connect(self, antecedents=None, consequents=None, kind='or'):
         """
         Private method used when arguments provided on rule instantiation.
         """
@@ -160,51 +164,47 @@ class Rule(object):
         """
         Execute this fuzzy rule.
         """
-        # Calculate firing for all connected antecedents if needed
-        for antecedent in self.antecedents:
-            if antecedent.output is None:
-                antecedent.compute()
 
         # Collect the firing of all input membership functions
-        collected_firing = []
-        for mf in self.graph.predecessors(self):
-            mf_label = self.graph.node[mf]['shortlabel']
-            collected_firing.append(
-                self.graph.predecessors(mf)[0].output[mf_label])
+        self.collected_firing = {}
+        for antecedent_term in self.graph.predecessors(self):
+            mv = antecedent_term.membership_value
+            if mv is None:
+                raise Exception("Membership value missing for " +
+                                antecedent_term.full_label)
+            self.collected_firing[antecedent_term.full_label] = mv
 
         # Combine membership function firing as appropriate for this rule
         if self.kind == 'or':
-            final_firing = np.asarray(collected_firing).max()
+            self.final_firing = np.asarray(self.collected_firing.values()).max()
+        elif self.kind == 'and':
+            self.final_firing = np.asarray(self.collected_firing.values()).min()
         else:
-            final_firing = np.asarray(collected_firing).min()
+            raise NotImplementedError("Unexpected kind: " + self.kind)
 
         # Cap output membership function(s) in consequents
-        for mf in self.graph.successors(self):
-            self.graph.successors(mf)[0].set_patch(
-                self.graph.node[mf]['shortlabel'], final_firing)
+        for consequent_term in self.graph.successors(self):
+            consequent_term.parent_variable.set_patch(
+                consequent_term.label, self.final_firing)
 
+    def view(self):
+        ControlSystemVisualizer(self).view().show()
 
 class ControlSystem(object):
     """
     Fuzzy Control System
     """
     def __init__(self, rules=None):
-        self.antecedents = OrderedDict()
-        self.consequents = OrderedDict()
         self.graph = nx.DiGraph()
-        self.rules = OrderedDict()
-        self._mapping = OrderedDict()
         self.input = self._InputAcceptor(self)
-        self._changed = set()
-        self._cached = set()
         self.output = OrderedDict()
 
         # Construct a system from provided rules, if given
         if rules is not None:
-            try:
+            if hasattr(rules, '__iter__'):
                 for rule in rules:
                     self.addrule(rule)
-            except AttributeError or TypeError:
+            else:
                 try:
                     self.addrule(rules)
                 except:
@@ -213,36 +213,85 @@ class ControlSystem(object):
 
     class _InputAcceptor(object):
         def __init__(self, system):
+            assert isinstance(system, ControlSystem)
             self.system = system
 
         def __setitem__(self, key, value):
-            uid = self.system._mapping[key]
-            self.system.antecedents[uid].input = value
-            self.system._changed.add(uid)
-            try:
-                self.system._cached.remove(uid)
-            except KeyError:
-                # This wasn't previously cached, that's OK
-                pass
+            # Find the antecedent we should set the input for
+            matches = [n for n in self.system.graph.nodes()
+                               if isinstance(n, Antecedent) and n.label == key]
+            if len(matches) == 0:
+                raise ValueError("Unexpected input: " + key)
+            assert len(matches) == 1
+            matches[0].input = value
+
+    @property
+    def rules(self):
+        # We have to expose the rules in the order from antecedents to
+        #  consequences.  For example if we have:
+        #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
+        #  if we expose rule2 before rule1, we won't calculate correctly
+        exposed_intermediaries = [] # Could also contain consequences
+
+        def _process_rules(rules):
+            # Recursive funcion to process rules in the correct firing order
+            len_rules = len(rules)
+            skipped_rules = []
+            while len(rules) > 0:
+                rule = rules.pop(0)
+                # Check that we've exposed all inputs to this rule
+                predecesors = self.graph.predecessors(rule)
+                p2 = filter(lambda p: isinstance(p.parent_variable,
+                                                 Intermediary), predecesors)
+                p3 = filter(lambda p: p not in exposed_intermediaries, p2)
+
+                if len(p3) > 0:
+                    # We have not calculated the predecsors for this rule yet.
+                    #  Skip it for now
+                    skipped_rules.append(rule)
+                else:
+                    yield rule
+                    exposed_intermediaries.extend(self.graph.successors(rule))
+
+            if len(skipped_rules) > 0:
+                if len(skipped_rules) == len_rules:
+                    raise Exception("Unable to resolve rule execution order")
+                else:
+                    _process_rules(skipped_rules)
+            else:
+                raise StopIteration()
+
+        rules = []
+
+        for node in self.graph.nodes():
+            if isinstance(node, Rule):
+                rules.append(node)
+        return _process_rules(rules)
+
+
+
+    @property
+    def antecedents(self):
+        for node in self.graph.nodes():
+            if isinstance(node, Antecedent):
+                yield node
+    @property
+    def consequents(self):
+        for node in self.graph.nodes():
+            if isinstance(node, Consequent):
+                yield node
+    @property
+    def fuzzy_variables(self):
+        for node in self.graph.nodes():
+            if isinstance(node, FuzzyVariable):
+                yield node
 
     def addrule(self, rule):
         """
         Add a new rule to the graph.
         """
-        # Add rule to self.rules, extract and track other needed info
-        self.rules[id(rule)] = (rule)
-
-        # Track antecedents connected to rule, deduplicate
-        for antecedent in rule.antecedents:
-            if id(antecedent) not in self.antecedents:
-                self.antecedents[id(antecedent)] = antecedent
-                self._mapping[antecedent.label] = id(antecedent)
-
-        # Track consequents connected to rule, deduplicate
-        for consequent in rule.consequents:
-            if id(consequent) not in self.consequents:
-                self.consequents[id(consequent)] = consequent
-                self._mapping[consequent.label] = id(consequent)
+        if not isinstance(rule, Rule):
+            raise ValueError("rule is not a Rule object")
 
         # Combine the two graphs, which may not be disjoint
         self.graph = nx.compose(self.graph, rule.graph)
@@ -251,46 +300,20 @@ class ControlSystem(object):
         """
         Compute the fuzzy system.
         """
-        # Check if any fuzzy variables lack input values
-        for antecedent in self.antecedents.values():
+        # TODO: Tracking and caching
+
+        # Check if any fuzzy variables lack input values and fuzzyfy inputs
+        for antecedent in self.antecedents:
             if antecedent.input is None:
                 raise ValueError("All antecedents must have input values!")
 
-        # Compute antecedents if not already computed
-        # This will usually only happen once
-        for antecedent in self.antecedents.values():
-            if antecedent._id not in self._cached:
-                antecedent.compute()
-                self._cached.add(antecedent._id)
+        # Calculate rules, taking inputs and accumulating outputs
+        for rule in self.rules:
+            rule.compute()
 
-        # Figure out which values changed, and what rules they affected
-        changed_rules = OrderedDict()
-        for changed in self._changed:
-
-            # Find connected rules
-            changed_antecedent = self.antecedents[changed]
-            connected_mfs = self.graph.successors(changed_antecedent)
-            connected_rules = set()
-            for mf in connected_mfs:
-                # Pass by unconnected membership functions
-                if len(self.graph.successors(mf)) != 0:
-                    for succesor in self.graph.successors(mf):
-                        connected_rules.add(succesor)
-
-            for rule in connected_rules:
-                if rule not in changed_rules:
-                    changed_rules[rule] = rule
-
-        # Reset the hidden tracker for changed rules
-        self._changed = set()
-
-        # (Re)calculate only changed rules, taking inputs and capping outputs
-        for changed_rule in changed_rules.values():
-            changed_rule.compute()
 
         # Collect the results and present them as a dict
-        for consequent in self.consequents.values():
-            consequent.compute()
+        for consequent in self.consequents:
             self.output[consequent.label] = consequent.output
 
     def inputs(self, input_dict):
@@ -305,3 +328,29 @@ class ControlSystem(object):
         """
         for label, value in input_dict.items():
             self.input[label] = value
+
+    def view(self):
+        fig = ControlSystemVisualizer(self).view()
+        fig.show()
+
+    def print_state(self):
+        print "==========="
+        print " Variables "
+        print "==========="
+        for v in self.fuzzy_variables:
+            print "{0:<25} = {1}".format(v, v.crisp_value)
+            for term in v.terms.values():
+                print "  - {0:<22}: {1}".format(term.label, term.membership_value)
+        print ""
+        print "======="
+        print " Rules "
+        print "======="
+        for r in self.rules:
+            print r
+            for fname, fvalue in r.collected_firing.items():
+                print "  - {0:<25}: {1}".format(fname, fvalue)
+
+            print "    {0:>21}-ed = {1}".format(r.kind.upper(), r.final_firing)
+            for c in r.consequents:
+                print "    {0:>24} : {1}".format(c.full_label,
+                                                 c.membership_value)

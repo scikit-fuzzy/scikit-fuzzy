@@ -24,3 +24,6 @@
 
 - Guilherme Castelão
   Minor bugfix on plot_tipping_problem.py
+
+- Jason Sexauer
+  Enhancements to ``control`` package
