@@ -6,8 +6,9 @@ import numpy as np
 import scipy as sp
 from PIL import Image
 import six
+import networkx
 
-for m in (np, sp, Image, six):
+for m in (np, sp, Image, six, networkx):
     if not m is None:
         if m is Image:
             print('PIL'.rjust(10), ' ', Image.VERSION)

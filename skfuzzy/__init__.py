@@ -59,3 +59,8 @@ __all__.extend(_defuzz.__all__)
 import skfuzzy.image as _image
 from skfuzzy.image import *
 __all__.extend(_image.__all__)
+
+# Fuzzy control system subpackage
+import skfuzzy.control as _control
+from skfuzzy.control import *
+__all__.extend(_control.__all__)
