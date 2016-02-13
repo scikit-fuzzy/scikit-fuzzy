@@ -8,6 +8,7 @@ import matplotlib.pylab as plt
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
 from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm
 from .visualization import ControlSystemVisualizer
+from .rule import Rule, WeightedConsequent
 
 try:
     from collections import OrderedDict
@@ -15,7 +16,7 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
-class Rule(object):
+class OLD_Rule(object):
     """
     Define a new fuzzzy rule relating universe variables in memory.
 
@@ -281,6 +282,11 @@ class ControlSystem(object):
             if isinstance(node, Consequent):
                 yield node
     @property
+    def intermediaries(self):
+        for node in self.graph.nodes():
+            if isinstance(node, Intermediary):
+                yield node
+    @property
     def fuzzy_variables(self):
         for node in self.graph.nodes():
             if isinstance(node, FuzzyVariable):
@@ -334,23 +340,52 @@ class ControlSystem(object):
         fig.show()
 
     def print_state(self):
-        print "==========="
-        print " Variables "
-        print "==========="
-        for v in self.fuzzy_variables:
-            print "{0:<25} = {1}".format(v, v.crisp_value)
+        print "============="
+        print " Antecedents "
+        print "============="
+        for v in self.antecedents:
+            print "{0:<35} = {1}".format(v, v.crisp_value)
             for term in v.terms.values():
-                print "  - {0:<22}: {1}".format(term.label, term.membership_value)
+                print "  - {0:<32}: {1}".format(term.label, term.membership_value)
         print ""
         print "======="
         print " Rules "
         print "======="
-        for r in self.rules:
-            print r
-            for fname, fvalue in r.collected_firing.items():
-                print "  - {0:<25}: {1}".format(fname, fvalue)
+        rule_number = {}
+        for rn, r in enumerate(self.rules):
+            assert isinstance(r, Rule)
+            rule_number[r] = "RULE #%d" % rn
+            print "RULE #%d:\n  %s\n" % (rn, r)
 
-            print "    {0:>21}-ed = {1}".format(r.kind.upper(), r.final_firing)
-            for c in r.consequents:
-                print "    {0:>24} : {1}".format(c.full_label,
-                                                 c.membership_value)
+            print "  Aggregation (IF-clause):"
+            for term in r.antecedent_terms:
+                assert isinstance(term, FuzzyVariableTerm)
+                print "  - {0:<45}: {1}".format(term.full_label,
+                                                term.membership_value)
+            print "    {0:>44} = {1}".format(r.antecedent, r.aggregate_firing)
+
+            print "  Activation (THEN-clause):"
+            for c in r.consequent:
+                assert isinstance(c, WeightedConsequent)
+                print "    {0:>44} : {1}".format(c.term.full_label,
+                                                 c.activation)
+            print ""
+        print ""
+
+        print "=============================="
+        print " Intermediaries and Conquests "
+        print "=============================="
+        both = list(self.consequents) + list(self.intermediaries)
+        for c in both:
+            print "{0:<36} = {1}".format(c, c.crisp_value)
+
+            for term in c.terms.values():
+                print "  %s:" % term.label
+                for cut_rule, cut_value in term.cuts.items():
+                    if cut_rule not in rule_number.keys(): continue
+                    print "    {0:>32} : {1}".format(rule_number[cut_rule],
+                                                     cut_value)
+                accu = "Accumulate using %s" % c.accumulation_method.func_name
+                print "    {0:>32} : {1}".format(accu,
+                                                term.membership_value)
+            print ""

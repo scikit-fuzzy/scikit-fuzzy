@@ -25,9 +25,9 @@ tip.view()
 #   * rule1: "If food is poor OR services is poor, then tip will be poor
 #   * rule2: "If service is average, then tip will be average
 #   * rule3: "If service is good OR food is good, then tip will be good
-rule1 = fuzz.Rule([quality['poor'], service['poor']], tip['poor'], kind='or')
+rule1 = fuzz.Rule(quality['poor'] | service['poor'], tip['poor'])
 rule2 = fuzz.Rule(service['average'], tip['average'])
-rule3 = fuzz.Rule([service['good'], quality['good']], tip['good'])
+rule3 = fuzz.Rule(service['good'] | quality['good'], tip['good'])
 
 # Create a new ControlSystem with these rules added
 # Note: it is possible to create an empty ControlSystem() and build it up interactively.
@@ -63,7 +63,7 @@ ambiance = fuzz.Intermediary(np.arange(0, 11, 1), 'ambiance')
 ambiance.automf(3)
 
 # If service is poor and decor is not good, ambiance is poor
-rule4 = fuzz.Rule([service['poor'], decor.not_['good']], ambiance['poor'])
+rule4 = fuzz.Rule(service['poor'] & decor.not_['good'], ambiance['poor'])
 rule2.view()
 
 # If ambiance is poor, tip is poor

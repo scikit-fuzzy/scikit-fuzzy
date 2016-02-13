@@ -2,6 +2,7 @@
 fuzzyvariable.py : Contains base fuzzy variable class.
 """
 import numpy as np
+import networkx as nx
 import matplotlib.pyplot as plt
 
 from skfuzzy import defuzz, interp_membership
@@ -23,11 +24,14 @@ class FuzzyVariableTerm(object):
     """
 
     def __init__(self, label, membership_function):
+        super(FuzzyVariableTerm, self).__init__()
         self.label = label
         self.mf = membership_function
 
         self.parent_variable = None
         self.membership_value = None
+
+        self.cuts = {}
 
     @property
     def full_label(self):
@@ -36,8 +40,20 @@ class FuzzyVariableTerm(object):
             raise ValueError("This term must be bound to a parent first")
         return self.parent_variable.label + "[" + self.label + "]"
 
-    def __repr__(self):
-        return self.full_label
+    def accumulate_cut(self, rule, value):
+
+        # Find new membership value
+        if self.membership_value is None:
+            assert len(self.cuts) == 0, "Membership value already set"
+            self.membership_value = value
+        else:
+            # Use the accumulation method of variable to determine
+            #  how to to handle multiple cuts
+            accu = self.parent_variable.accumulation_method
+            self.membership_value = accu(value, self.membership_value)
+
+        self.cuts[rule] = value
+
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
@@ -47,6 +63,88 @@ class FuzzyVariableTerm(object):
         # Emphasize my membership function
         viz.plots[self.label][0].set_linewidth(3)
         viz.fig.show()
+
+    def __repr__(self):
+        return self.full_label
+
+    def __and__(self, other):
+        if not isinstance(other, FuzzyVariableTerm) \
+                or isinstance(other, FuzzyVariableTermAggregate):
+            raise ValueError("Can only construct 'AND' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'and')
+
+    def __or__(self, other):
+        if not isinstance(other, FuzzyVariableTerm) \
+                or isinstance(other, FuzzyVariableTermAggregate):
+            raise ValueError("Can only construct 'OR' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'or')
+
+class FuzzyAggregationMethod(object):
+    def __init__(self, and_func=min, or_func=max):
+        # Default and to OR = max and AND = min
+        self.and_agg_func = and_func
+        self.or_agg_func = or_func
+
+
+class FuzzyVariableTermAggregate(object):
+    """
+    Used to track the creation of AND and OR clauses used when building
+    the antecedent of a rule.
+    """
+
+    def __init__(self, term1, term2, kind):
+        assert isinstance(term1, FuzzyVariableTerm) \
+               or isinstance(term1, FuzzyVariableTermAggregate)
+        assert isinstance(term2, FuzzyVariableTerm) \
+               or isinstance(term1, FuzzyVariableTermAggregate)
+        assert kind in ('and','or')
+        self.term1 = term1
+        self.term2 = term2
+        self.kind = kind
+        self._agg_method = FuzzyAggregationMethod()
+
+    def __repr__(self):
+        def _term_to_str(term):
+            if isinstance(term, FuzzyVariableTerm):
+                return term.full_label
+            elif isinstance(term, FuzzyVariableTermAggregate):
+                return "(%s)" % term
+
+        return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
+                             _term_to_str(self.term2))
+
+    @property
+    def agg_method(self):
+        return self._agg_method
+    @agg_method.setter
+    def agg_method(self, value):
+        if not isinstance(value, FuzzyAggregationMethod):
+            raise ValueError("Expected FuzzyAggregationMethod")
+        self._agg_method = value
+
+        # Propegate agg method down to all agg terms below me
+        for term in (self.term1, self.term2):
+            if isinstance(term, FuzzyVariableTermAggregate):
+                term.agg_method = value
+
+
+    @property
+    def membership_value(self):
+        """Perform aggregation to determine membership"""
+        if self.kind == 'and':
+            return self.agg_method.and_agg_func(self.term1.membership_value,
+                                                self.term2.membership_value)
+        elif self.kind == 'or':
+            return self.agg_method.or_agg_func(self.term1.membership_value,
+                                               self.term2.membership_value)
+        else:
+            raise NotImplementedError()
+
+
 
 
 class FuzzyVariable(object):
@@ -192,9 +290,9 @@ class FuzzyVariable(object):
         if len(self.terms) == 0:
             raise ValueError("Set Term membership function(s) first")
 
-        for label, adj in self.terms.items():
-            adj.membership_value = \
-                                interp_membership(self.universe, adj.mf, value)
+        for label, term in self.terms.items():
+            term.membership_value = \
+                                interp_membership(self.universe, term.mf, value)
         self._crisp_value_accessed = True
 
     def _find_crisp_value(self):
@@ -206,15 +304,15 @@ class FuzzyVariable(object):
         output_mf = np.zeros_like(self.universe, dtype=np.float64)
 
         # Build output membership function
-        cut_mfs = {}
+        term_mfs = {}
         for label, term in self.terms.items():
             cut = term.membership_value
             if cut is None:
                 continue # No membership defined for this adjective
-            cut_mfs[label] = np.minimum(cut, term.mf)
-            np.maximum(output_mf, cut_mfs[label], output_mf)
+            term_mfs[label] = np.minimum(cut, term.mf)
+            np.maximum(output_mf, term_mfs[label], output_mf)
 
-        return output_mf, cut_mfs
+        return output_mf, term_mfs
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__

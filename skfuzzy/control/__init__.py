@@ -11,4 +11,5 @@ __all__ = ['Antecedent',
            ]
 
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
-from .controlsystem import Rule, ControlSystem
+from .controlsystem import ControlSystem
+from .rule import Rule

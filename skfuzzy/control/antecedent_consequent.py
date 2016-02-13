@@ -66,6 +66,9 @@ class Consequent(FuzzyVariable):
         super(Consequent, self).__init__(universe, label)
         self.__name__ = 'Consequent'
 
+        # Default accumulation method is to take the max of any cut
+        self.accumulation_method = np.max
+
     @property
     def output(self):
         return self.crisp_value
@@ -74,25 +77,6 @@ class Consequent(FuzzyVariable):
     def crisp_value(self, value):
         raise AttributeError("Cannot set the crisp value of a Consequent")
 
-    def set_patch(self, label, cut):
-        """
-        Input method from a fuzzy rule on a consequent membership function.
-
-        Parameters
-        ----------
-        label : string
-            Memebership function the rule is associated with.
-        cut : float
-            Floating-point value from 0 to 1 calculated from current inputs
-            via a fuzzy rule.
-        """
-        if self.terms[label].membership_value is None:
-            self.terms[label].membership_value = cut
-        elif self.terms[label].membership_value < cut:
-            # Update existing cut using an accumulation method
-            #  (this is assuming ACCU = max)
-            # TODO: Multiple accumulation methods
-            self.terms[label].membership_value = cut
 
 
 class Intermediary(FuzzyVariable):
@@ -100,20 +84,6 @@ class Intermediary(FuzzyVariable):
         super(Intermediary, self).__init__(universe, label)
         self.__name__ = "Intermediary"
 
+        # Default accumulation method to max
+        self.accumulation_method = np.max
 
-    def set_patch(self, label, cut):
-        ### Consequent mocking
-        if self.terms[label].membership_value is None:
-            self.terms[label].membership_value = cut
-        elif self.terms[label].membership_value < cut:
-            # Update existing cut using an accumulation method
-            #  (this is assuming ACCU = max)
-            # TODO: Multiple accumulation methods
-            self.terms[label].membership_value = cut
-
-        # Update my crisp value given this new patch
-        output_mf, cut_mfs = self._find_crisp_value()
-        assert len(cut_mfs) > 0
-        crisp = defuzz(self.universe, output_mf, self.defuzzify_method)
-        self.crisp_value = crisp
-        print "%s is now %s" % (self, crisp)
