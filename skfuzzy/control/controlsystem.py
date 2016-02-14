@@ -5,8 +5,11 @@ controlsystem.py : Contains framework for fuzzy logic control systems.
 import numpy as np
 import networkx as nx
 import matplotlib.pylab as plt
+
+from skfuzzy import interp_membership, defuzz
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
-from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm
+from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm, \
+    FuzzyVariableTermAggregate
 from .visualization import ControlSystemVisualizer
 from .rule import Rule, WeightedConsequent
 
@@ -197,8 +200,7 @@ class ControlSystem(object):
     """
     def __init__(self, rules=None):
         self.graph = nx.DiGraph()
-        self.input = self._InputAcceptor(self)
-        self.output = OrderedDict()
+
 
         # Construct a system from provided rules, if given
         if rules is not None:
@@ -211,20 +213,6 @@ class ControlSystem(object):
                 except:
                     raise ValueError("Optional argument `rules` must be a "
                                      "FuzzyRule or iterable of FuzzyRules.")
-
-    class _InputAcceptor(object):
-        def __init__(self, system):
-            assert isinstance(system, ControlSystem)
-            self.system = system
-
-        def __setitem__(self, key, value):
-            # Find the antecedent we should set the input for
-            matches = [n for n in self.system.graph.nodes()
-                               if isinstance(n, Antecedent) and n.label == key]
-            if len(matches) == 0:
-                raise ValueError("Unexpected input: " + key)
-            assert len(matches) == 1
-            matches[0].input = value
 
     @property
     def rules(self):
@@ -258,7 +246,9 @@ class ControlSystem(object):
                 if len(skipped_rules) == len_rules:
                     raise Exception("Unable to resolve rule execution order")
                 else:
-                    _process_rules(skipped_rules)
+                    # Recurse across the skipped rules
+                    for r in _process_rules(skipped_rules):
+                        yield r
             else:
                 raise StopIteration()
 
@@ -302,25 +292,33 @@ class ControlSystem(object):
         # Combine the two graphs, which may not be disjoint
         self.graph = nx.compose(self.graph, rule.graph)
 
-    def compute(self):
-        """
-        Compute the fuzzy system.
-        """
-        # TODO: Tracking and caching
+    def view(self):
+        fig = ControlSystemVisualizer(self).view()
+        fig.show()
 
-        # Check if any fuzzy variables lack input values and fuzzyfy inputs
-        for antecedent in self.antecedents:
-            if antecedent.input is None:
-                raise ValueError("All antecedents must have input values!")
+class _InputAcceptor(object):
+    def __init__(self, simulation):
+        assert isinstance(simulation, ControlSystemSimulation)
+        self.sim = simulation
 
-        # Calculate rules, taking inputs and accumulating outputs
-        for rule in self.rules:
-            rule.compute()
+    def __setitem__(self, key, value):
+        # Find the antecedent we should set the input for
+        matches = [n for n in self.sim.ctrl.graph.nodes()
+                           if isinstance(n, Antecedent) and n.label == key]
+        if len(matches) == 0:
+            raise ValueError("Unexpected input: " + key)
+        assert len(matches) == 1
+        matches[0].input[self.sim] = value
 
 
-        # Collect the results and present them as a dict
-        for consequent in self.consequents:
-            self.output[consequent.label] = consequent.output
+class ControlSystemSimulation(object):
+
+    def __init__(self, control_system):
+        assert isinstance(control_system, ControlSystem)
+        self.ctrl = control_system
+
+        self.input = _InputAcceptor(self)
+        self.output = OrderedDict()
 
     def inputs(self, input_dict):
         """
@@ -335,24 +333,93 @@ class ControlSystem(object):
         for label, value in input_dict.items():
             self.input[label] = value
 
-    def view(self):
-        fig = ControlSystemVisualizer(self).view()
-        fig.show()
+    def compute(self):
+        """
+        Compute the fuzzy system.
+        """
+        # TODO: Tracking and caching
+
+        # Check if any fuzzy variables lack input values and fuzzyfy inputs
+        for antecedent in self.ctrl.antecedents:
+            if antecedent.input[self] is None:
+                raise ValueError("All antecedents must have input values!")
+            CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
+
+        # Calculate rules, taking inputs and accumulating outputs
+        for rule in self.ctrl.rules:
+            self.compute_rule(rule)
+
+
+        # Collect the results and present them as a dict
+        for consequent in self.ctrl.consequents:
+            CrispValueCalculator(consequent, self).defuzz()
+            self.output[consequent.label] = consequent.output
+
+    def compute_rule(self, rule):
+        """
+        Implements rule according to the three step method of
+        Mamdani inference: Aggregation, activation, and accumulation
+
+        """
+        print "EVALUATING %s" % rule
+        # Step 1: Aggregation.  This finds the net accomplishment of the
+        #  antecedent by AND-ing or OR-ing together all the membership values
+        #  of the terms that make up the accomplishment condition.
+        #  The process of actually aggregating everything is delegated to the
+        #  FuzzyVariableTermAggregation class, but we can tell that class
+        #  what aggregation style this rule mandates
+
+        if isinstance(rule.antecedent, FuzzyVariableTermAggregate):
+            rule.antecedent.agg_method = rule.aggregation_method
+        rule.aggregate_firing[self] = rule.antecedent.membership_value[self]
+
+        # Step 2: Activation.  The degree of membership of the consequence
+        #  is determined by the degree of accomplishment of the antecedent,
+        #  which is what we determined in step 1.  The only difference would
+        #  be if the consequent has a weight, which we would apply now.
+        for c in rule.consequent:
+            assert isinstance(c, WeightedConsequent)
+            c.activation[self] = rule.aggregate_firing[self] * c.weight
+
+        # Step 3: Accumulation.  Apply the activation to each consequent,
+        #   accumulating multiple rule firings into a single membership value.
+        #   The process of actual accumulation is delegated to the
+        #   FuzzyVariableTerm which uses its parent's accumulation method
+        for c in rule.consequent:
+            assert isinstance(c, WeightedConsequent)
+            term = c.term
+            value = c.activation[self]
+
+            # Find new membership value
+            if term.membership_value[self] is None:
+                assert len(term.cuts[self]) == 0, "Membership value already set"
+                term.membership_value[self] = value
+            else:
+                # Use the accumulation method of variable to determine
+                #  how to to handle multiple cuts
+                accu = term.parent_variable.accumulation_method
+                term.membership_value[self] = accu(value,
+                                                   term.membership_value[self])
+
+            term.cuts[self][rule] = value
+
+
 
     def print_state(self):
         print "============="
         print " Antecedents "
         print "============="
-        for v in self.antecedents:
-            print "{0:<35} = {1}".format(v, v.crisp_value)
+        for v in self.ctrl.antecedents:
+            print "{0:<35} = {1}".format(v, v.input[self])
             for term in v.terms.values():
-                print "  - {0:<32}: {1}".format(term.label, term.membership_value)
+                print "  - {0:<32}: {1}".format(term.label,
+                                                term.membership_value[self])
         print ""
         print "======="
         print " Rules "
         print "======="
         rule_number = {}
-        for rn, r in enumerate(self.rules):
+        for rn, r in enumerate(self.ctrl.rules):
             assert isinstance(r, Rule)
             rule_number[r] = "RULE #%d" % rn
             print "RULE #%d:\n  %s\n" % (rn, r)
@@ -361,31 +428,80 @@ class ControlSystem(object):
             for term in r.antecedent_terms:
                 assert isinstance(term, FuzzyVariableTerm)
                 print "  - {0:<45}: {1}".format(term.full_label,
-                                                term.membership_value)
-            print "    {0:>44} = {1}".format(r.antecedent, r.aggregate_firing)
+                                                term.membership_value[self])
+            print "    {0:>44} = {1}".format(r.antecedent,
+                                             r.aggregate_firing[self])
 
             print "  Activation (THEN-clause):"
             for c in r.consequent:
                 assert isinstance(c, WeightedConsequent)
                 print "    {0:>44} : {1}".format(c.term.full_label,
-                                                 c.activation)
+                                                 c.activation[self])
             print ""
         print ""
 
         print "=============================="
         print " Intermediaries and Conquests "
         print "=============================="
-        both = list(self.consequents) + list(self.intermediaries)
+        both = list(self.ctrl.consequents) + list(self.ctrl.intermediaries)
         for c in both:
-            print "{0:<36} = {1}".format(c, c.crisp_value)
+            print "{0:<36} = {1}".format(c,
+                                         CrispValueCalculator(c, self).defuzz())
 
             for term in c.terms.values():
                 print "  %s:" % term.label
-                for cut_rule, cut_value in term.cuts.items():
+                for cut_rule, cut_value in term.cuts[self].items():
                     if cut_rule not in rule_number.keys(): continue
                     print "    {0:>32} : {1}".format(rule_number[cut_rule],
                                                      cut_value)
                 accu = "Accumulate using %s" % c.accumulation_method.func_name
                 print "    {0:>32} : {1}".format(accu,
-                                                term.membership_value)
+                                                term.membership_value[self])
             print ""
+
+
+class CrispValueCalculator(object):
+
+    def __init__(self, fuzzy_var, sim):
+        assert isinstance(fuzzy_var, FuzzyVariable)
+        assert isinstance(sim, ControlSystemSimulation)
+        self.var = fuzzy_var
+        self.sim = sim
+
+    def defuzz(self):
+        """Derive crisp value based on membership of adjectives"""
+        output_mf, cut_mfs = self.find_crisp_value()
+        if len(cut_mfs) == 0:
+            raise ValueError("No terms have memberships.  Make sure you "
+                             "have at least one rule connected to this "
+                             "variable and have run the rules calculation.")
+        return defuzz(self.var.universe, output_mf, self.var.defuzzify_method)
+
+    def fuzz(self, value):
+        """Propagate crisp value down to adjectives by calculating membership"""
+        if len(self.var.terms) == 0:
+            raise ValueError("Set Term membership function(s) first")
+
+        for label, term in self.var.terms.items():
+            term.membership_value[self.sim] = \
+                interp_membership(self.var.universe, term.mf, value)
+
+
+    def find_crisp_value(self):
+        # Check we have some adjectives
+        if len(self.var.terms.keys()) == 0:
+            raise ValueError("Set term membership function(s) first")
+
+        # Initilize membership
+        output_mf = np.zeros_like(self.var.universe, dtype=np.float64)
+
+        # Build output membership function
+        term_mfs = {}
+        for label, term in self.var.terms.items():
+            cut = term.membership_value[self.sim]
+            if cut is None:
+                continue # No membership defined for this adjective
+            term_mfs[label] = np.minimum(cut, term.mf)
+            np.maximum(output_mf, term_mfs[label], output_mf)
+
+        return output_mf, term_mfs

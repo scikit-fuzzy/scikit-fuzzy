@@ -4,7 +4,9 @@ visualization.py : Contains classes to help with visualizing a control system
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+
 from .. import defuzz, interp_membership
+
 
 class FuzzyVariableVisualizer(object):
 
@@ -33,7 +35,12 @@ class FuzzyVariableVisualizer(object):
 
         self._init_plot()
 
-        output_mf, cut_mfs = self.fuzzy_var._find_crisp_value()
+        from .controlsystem import (CrispValueCalculator, ControlSystemSimulation,
+                                    ControlSystem)
+
+        crispy = CrispValueCalculator(self.fuzzy_var,
+                                      ControlSystemSimulation(ControlSystem()))
+        output_mf, cut_mfs = crispy.find_crisp_value()
 
         # Plot the output membership functions
         cut_plots = {}

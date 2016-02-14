@@ -6,6 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from skfuzzy import defuzz, interp_membership
+from skfuzzy.control.state import StatefulProperty
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
 
@@ -26,12 +27,11 @@ class FuzzyVariableTerm(object):
     def __init__(self, label, membership_function):
         super(FuzzyVariableTerm, self).__init__()
         self.label = label
+        self.parent_variable = None
         self.mf = membership_function
 
-        self.parent_variable = None
-        self.membership_value = None
-
-        self.cuts = {}
+        self.membership_value = StatefulProperty(None)
+        self.cuts = StatefulProperty({})
 
     @property
     def full_label(self):
@@ -39,21 +39,6 @@ class FuzzyVariableTerm(object):
         if self.parent_variable is None:
             raise ValueError("This term must be bound to a parent first")
         return self.parent_variable.label + "[" + self.label + "]"
-
-    def accumulate_cut(self, rule, value):
-
-        # Find new membership value
-        if self.membership_value is None:
-            assert len(self.cuts) == 0, "Membership value already set"
-            self.membership_value = value
-        else:
-            # Use the accumulation method of variable to determine
-            #  how to to handle multiple cuts
-            accu = self.parent_variable.accumulation_method
-            self.membership_value = accu(value, self.membership_value)
-
-        self.cuts[rule] = value
-
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
@@ -185,7 +170,6 @@ class FuzzyVariable(object):
         self.terms = OrderedDict()
 
         self._id = id(self)
-        self._crisp_value_accessed = False
 
         class _NotGenerator(object):
             def __init__(self, var):
@@ -199,8 +183,8 @@ class FuzzyVariable(object):
 
                 posterm = self.var[key]
                 negterm = FuzzyVariableTerm(lbl, 1. - posterm.mf)
-                if posterm.membership_value is not None:
-                    negterm.membership_value = 1. - posterm.membership_value
+                #if posterm.membership_value is not None:
+                #    negterm.membership_value = 1. - posterm.membership_value
                 self.var[lbl] = negterm
                 return negterm
         self.not_ = _NotGenerator(self)
@@ -252,11 +236,6 @@ class FuzzyVariable(object):
             # function
             item = FuzzyVariableTerm(key, np.asarray(item))
 
-        if self._crisp_value_accessed:
-            # TODO: Overcome this limitation
-            raise ValueError("Cannot add adjectives after accessing the "
-                             "crisp value of this variable.")
-
         mf = item.mf
 
         if mf.size != self.universe.size:
@@ -272,47 +251,6 @@ class FuzzyVariable(object):
         # If above pass, add the new membership function
         item.parent_variable = self
         self.terms[key] = item
-
-    @property
-    def crisp_value(self):
-        """Derive crisp value based on membership of adjectives"""
-        output_mf, cut_mfs = self._find_crisp_value()
-        if len(cut_mfs) == 0:
-            raise ValueError("No terms have memberships.  Make sure you "
-                             "have at least one rule connected to this "
-                             "variable and have run the rules calculation.")
-        self._crisp_value_accessed = True
-        return defuzz(self.universe, output_mf, self.defuzzify_method)
-
-    @crisp_value.setter
-    def crisp_value(self, value):
-        """Propagate crisp value down to adjectives by calculating membership"""
-        if len(self.terms) == 0:
-            raise ValueError("Set Term membership function(s) first")
-
-        for label, term in self.terms.items():
-            term.membership_value = \
-                                interp_membership(self.universe, term.mf, value)
-        self._crisp_value_accessed = True
-
-    def _find_crisp_value(self):
-        # Check we have some adjectives
-        if len(self.terms.keys()) == 0:
-            raise ValueError("Set term membership function(s) first")
-
-        # Initilize membership
-        output_mf = np.zeros_like(self.universe, dtype=np.float64)
-
-        # Build output membership function
-        term_mfs = {}
-        for label, term in self.terms.items():
-            cut = term.membership_value
-            if cut is None:
-                continue # No membership defined for this adjective
-            term_mfs[label] = np.minimum(cut, term.mf)
-            np.maximum(output_mf, term_mfs[label], output_mf)
-
-        return output_mf, term_mfs
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__

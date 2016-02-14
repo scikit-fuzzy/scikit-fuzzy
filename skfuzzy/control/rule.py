@@ -11,6 +11,7 @@ from .fuzzyvariable import (FuzzyVariable, FuzzyVariableTerm,
                             FuzzyAggregationMethod,
                             FuzzyVariableTermAggregate)
 from .visualization import ControlSystemVisualizer
+from .state import StatefulProperty
 
 try:
     from collections import OrderedDict
@@ -23,7 +24,7 @@ class WeightedConsequent(object):
         assert isinstance(term, FuzzyVariableTerm)
         self.term = term
         self.weight = weight
-        self.activation = None
+        self.activation = StatefulProperty(None)
 
     def __repr__(self):
         if self.weight == 1.:
@@ -36,12 +37,12 @@ class Rule(object):
 
     def __init__(self, antecedent=None, consequent=None, label=None):
         self.label = label
+        self.aggregation_method = FuzzyAggregationMethod()
+
+        self.aggregate_firing = StatefulProperty(None)
+
         self._antecedent = None
         self._consequent = None
-
-        self.aggregation_method = FuzzyAggregationMethod()
-        self.aggregate_firing = None
-
         if antecedent is not None:
             self.antecedent = antecedent
         if consequent is not None:
@@ -142,38 +143,6 @@ class Rule(object):
             graph.add_path([c.term, c.term.parent_variable])
         return graph
 
-    def compute(self):
-        """
-        Implements rule according to the three step method of
-        Mamdani inference: Aggregation, activation, and accumulation
-
-        """
-        # Step 1: Aggregation.  This finds the net accomplishment of the
-        #  antecedent by AND-ing or OR-ing together all the membership values
-        #  of the terms that make up the accomplishment condition.
-        #  The process of actually aggregating everything is delegated to the
-        #  FuzzyVariableTermAggregation class, but we can tell that class
-        #  what aggregation style this rule mandates
-
-        if isinstance(self.antecedent, FuzzyVariableTermAggregate):
-            self.antecedent.agg_method = self.aggregation_method
-        self.aggregate_firing = self.antecedent.membership_value
-
-        # Step 2: Activation.  The degree of membership of the consequence
-        #  is determined by the degree of accomplishment of the antecedent,
-        #  which is what we determined in step 1.  The only difference would
-        #  be if the consequent has a weight, which we would apply now.
-        for c in self.consequent:
-            assert isinstance(c, WeightedConsequent)
-            c.activation = self.aggregate_firing * c.weight
-
-        # Step 3: Accumulation.  Apply the activation to each consequent,
-        #   accumulating multiple rule firings into a single membership value.
-        #   The process of actual accumulation is delegated to the
-        #   FuzzyVariableTerm which uses its parent's accumulation method
-        for c in self.consequent:
-            assert isinstance(c, WeightedConsequent)
-            c.term.accumulate_cut(self, c.activation)
 
     def view(self):
         ControlSystemVisualizer(self).view().show()

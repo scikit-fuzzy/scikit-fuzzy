@@ -2,6 +2,8 @@
 antecedent_consequent.py : Contains Antecedent and Consequent classes.
 """
 import numpy as np
+
+from skfuzzy.control.state import StatefulProperty
 from ..fuzzymath import interp_membership
 from .fuzzyvariable import FuzzyVariable
 from ..defuzzify import defuzz
@@ -29,18 +31,7 @@ class Antecedent(FuzzyVariable):
         """""" + Antecedent.__doc__
         super(Antecedent, self).__init__(universe, label)
         self.__name__ = 'Antecedent'
-        self._input_set = False
-
-    @property
-    def input(self):
-        if not self._input_set:
-            return None
-        return self.crisp_value
-
-    @input.setter
-    def input(self, value):
-        self.crisp_value = value
-        self._input_set = True
+        self.input = StatefulProperty(None)
 
 
 class Consequent(FuzzyVariable):
@@ -65,17 +56,10 @@ class Consequent(FuzzyVariable):
         """""" + Consequent.__doc__
         super(Consequent, self).__init__(universe, label)
         self.__name__ = 'Consequent'
+        self.output = StatefulProperty(None)
 
         # Default accumulation method is to take the max of any cut
         self.accumulation_method = np.max
-
-    @property
-    def output(self):
-        return self.crisp_value
-
-    @FuzzyVariable.crisp_value.setter
-    def crisp_value(self, value):
-        raise AttributeError("Cannot set the crisp value of a Consequent")
 
 
 

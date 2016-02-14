@@ -2,6 +2,8 @@ import numpy as np
 import skfuzzy as fuzz
 
 # New Antecedent/Consequent objects hold universe variables and membership functions
+from skfuzzy.control.controlsystem import ControlSystemSimulation
+
 quality = fuzz.Antecedent(np.arange(0, 11, 1), 'quality')
 service = fuzz.Antecedent(np.arange(0, 11, 1), 'service')
 tip = fuzz.Consequent(np.arange(0, 26, 1), 'tip')
@@ -31,10 +33,12 @@ rule3 = fuzz.Rule(service['good'] | quality['good'], tip['good'])
 
 # Create a new ControlSystem with these rules added
 # Note: it is possible to create an empty ControlSystem() and build it up interactively.
-tipping = fuzz.ControlSystem([rule1, rule2, rule3])
+tipping_ctrl = fuzz.ControlSystem([rule1, rule2, rule3])
 
 # View the whole system
-tipping.view()
+tipping_ctrl.view()
+
+tipping = ControlSystemSimulation(tipping_ctrl)
 
 # Pass inputs to the ControlSystem using Antecedent labels with Pythonic API
 # Note: if you like passing many inputs all at once, use .inputs(dict_of_data)
@@ -70,14 +74,15 @@ rule2.view()
 rule5 = fuzz.Rule(ambiance['poor'], tip['poor'])
 
 sys2 = fuzz.ControlSystem([rule1, rule4, rule5])
-sys2.input['quality'] = 6.5
-sys2.input['service'] = 2.5
-sys2.input['decor'] = 3.5
-sys2.compute()
+sys2_sim = ControlSystemSimulation(sys2)
+sys2_sim.input['quality'] = 6.5
+sys2_sim.input['service'] = 2.9
+sys2_sim.input['decor'] = 3.5
+sys2_sim.compute()
 
-print sys2.output
-print ambiance.crisp_value
+print sys2_sim.output
+#print ambiance.crisp_value
 sys2.view()
-sys2.print_state()
+sys2_sim.print_state()
 
 a = 5
