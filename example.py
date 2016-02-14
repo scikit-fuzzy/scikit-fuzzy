@@ -67,7 +67,7 @@ ambiance = fuzz.Intermediary(np.arange(0, 11, 1), 'ambiance')
 ambiance.automf(3)
 
 # If service is poor and decor is not good, ambiance is poor
-rule4 = fuzz.Rule(service['poor'] & decor.not_['good'], ambiance['poor'])
+rule4 = fuzz.Rule(service['poor'] & ~decor['good'], ambiance['poor'])
 rule2.view()
 
 # If ambiance is poor, tip is poor
@@ -80,8 +80,6 @@ sys2_sim.input['service'] = 2.9
 sys2_sim.input['decor'] = 3.5
 sys2_sim.compute()
 
-print sys2_sim.output
-#print ambiance.crisp_value
 sys2.view()
 sys2_sim.print_state()
 

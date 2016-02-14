@@ -9,7 +9,7 @@ from weakref import WeakKeyDictionary
 from .antecedent_consequent import Antecedent, Consequent, Intermediary
 from .fuzzyvariable import (FuzzyVariable, FuzzyVariableTerm,
                             FuzzyAggregationMethod,
-                            FuzzyVariableTermAggregate)
+                            FuzzyVariableTermAggregate, TermPrimitive)
 from .visualization import ControlSystemVisualizer
 from .state import StatefulProperty
 
@@ -68,11 +68,12 @@ class Rule(object):
         return self._antecedent
     @antecedent.setter
     def antecedent(self, value):
-        if hasattr(value, 'membership_value'):
-            # Should be either FuzzyVariableTerm or FuzzyVariableTermAggregate
-            self._antecedent = value
-        else:
+        if not isinstance(value, TermPrimitive):
             raise ValueError("Unexpected antecedent type")
+        # Should be either FuzzyVariableTerm or FuzzyVariableTermAggregate
+        self._antecedent = value
+
+
 
     @property
     def antecedent_terms(self):
@@ -81,6 +82,8 @@ class Rule(object):
         def _find_terms(obj):
             if isinstance(obj, FuzzyVariableTerm):
                 terms.append(obj)
+            elif obj is None:
+                pass
             else:
                 assert isinstance(obj, FuzzyVariableTermAggregate)
                 _find_terms(obj.term1)

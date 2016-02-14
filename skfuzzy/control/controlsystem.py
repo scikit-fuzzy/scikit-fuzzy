@@ -352,8 +352,9 @@ class ControlSystemSimulation(object):
 
         # Collect the results and present them as a dict
         for consequent in self.ctrl.consequents:
-            CrispValueCalculator(consequent, self).defuzz()
-            self.output[consequent.label] = consequent.output
+            consequent.output[self] = \
+                CrispValueCalculator(consequent, self).defuzz()
+            self.output[consequent.label] = consequent.output[self]
 
     def compute_rule(self, rule):
         """
@@ -361,7 +362,6 @@ class ControlSystemSimulation(object):
         Mamdani inference: Aggregation, activation, and accumulation
 
         """
-        print "EVALUATING %s" % rule
         # Step 1: Aggregation.  This finds the net accomplishment of the
         #  antecedent by AND-ing or OR-ing together all the membership values
         #  of the terms that make up the accomplishment condition.

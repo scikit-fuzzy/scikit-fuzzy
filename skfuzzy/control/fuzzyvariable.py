@@ -15,8 +15,15 @@ try:
 except ImportError:
     from .ordereddict import OrderedDict
 
+class TermPrimitive(object):
+    """Marker class used for type checking when a term
+    or term aggregate is expected"""
+    pass
 
-class FuzzyVariableTerm(object):
+    def membership_value(self):
+        raise NotImplementedError("Implement in concrete class")
+
+class FuzzyVariableTerm(TermPrimitive):
     """
     An term and associated member function for a fuzzy varaible.
     For example, if one were creating a FuzzyVariable with a simple three-point
@@ -53,20 +60,24 @@ class FuzzyVariableTerm(object):
         return self.full_label
 
     def __and__(self, other):
-        if not isinstance(other, FuzzyVariableTerm) \
-                or isinstance(other, FuzzyVariableTermAggregate):
+        if not (isinstance(other, FuzzyVariableTerm) \
+                or isinstance(other, FuzzyVariableTermAggregate)):
             raise ValueError("Can only construct 'AND' from the term "
                              "of a fuzzy variable")
 
         return FuzzyVariableTermAggregate(self, other, 'and')
 
     def __or__(self, other):
-        if not isinstance(other, FuzzyVariableTerm) \
-                or isinstance(other, FuzzyVariableTermAggregate):
+        if not (isinstance(other, FuzzyVariableTerm) \
+                or isinstance(other, FuzzyVariableTermAggregate)):
             raise ValueError("Can only construct 'OR' from the term "
                              "of a fuzzy variable")
 
         return FuzzyVariableTermAggregate(self, other, 'or')
+
+    def __invert__(self):
+        return FuzzyVariableTermAggregate(self, None, 'not')
+
 
 class FuzzyAggregationMethod(object):
     def __init__(self, and_func=min, or_func=max):
@@ -75,22 +86,51 @@ class FuzzyAggregationMethod(object):
         self.or_agg_func = or_func
 
 
-class FuzzyVariableTermAggregate(object):
+class _MembershipValueAccessor(object):
+
+    def __init__(self, agg):
+        assert isinstance(agg, FuzzyVariableTermAggregate)
+        self.agg = agg
+
+    def __getitem__(self, key):
+        from .controlsystem import ControlSystemSimulation
+        assert isinstance(key, ControlSystemSimulation)
+        # Perform aggregation to determine membership
+        if self.agg.kind == 'and':
+            return self.agg.agg_method.and_agg_func(
+                self.agg.term1.membership_value[key],
+                self.agg.term2.membership_value[key])
+        elif self.agg.kind == 'or':
+            return self.agg.agg_method.or_agg_func(
+                self.agg.term1.membership_value[key],
+                self.agg.term2.membership_value[key])
+        elif self.agg.kind == 'not':
+            return 1. - self.agg.term1.membership_value[key]
+        else:
+            raise NotImplementedError()
+
+
+
+class FuzzyVariableTermAggregate(TermPrimitive):
     """
     Used to track the creation of AND and OR clauses used when building
     the antecedent of a rule.
     """
 
     def __init__(self, term1, term2, kind):
-        assert isinstance(term1, FuzzyVariableTerm) \
-               or isinstance(term1, FuzzyVariableTermAggregate)
-        assert isinstance(term2, FuzzyVariableTerm) \
-               or isinstance(term1, FuzzyVariableTermAggregate)
-        assert kind in ('and','or')
+        assert isinstance(term1, TermPrimitive)
+        if kind in ('and','or'):
+            assert isinstance(term2, TermPrimitive)
+        elif kind == 'not':
+            assert term2 is None
+        else:
+            raise ValueError("Unexpected kind")
+
         self.term1 = term1
         self.term2 = term2
         self.kind = kind
         self._agg_method = FuzzyAggregationMethod()
+        self.membership_value = _MembershipValueAccessor(self)
 
     def __repr__(self):
         def _term_to_str(term):
@@ -98,6 +138,9 @@ class FuzzyVariableTermAggregate(object):
                 return term.full_label
             elif isinstance(term, FuzzyVariableTermAggregate):
                 return "(%s)" % term
+
+        if self.kind == 'not':
+            return "NOT-%s" % _term_to_str(self.term1)
 
         return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
                              _term_to_str(self.term2))
@@ -115,20 +158,6 @@ class FuzzyVariableTermAggregate(object):
         for term in (self.term1, self.term2):
             if isinstance(term, FuzzyVariableTermAggregate):
                 term.agg_method = value
-
-
-    @property
-    def membership_value(self):
-        """Perform aggregation to determine membership"""
-        if self.kind == 'and':
-            return self.agg_method.and_agg_func(self.term1.membership_value,
-                                                self.term2.membership_value)
-        elif self.kind == 'or':
-            return self.agg_method.or_agg_func(self.term1.membership_value,
-                                               self.term2.membership_value)
-        else:
-            raise NotImplementedError()
-
 
 
 
@@ -170,24 +199,6 @@ class FuzzyVariable(object):
         self.terms = OrderedDict()
 
         self._id = id(self)
-
-        class _NotGenerator(object):
-            def __init__(self, var):
-                self.var = var
-
-            def __getitem__(self, key):
-                # Get the positive version of the term
-                lbl = "NOT-" + key
-                if lbl in self.var.terms.keys():
-                    return self.var[lbl]
-
-                posterm = self.var[key]
-                negterm = FuzzyVariableTerm(lbl, 1. - posterm.mf)
-                #if posterm.membership_value is not None:
-                #    negterm.membership_value = 1. - posterm.membership_value
-                self.var[lbl] = negterm
-                return negterm
-        self.not_ = _NotGenerator(self)
 
     def __repr__(self):
         return "{0}: {1}".format(self.__name__, self.label)
