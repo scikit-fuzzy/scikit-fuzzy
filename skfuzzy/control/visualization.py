@@ -57,7 +57,7 @@ class FuzzyVariableVisualizer(object):
                     facecolor=color, alpha=0.4)
 
         # Plot defuzzified output if available
-        if len(cut_mfs) > 0:
+        if len(cut_mfs) > 0 and not all(output_mf == 0):
             crip_value = defuzz(self.fuzzy_var.universe, output_mf,
                                 self.fuzzy_var.defuzzify_method)
             if crip_value is not None:

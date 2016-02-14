@@ -23,6 +23,23 @@ class TermPrimitive(object):
     def membership_value(self):
         raise NotImplementedError("Implement in concrete class")
 
+    def __and__(self, other):
+        if not isinstance(other, TermPrimitive):
+            raise ValueError("Can only construct 'AND' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'and')
+
+    def __or__(self, other):
+        if not isinstance(other, TermPrimitive):
+            raise ValueError("Can only construct 'OR' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'or')
+
+    def __invert__(self):
+        return FuzzyVariableTermAggregate(self, None, 'not')
+
 class FuzzyVariableTerm(TermPrimitive):
     """
     An term and associated member function for a fuzzy varaible.
@@ -60,23 +77,6 @@ class FuzzyVariableTerm(TermPrimitive):
     def __repr__(self):
         return self.full_label
 
-    def __and__(self, other):
-        if not isinstance(other, TermPrimitive):
-            raise ValueError("Can only construct 'AND' from the term "
-                             "of a fuzzy variable")
-
-        return FuzzyVariableTermAggregate(self, other, 'and')
-
-    def __or__(self, other):
-        if not isinstance(other, TermPrimitive):
-            raise ValueError("Can only construct 'OR' from the term "
-                             "of a fuzzy variable")
-
-        return FuzzyVariableTermAggregate(self, other, 'or')
-
-    def __invert__(self):
-        return FuzzyVariableTermAggregate(self, None, 'not')
-
     def __mod__(self, other):
         from .rule import WeightedConsequent
         assert isinstance(other, float)
@@ -100,14 +100,16 @@ class _MembershipValueAccessor(object):
         from .controlsystem import ControlSystemSimulation
         assert isinstance(key, ControlSystemSimulation)
         # Perform aggregation to determine membership
+        term1 = self.agg.term1.membership_value[key]
+        if self.agg.term2 is not None:
+            term2 = self.agg.term2.membership_value[key]
+
         if self.agg.kind == 'and':
             return self.agg.agg_method.and_agg_func(
-                self.agg.term1.membership_value[key],
-                self.agg.term2.membership_value[key])
+                term1, term2)
         elif self.agg.kind == 'or':
             return self.agg.agg_method.or_agg_func(
-                self.agg.term1.membership_value[key],
-                self.agg.term2.membership_value[key])
+                term1, term2)
         elif self.agg.kind == 'not':
             return 1. - self.agg.term1.membership_value[key]
         else:

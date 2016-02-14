@@ -7,7 +7,7 @@ import networkx as nx
 import matplotlib.pylab as plt
 
 from skfuzzy import interp_membership, defuzz
-from .antecedent_consequent import Antecedent, Consequent, Intermediary
+from .antecedent_consequent import Antecedent, Consequent
 from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm, \
     FuzzyVariableTermAggregate
 from .visualization import ControlSystemVisualizer
@@ -102,8 +102,7 @@ class OLD_Rule(object):
                 raise ValueError("All elements must be terms")
             if parent is None:
                 raise ValueError("All terms must have a parent")
-            if not isinstance(parent, obj) and \
-               not isinstance(parent, Intermediary):
+            if not isinstance(parent, obj):
                 raise ValueError("All term's variables must be of type "
                                  "{0}".format(obj))
         return temp
@@ -133,7 +132,7 @@ class OLD_Rule(object):
         """
         assert isinstance(antecedent_term, FuzzyVariableTerm)
         antecedent = antecedent_term.parent_variable
-        assert isinstance(antecedent, Antecedent) or isinstance(antecedent, Intermediary)
+        assert isinstance(antecedent, Antecedent)
 
         # Antecedent -> Antecedent_Term -> Rule
         self.graph.add_path([antecedent, antecedent_term])
@@ -146,7 +145,7 @@ class OLD_Rule(object):
         """
         assert isinstance(consequent_term, FuzzyVariableTerm)
         consequent = consequent_term.parent_variable
-        assert isinstance(consequent, Consequent) or isinstance(consequent, Intermediary)
+        assert isinstance(consequent, Consequent)
 
         # Rule -> Consequent_Term -> Consequent
         self.graph.add_path([self, consequent_term])
@@ -220,7 +219,7 @@ class ControlSystem(object):
         #  consequences.  For example if we have:
         #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
         #  if we expose rule2 before rule1, we won't calculate correctly
-        exposed_intermediaries = [] # Could also contain consequences
+        exposed_intermediaries = [] # consequences which must be already calced
 
         def _process_rules(rules):
             # Recursive funcion to process rules in the correct firing order
@@ -231,7 +230,7 @@ class ControlSystem(object):
                 # Check that we've exposed all inputs to this rule
                 predecesors = self.graph.predecessors(rule)
                 p2 = filter(lambda p: isinstance(p.parent_variable,
-                                                 Intermediary), predecesors)
+                                                 Consequent), predecesors)
                 p3 = filter(lambda p: p not in exposed_intermediaries, p2)
 
                 if len(p3) > 0:
@@ -270,11 +269,6 @@ class ControlSystem(object):
     def consequents(self):
         for node in self.graph.nodes():
             if isinstance(node, Consequent):
-                yield node
-    @property
-    def intermediaries(self):
-        for node in self.graph.nodes():
-            if isinstance(node, Intermediary):
                 yield node
     @property
     def fuzzy_variables(self):
@@ -384,6 +378,8 @@ class ControlSystemSimulation(object):
         #  be if the consequent has a weight, which we would apply now.
         for c in rule.consequent:
             assert isinstance(c, WeightedConsequent)
+            print "RULE", rule
+            print "FIRE", rule.aggregate_firing[self]
             c.activation[self] = rule.aggregate_firing[self] * c.weight
 
         # Step 3: Accumulation.  Apply the activation to each consequent,
@@ -435,15 +431,15 @@ class ControlSystemSimulation(object):
             print "  Aggregation (IF-clause):"
             for term in r.antecedent_terms:
                 assert isinstance(term, FuzzyVariableTerm)
-                print "  - {0:<45}: {1}".format(term.full_label,
+                print "  - {0:<55}: {1}".format(term.full_label,
                                                 term.membership_value[self])
-            print "    {0:>44} = {1}".format(r.antecedent,
+            print "    {0:>54} = {1}".format(r.antecedent,
                                              r.aggregate_firing[self])
 
             print "  Activation (THEN-clause):"
             for c in r.consequent:
                 assert isinstance(c, WeightedConsequent)
-                print "    {0:>44} : {1}".format(c,
+                print "    {0:>54} : {1}".format(c,
                                                  c.activation[self])
             print ""
         print ""
@@ -451,8 +447,7 @@ class ControlSystemSimulation(object):
         print "=============================="
         print " Intermediaries and Conquests "
         print "=============================="
-        both = list(self.ctrl.consequents) + list(self.ctrl.intermediaries)
-        for c in both:
+        for c in self.ctrl.consequents:
             print "{0:<36} = {1}".format(c,
                                          CrispValueCalculator(c, self).defuzz())
 

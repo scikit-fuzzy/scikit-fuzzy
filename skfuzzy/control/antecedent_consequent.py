@@ -14,6 +14,11 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
+
+def accu_max(*args):
+    return np.max(args)
+
+
 class Antecedent(FuzzyVariable):
     """
     Antecedent (input/sensor) variable for a fuzzy control system.
@@ -63,15 +68,6 @@ class Consequent(FuzzyVariable):
         self.__name__ = 'Consequent'
 
         # Default accumulation method is to take the max of any cut
-        self.accumulation_method = np.max
+        self.accumulation_method = accu_max
 
-
-
-class Intermediary(FuzzyVariable):
-    def __init__(self, universe, label):
-        super(Intermediary, self).__init__(universe, label)
-        self.__name__ = "Intermediary"
-
-        # Default accumulation method to max
-        self.accumulation_method = np.max
 

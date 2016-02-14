@@ -6,7 +6,7 @@ atecedents with conqeuents in a `ControlSystem`.
 import numpy as np
 import networkx as nx
 from weakref import WeakKeyDictionary
-from .antecedent_consequent import Antecedent, Consequent, Intermediary
+from .antecedent_consequent import Antecedent, Consequent
 from .fuzzyvariable import (FuzzyVariable, FuzzyVariableTerm,
                             FuzzyAggregationMethod,
                             FuzzyVariableTermAggregate, TermPrimitive)

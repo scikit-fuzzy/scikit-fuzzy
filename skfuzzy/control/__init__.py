@@ -5,11 +5,10 @@ skfuzzy.control subpackage, providing a high-level API for fuzzy system design.
 
 __all__ = ['Antecedent',
            'Consequent',
-           'Intermediary',
            'ControlSystem',
            'Rule',
            ]
 
-from .antecedent_consequent import Antecedent, Consequent, Intermediary
+from .antecedent_consequent import Antecedent, Consequent
 from .controlsystem import ControlSystem
 from .rule import Rule

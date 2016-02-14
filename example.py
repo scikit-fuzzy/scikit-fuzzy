@@ -63,7 +63,7 @@ tip.view(sim=tipping)
 decor = fuzz.Antecedent(np.arange(0, 11, 1), 'decor')
 decor.automf(3)
 
-ambiance = fuzz.Intermediary(np.arange(0, 11, 1), 'ambiance')
+ambiance = fuzz.Consequent(np.arange(0, 11, 1), 'ambiance')
 ambiance.automf(3)
 
 # If service is poor and decor is not good, ambiance is poor
