@@ -6,7 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from skfuzzy import defuzz, interp_membership
-from skfuzzy.control.state import StatefulProperty
+from skfuzzy.control.state import StatefulProperty, StatefulProperty
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
 
@@ -31,14 +31,15 @@ class FuzzyVariableTerm(TermPrimitive):
     and good.
     """
 
+    # State variables
+    membership_value = StatefulProperty(None)
+    cuts = StatefulProperty({})
+
     def __init__(self, label, membership_function):
         super(FuzzyVariableTerm, self).__init__()
         self.label = label
         self.parent_variable = None
         self.mf = membership_function
-
-        self.membership_value = StatefulProperty(None)
-        self.cuts = StatefulProperty({})
 
     @property
     def full_label(self):
@@ -60,16 +61,14 @@ class FuzzyVariableTerm(TermPrimitive):
         return self.full_label
 
     def __and__(self, other):
-        if not (isinstance(other, FuzzyVariableTerm) \
-                or isinstance(other, FuzzyVariableTermAggregate)):
+        if not isinstance(other, TermPrimitive):
             raise ValueError("Can only construct 'AND' from the term "
                              "of a fuzzy variable")
 
         return FuzzyVariableTermAggregate(self, other, 'and')
 
     def __or__(self, other):
-        if not (isinstance(other, FuzzyVariableTerm) \
-                or isinstance(other, FuzzyVariableTermAggregate)):
+        if not isinstance(other, TermPrimitive):
             raise ValueError("Can only construct 'OR' from the term "
                              "of a fuzzy variable")
 

@@ -11,7 +11,7 @@ from .fuzzyvariable import (FuzzyVariable, FuzzyVariableTerm,
                             FuzzyAggregationMethod,
                             FuzzyVariableTermAggregate, TermPrimitive)
 from .visualization import ControlSystemVisualizer
-from .state import StatefulProperty
+from .state import StatefulProperty, StatefulProperty
 
 try:
     from collections import OrderedDict
@@ -20,11 +20,13 @@ except ImportError:
 
 
 class WeightedConsequent(object):
+
+    activation = StatefulProperty(None)
+
     def __init__(self, term, weight):
         assert isinstance(term, FuzzyVariableTerm)
         self.term = term
         self.weight = weight
-        self.activation = StatefulProperty(None)
 
     def __repr__(self):
         if self.weight == 1.:
@@ -35,11 +37,11 @@ class WeightedConsequent(object):
 
 class Rule(object):
 
+    aggregate_firing = StatefulProperty(None)
+
     def __init__(self, antecedent=None, consequent=None, label=None):
         self.label = label
         self.aggregation_method = FuzzyAggregationMethod()
-
-        self.aggregate_firing = StatefulProperty(None)
 
         self._antecedent = None
         self._consequent = None

@@ -3,7 +3,7 @@ antecedent_consequent.py : Contains Antecedent and Consequent classes.
 """
 import numpy as np
 
-from skfuzzy.control.state import StatefulProperty
+from .state import StatefulProperty
 from ..fuzzymath import interp_membership
 from .fuzzyvariable import FuzzyVariable
 from ..defuzzify import defuzz
@@ -27,11 +27,13 @@ class Antecedent(FuzzyVariable):
         Name of the universe variable.
     """
     # Customized subclass of `FuzzyVariable`
+
+    input = StatefulProperty(None)
+
     def __init__(self, universe, label):
         """""" + Antecedent.__doc__
         super(Antecedent, self).__init__(universe, label)
         self.__name__ = 'Antecedent'
-        self.input = StatefulProperty(None)
 
 
 class Consequent(FuzzyVariable):
@@ -52,11 +54,13 @@ class Consequent(FuzzyVariable):
     Consequents in the ``ControlSystem``.
     """
     # Customized subclass of `FuzzyVariable`
+
+    output = StatefulProperty(None)
+
     def __init__(self, universe, label):
         """""" + Consequent.__doc__
         super(Consequent, self).__init__(universe, label)
         self.__name__ = 'Consequent'
-        self.output = StatefulProperty(None)
 
         # Default accumulation method is to take the max of any cut
         self.accumulation_method = np.max
