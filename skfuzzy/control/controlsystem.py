@@ -378,8 +378,6 @@ class ControlSystemSimulation(object):
         #  be if the consequent has a weight, which we would apply now.
         for c in rule.consequent:
             assert isinstance(c, WeightedConsequent)
-            print "RULE", rule
-            print "FIRE", rule.aggregate_firing[self]
             c.activation[self] = rule.aggregate_firing[self] * c.weight
 
         # Step 3: Accumulation.  Apply the activation to each consequent,

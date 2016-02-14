@@ -2,7 +2,6 @@ import numpy as np
 import skfuzzy as fuzz
 
 # New Antecedent/Consequent objects hold universe variables and membership functions
-from skfuzzy.control.controlsystem import ControlSystemSimulation
 
 quality = fuzz.Antecedent(np.arange(0, 11, 1), 'quality')
 service = fuzz.Antecedent(np.arange(0, 11, 1), 'service')
@@ -38,7 +37,7 @@ tipping_ctrl = fuzz.ControlSystem([rule1, rule2, rule3])
 # View the whole system
 tipping_ctrl.view()
 
-tipping = ControlSystemSimulation(tipping_ctrl)
+tipping = fuzz.ControlSystemSimulation(tipping_ctrl)
 
 # Pass inputs to the ControlSystem using Antecedent labels with Pythonic API
 # Note: if you like passing many inputs all at once, use .inputs(dict_of_data)
@@ -53,6 +52,7 @@ print tipping.output
 tipping.print_state()
 # Viewing the Consequent again after computation shows the calculated system
 tip.view(sim=tipping)
+quality.view(sim=tipping)
 
 ###############
 # More sophesticated system

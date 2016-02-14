@@ -56,23 +56,27 @@ class FuzzyVariableVisualizer(object):
                     self.fuzzy_var.universe, zeros, cut_mfs[label],
                     facecolor=color, alpha=0.4)
 
-        # Plot defuzzified output if available
+        # Plot crisp value if available
         if len(cut_mfs) > 0 and not all(output_mf == 0):
-            crip_value = defuzz(self.fuzzy_var.universe, output_mf,
-                                self.fuzzy_var.defuzzify_method)
-            if crip_value is not None:
+            crisp_value = None
+            if hasattr(self.fuzzy_var, 'input'):
+                crisp_value = self.fuzzy_var.input[sim]
+            elif hasattr(self.fuzzy_var, 'output'):
+                crisp_value = self.fuzzy_var.output[sim]
+
+            if crisp_value is not None:
                 y = interp_membership(self.fuzzy_var.universe,
-                                      output_mf, crip_value)
+                                      output_mf, crisp_value)
                 if y < 0.1:
                     y = 1.
-                self.ax.plot([crip_value] * 2, [0, y],
+                self.ax.plot([crisp_value] * 2, [0, y],
                               color='k', lw=3, label='crisp value')
 
         return self.fig
 
     def _init_plot(self):
         # Formatting: limits
-        self.ax.set_ylim([0, 1])
+        self.ax.set_ylim([0, 1.01])
         self.ax.set_xlim([self.fuzzy_var.universe.min(),
                      self.fuzzy_var.universe.max()])
 
