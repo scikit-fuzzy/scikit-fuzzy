@@ -343,6 +343,11 @@ class ControlSystemSimulation(object):
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
+            if antecedent.terms.values()[0].membership_value[self] is not None:
+                raise RuntimeError("Antecedent already has calculated "
+                "membership.  Are you trying to computer a simulation multiple "
+                "times?  Create multiple ControlSystemSimulation objects "
+                "instead.")
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs
@@ -406,6 +411,9 @@ class ControlSystemSimulation(object):
 
 
     def print_state(self):
+        if self.ctrl.consequents.next().output[self] is None:
+            raise ValueError("Call compute method first.")
+
         print "============="
         print " Antecedents "
         print "============="
@@ -435,7 +443,7 @@ class ControlSystemSimulation(object):
             print "  Activation (THEN-clause):"
             for c in r.consequent:
                 assert isinstance(c, WeightedConsequent)
-                print "    {0:>44} : {1}".format(c.term.full_label,
+                print "    {0:>44} : {1}".format(c,
                                                  c.activation[self])
             print ""
         print ""
@@ -470,7 +478,7 @@ class CrispValueCalculator(object):
 
     def defuzz(self):
         """Derive crisp value based on membership of adjectives"""
-        output_mf, cut_mfs = self.find_crisp_value()
+        output_mf, cut_mfs = self.find_memberships()
         if len(cut_mfs) == 0:
             raise ValueError("No terms have memberships.  Make sure you "
                              "have at least one rule connected to this "
@@ -487,7 +495,7 @@ class CrispValueCalculator(object):
                 interp_membership(self.var.universe, term.mf, value)
 
 
-    def find_crisp_value(self):
+    def find_memberships(self):
         # Check we have some adjectives
         if len(self.var.terms.keys()) == 0:
             raise ValueError("Set term membership function(s) first")

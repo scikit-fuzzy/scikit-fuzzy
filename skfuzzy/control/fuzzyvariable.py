@@ -77,6 +77,11 @@ class FuzzyVariableTerm(TermPrimitive):
     def __invert__(self):
         return FuzzyVariableTermAggregate(self, None, 'not')
 
+    def __mod__(self, other):
+        from .rule import WeightedConsequent
+        assert isinstance(other, float)
+        return WeightedConsequent(self, other)
+
 
 class FuzzyAggregationMethod(object):
     def __init__(self, and_func=min, or_func=max):

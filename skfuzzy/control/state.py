@@ -51,7 +51,4 @@ class StatePerSimulation(object):
         assert isinstance(key, ControlSystemSimulation)
         self.__sim_data[key] = value
 
-    def __del__(self):
-        # For debugging
-        raise RuntimeError("Tried to delete a stateful property!")
 

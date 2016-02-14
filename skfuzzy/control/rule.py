@@ -32,7 +32,7 @@ class WeightedConsequent(object):
         if self.weight == 1.:
             return self.term.full_label
         else:
-            return "%s@%02.f" % (self.term.full_label, self.weight)
+            return "%s@%0.2f%%" % (self.term.full_label, self.weight)
 
 
 class Rule(object):
@@ -105,14 +105,17 @@ class Rule(object):
          a) Unweighted single output.
             eg: output['term']
          b) Weighted single output
-            eg: (output['term'], 0.5)
+            eg: (output['term']%0.5)
          c) Unweighted multiple output
             eg: (output1['term1'], output2['term2'])
          d) Weighted multiple output
-            eg: ( (output1['term1'],1.0), (output2['term2'],0.5) )
+            eg: ( (output1['term1']%1.0), (output2['term2']%0.5) )
         """
         if isinstance(value, FuzzyVariableTerm):
             self._consequent = [WeightedConsequent(value, 1.)]
+
+        elif isinstance(value, WeightedConsequent):
+            self._consequent = [value]
 
         elif not hasattr(value, '__iter__'):
             raise ValueError("Unexpected consequent type")
@@ -124,13 +127,10 @@ class Rule(object):
             for i in value:
                 if isinstance(i, FuzzyVariableTerm):
                     self._consequent.append(WeightedConsequent(i, 1.))
+                elif isinstance(i, WeightedConsequent):
+                    self._consequent.append(i)
                 else:
-                    try:
-                        assert len(i) == 2
-                    except:
-                        # Could die to assertion or because i is not iterable
-                        raise ValueError("Unexpected consequent type")
-                    self._consequent.append((WeightedConsequent(i[0], i[1])))
+                    raise ValueError("Unexpected consequent type")
 
     @property
     def graph(self):
