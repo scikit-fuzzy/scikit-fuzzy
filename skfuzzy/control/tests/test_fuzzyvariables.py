@@ -321,9 +321,9 @@ def test_cannot_compute():
     global ant
     global con
     with tst.assert_raises(ValueError):
-        ant.crisp_value
+        ant.input
     with tst.assert_raises(ValueError):
-        con.crisp_value
+        con.output
 
 
 if __name__ == '__main__':

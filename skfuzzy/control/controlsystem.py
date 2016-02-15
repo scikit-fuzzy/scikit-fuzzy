@@ -218,47 +218,8 @@ class ControlSystem(object):
         # We have to expose the rules in the order from antecedents to
         #  consequences.  For example if we have:
         #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
-        #  if we expose rule2 before rule1, we won't calculate correctly
-        exposed_intermediaries = [] # consequences which must be already calced
-
-        def _process_rules(rules):
-            # Recursive funcion to process rules in the correct firing order
-            len_rules = len(rules)
-            skipped_rules = []
-            while len(rules) > 0:
-                rule = rules.pop(0)
-                # Check that we've exposed all inputs to this rule
-                predecesors = self.graph.predecessors(rule)
-                p2 = filter(lambda p: isinstance(p.parent_variable,
-                                                 Consequent), predecesors)
-                p3 = filter(lambda p: p not in exposed_intermediaries, p2)
-
-                if len(p3) > 0:
-                    # We have not calculated the predecsors for this rule yet.
-                    #  Skip it for now
-                    skipped_rules.append(rule)
-                else:
-                    yield rule
-                    exposed_intermediaries.extend(self.graph.successors(rule))
-
-            if len(skipped_rules) > 0:
-                if len(skipped_rules) == len_rules:
-                    raise Exception("Unable to resolve rule execution order")
-                else:
-                    # Recurse across the skipped rules
-                    for r in _process_rules(skipped_rules):
-                        yield r
-            else:
-                raise StopIteration()
-
-        rules = []
-
-        for node in self.graph.nodes():
-            if isinstance(node, Rule):
-                rules.append(node)
-        return _process_rules(rules)
-
-
+        #  if we expose rule1 before rule2, we won't calculate correctly
+        return RuleOrderGenerator(self)
 
     @property
     def antecedents(self):
@@ -506,3 +467,73 @@ class CrispValueCalculator(object):
             np.maximum(output_mf, term_mfs[label], output_mf)
 
         return output_mf, term_mfs
+
+
+class RuleOrderGenerator(object):
+    """
+    Generator object which yields rules in the correct order required for
+    calculation.
+    """
+
+    def __init__(self, ctrl):
+        assert isinstance(ctrl, ControlSystem)
+        # This graph will represent what's been calculated so far.  We
+        # initialize it to just the antecedents as they, by definition, already
+        # have fuzzy values
+        self.calced_grpah = nx.DiGraph()
+        for a in ctrl.antecedents:
+            self.calced_grpah.add_star([a, ] + a.terms.values())
+
+        self.all_graph = ctrl.graph
+
+        self.all_rules = []
+        for node in self.all_graph.nodes():
+            if isinstance(node, Rule):
+                self.all_rules.append(node)
+
+    def __iter__(self):
+        for n, r in enumerate(self._process_rules(self.all_rules[:])):
+            yield r
+        assert n == len(self.all_rules)-1, "Not all rules exposed"
+
+    def _can_calc_rule(self, rule):
+        # Check that we've exposed all inputs to this rule by ensuring
+        # the predecessor-degree of each predecessor node is the same
+        # in both the calculation graph and overall graph
+        for p in self.all_graph.predecessors_iter(rule):
+            assert isinstance(p, FuzzyVariableTerm)
+            if p not in self.calced_grpah:
+                return False
+
+            all_degree = len(self.all_graph.predecessors(p))
+            calced_degree = len(self.calced_grpah.predecessors(p))
+            if all_degree != calced_degree:
+                return False
+        return True
+
+    def _process_rules(self, rules):
+        # Recursive funcion to process rules in the correct firing order
+        len_rules = len(rules)
+        skipped_rules = []
+        while len(rules) > 0:
+            rule = rules.pop(0)
+            if self._can_calc_rule(rule):
+                yield rule
+                # Add rule to calced graph
+                self.calced_grpah = nx.compose(self.calced_grpah, rule.graph)
+            else:
+                # We have not calculated the predecsors for this rule yet.
+                #  Skip it for now
+                skipped_rules.append(rule)
+
+        if len(skipped_rules) == 0:
+            # All done!
+            raise StopIteration()
+        else:
+            if len(skipped_rules) == len_rules:
+                # Avoid being caught in an infinite loop
+                raise RuntimeError("Unable to resolve rule execution order")
+            else:
+                # Recurse across the skipped rules
+                for r in self._process_rules(skipped_rules):
+                    yield r

@@ -2,6 +2,7 @@
 antecedent_consequent.py : Contains Antecedent and Consequent classes.
 """
 import numpy as np
+import networkx as nx
 
 from .state import StatefulProperty
 from ..fuzzymath import interp_membership
@@ -40,6 +41,13 @@ class Antecedent(FuzzyVariable):
         super(Antecedent, self).__init__(universe, label)
         self.__name__ = 'Antecedent'
 
+    @property
+    def graph(self):
+        g = nx.DiGraph()
+        for t in self.terms.values():
+            g.add_path([self, t])
+        return g
+
 
 class Consequent(FuzzyVariable):
     """
@@ -70,4 +78,9 @@ class Consequent(FuzzyVariable):
         # Default accumulation method is to take the max of any cut
         self.accumulation_method = accu_max
 
-
+    @property
+    def graph(self):
+        g = nx.DiGraph()
+        for t in self.terms.values():
+            g.add_path([t, self])
+        return g

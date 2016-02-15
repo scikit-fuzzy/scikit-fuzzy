@@ -74,7 +74,7 @@ rule2.view()
 rule5 = fuzz.Rule(ambiance['poor'], tip['poor']%.75)
 
 sys2 = fuzz.ControlSystem([rule1, rule4, rule5])
-sys2_sim = ControlSystemSimulation(sys2)
+sys2_sim = fuzz.ControlSystemSimulation(sys2)
 sys2_sim.input['quality'] = 6.5
 sys2_sim.input['service'] = 2.9
 sys2_sim.input['decor'] = 3.5

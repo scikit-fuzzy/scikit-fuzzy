@@ -140,12 +140,13 @@ class Rule(object):
         for t in self.antecedent_terms:
             assert isinstance(t, FuzzyVariableTerm)
             graph.add_path([t, self])
-            graph.add_path([t.parent_variable, t])
+            graph = nx.compose(graph, t.parent_variable.graph)
 
         # Link all consequents from me
         for c in self.consequent:
+            assert isinstance(c, WeightedConsequent)
             graph.add_path([self, c.term])
-            graph.add_path([c.term, c.term.parent_variable])
+            graph = nx.compose(graph, c.term.parent_variable.graph)
         return graph
 
 
