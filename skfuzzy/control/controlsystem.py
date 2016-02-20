@@ -25,6 +25,7 @@ class ControlSystem(object):
     """
     def __init__(self, rules=None):
         self.graph = nx.DiGraph()
+        self._rule_generator = RuleOrderGenerator(self)
 
 
         # Construct a system from provided rules, if given
@@ -45,7 +46,7 @@ class ControlSystem(object):
         #  consequences.  For example if we have:
         #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
         #  if we expose rule1 before rule2, we won't calculate correctly
-        return RuleOrderGenerator(self)
+        return self._rule_generator
 
     @property
     def antecedents(self):
@@ -91,15 +92,15 @@ class _InputAcceptor(object):
         assert len(matches) == 1
         var = matches[0]
 
-        if value > max(var.universe):
+        if value > var.universe.max():
             if self.sim.clip_to_bounds:
-                value = max(var.universe)
+                value = var.universe.max()
             else:
                 raise ValueError("Value is out of bounds.  Max is %s" %
                                  max(var.universe))
-        if value < min(var.universe):
+        if value < var.universe.min():
             if self.sim.clip_to_bounds:
-                value = min(var.universe)
+                value = var.universe.min()
             else:
                 raise ValueError("Value is out of bounds.  Min is %s" %
                                  min(var.universe))
@@ -320,39 +321,38 @@ class RuleOrderGenerator(object):
 
     def __init__(self, ctrl):
         assert isinstance(ctrl, ControlSystem)
+        self.ctrl = ctrl
+        self._cache = []
+        self._cahced_graph = None
+
+
+    def __iter__(self):
+        # Determine if we can return the cached version or must calc new
+        if self._cahced_graph is not self.ctrl.graph:
+            # The controller is still using a different version of the graph
+            #  than we created the rule order for.  Thus, make new cache
+            self._init_state()
+            self._cache = list(self._process_rules(self.all_rules[:]))
+            self._cahced_graph = self.ctrl.graph
+
+        for n, r in enumerate(self._cache):
+            yield r
+        assert n == len(self.all_rules)-1, "Not all rules exposed"
+
+    def _init_state(self):
         # This graph will represent what's been calculated so far.  We
         # initialize it to just the antecedents as they, by definition, already
         # have fuzzy values
-        self.calced_grpah = nx.DiGraph()
-        for a in ctrl.antecedents:
-            self.calced_grpah.add_star([a, ] + a.terms.values())
+        self.calced_graph = nx.DiGraph()
+        for a in self.ctrl.antecedents:
+            self.calced_graph.add_star([a, ] + a.terms.values())
 
-        self.all_graph = ctrl.graph
+        self.all_graph = self.ctrl.graph
 
         self.all_rules = []
         for node in self.all_graph.nodes():
             if isinstance(node, Rule):
                 self.all_rules.append(node)
-
-    def __iter__(self):
-        for n, r in enumerate(self._process_rules(self.all_rules[:])):
-            yield r
-        assert n == len(self.all_rules)-1, "Not all rules exposed"
-
-    def _can_calc_rule(self, rule):
-        # Check that we've exposed all inputs to this rule by ensuring
-        # the predecessor-degree of each predecessor node is the same
-        # in both the calculation graph and overall graph
-        for p in self.all_graph.predecessors_iter(rule):
-            assert isinstance(p, FuzzyVariableTerm)
-            if p not in self.calced_grpah:
-                return False
-
-            all_degree = len(self.all_graph.predecessors(p))
-            calced_degree = len(self.calced_grpah.predecessors(p))
-            if all_degree != calced_degree:
-                return False
-        return True
 
     def _process_rules(self, rules):
         # Recursive funcion to process rules in the correct firing order
@@ -363,7 +363,7 @@ class RuleOrderGenerator(object):
             if self._can_calc_rule(rule):
                 yield rule
                 # Add rule to calced graph
-                self.calced_grpah = nx.compose(self.calced_grpah, rule.graph)
+                self.calced_graph = nx.compose(self.calced_graph, rule.graph)
             else:
                 # We have not calculated the predecsors for this rule yet.
                 #  Skip it for now
@@ -380,3 +380,18 @@ class RuleOrderGenerator(object):
                 # Recurse across the skipped rules
                 for r in self._process_rules(skipped_rules):
                     yield r
+
+    def _can_calc_rule(self, rule):
+        # Check that we've exposed all inputs to this rule by ensuring
+        # the predecessor-degree of each predecessor node is the same
+        # in both the calculation graph and overall graph
+        for p in self.all_graph.predecessors_iter(rule):
+            assert isinstance(p, FuzzyVariableTerm)
+            if p not in self.calced_graph:
+                return False
+
+            all_degree = len(self.all_graph.predecessors(p))
+            calced_degree = len(self.calced_graph.predecessors(p))
+            if all_degree != calced_degree:
+                return False
+        return True
