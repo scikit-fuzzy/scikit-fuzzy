@@ -29,18 +29,18 @@ class StatePerSimulation(object):
 
     def __init__(self, initial_condition = None):
         self.default = initial_condition
-        self.__sim_data = WeakKeyDictionary()
+        self._sim_data = WeakKeyDictionary()
 
     def __getitem__(self, key):
         from .controlsystem import ControlSystemSimulation
         assert isinstance(key, ControlSystemSimulation)
         try:
-            return self.__sim_data[key]
+            return self._sim_data[key]
         except KeyError:
             if isinstance(self.default, dict) and len(self.default) == 0:
                 # Create a new empty dictionary and remember it
                 result = dict()
-                self.__sim_data[key] = result
+                self._sim_data[key] = result
                 return result
             else:
                 return self.default
@@ -49,6 +49,6 @@ class StatePerSimulation(object):
     def __setitem__(self, key, value):
         from .controlsystem import ControlSystemSimulation
         assert isinstance(key, ControlSystemSimulation)
-        self.__sim_data[key] = value
+        self._sim_data[key] = value
 
 

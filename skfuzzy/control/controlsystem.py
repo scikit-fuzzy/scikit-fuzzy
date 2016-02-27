@@ -2,6 +2,8 @@
 controlsystem.py : Contains framework for fuzzy logic control systems.
 
 """
+from __future__ import print_function
+
 import numpy as np
 import networkx as nx
 import matplotlib.pylab as plt
@@ -138,7 +140,7 @@ class ControlSystemSimulation(object):
         """
         # TODO: Tracking and caching
 
-        # Check if any fuzzy variables lack input values and fuzzyfy inputs
+        # Check if any fuzzy variables lack input values and fuzzify inputs
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
@@ -207,63 +209,61 @@ class ControlSystemSimulation(object):
 
             term.cuts[self][rule] = value
 
-
-
     def print_state(self):
         if self.ctrl.consequents.next().output[self] is None:
             raise ValueError("Call compute method first.")
 
-        print "============="
-        print " Antecedents "
-        print "============="
+        print("=============")
+        print(" Antecedents ")
+        print("=============")
         for v in self.ctrl.antecedents:
-            print "{0:<35} = {1}".format(v, v.input[self])
+            print("{0:<35} = {1}".format(v, v.input[self]))
             for term in v.terms.values():
-                print "  - {0:<32}: {1}".format(term.label,
-                                                term.membership_value[self])
-        print ""
-        print "======="
-        print " Rules "
-        print "======="
+                print("  - {0:<32}: {1}".format(term.label,
+                                                term.membership_value[self]))
+        print("")
+        print("=======")
+        print(" Rules ")
+        print("=======")
         rule_number = {}
         for rn, r in enumerate(self.ctrl.rules):
             assert isinstance(r, Rule)
             rule_number[r] = "RULE #%d" % rn
-            print "RULE #%d:\n  %s\n" % (rn, r)
+            print("RULE #%d:\n  %s\n" % (rn, r))
 
-            print "  Aggregation (IF-clause):"
+            print("  Aggregation (IF-clause):")
             for term in r.antecedent_terms:
                 assert isinstance(term, FuzzyVariableTerm)
-                print "  - {0:<55}: {1}".format(term.full_label,
-                                                term.membership_value[self])
-            print "    {0:>54} = {1}".format(r.antecedent,
-                                             r.aggregate_firing[self])
+                print("  - {0:<55}: {1}".format(term.full_label,
+                                                term.membership_value[self]))
+            print("    {0:>54} = {1}".format(r.antecedent,
+                                             r.aggregate_firing[self]))
 
-            print "  Activation (THEN-clause):"
+            print("  Activation (THEN-clause):")
             for c in r.consequent:
                 assert isinstance(c, WeightedConsequent)
-                print "    {0:>54} : {1}".format(c,
-                                                 c.activation[self])
-            print ""
-        print ""
+                print("    {0:>54} : {1}".format(c,
+                                                 c.activation[self]))
+            print("")
+        print("")
 
-        print "=============================="
-        print " Intermediaries and Conquests "
-        print "=============================="
+        print("==============================")
+        print(" Intermediaries and Conquests ")
+        print("==============================")
         for c in self.ctrl.consequents:
-            print "{0:<36} = {1}".format(c,
-                                         CrispValueCalculator(c, self).defuzz())
+            print("{0:<36} = {1}".format(c,
+                                         CrispValueCalculator(c, self).defuzz()))
 
             for term in c.terms.values():
-                print "  %s:" % term.label
+                print("  %s:" % term.label)
                 for cut_rule, cut_value in term.cuts[self].items():
                     if cut_rule not in rule_number.keys(): continue
-                    print "    {0:>32} : {1}".format(rule_number[cut_rule],
-                                                     cut_value)
+                    print("    {0:>32} : {1}".format(rule_number[cut_rule],
+                                                     cut_value))
                 accu = "Accumulate using %s" % c.accumulation_method.func_name
-                print "    {0:>32} : {1}".format(accu,
-                                                term.membership_value[self])
-            print ""
+                print("    {0:>32} : {1}".format(accu,
+                                                term.membership_value[self]))
+            print("")
 
 
 class CrispValueCalculator(object):
@@ -323,17 +323,17 @@ class RuleOrderGenerator(object):
         assert isinstance(ctrl, ControlSystem)
         self.ctrl = ctrl
         self._cache = []
-        self._cahced_graph = None
+        self._cached_graph = None
 
 
     def __iter__(self):
         # Determine if we can return the cached version or must calc new
-        if self._cahced_graph is not self.ctrl.graph:
+        if self._cached_graph is not self.ctrl.graph:
             # The controller is still using a different version of the graph
             #  than we created the rule order for.  Thus, make new cache
             self._init_state()
             self._cache = list(self._process_rules(self.all_rules[:]))
-            self._cahced_graph = self.ctrl.graph
+            self._cached_graph = self.ctrl.graph
 
         for n, r in enumerate(self._cache):
             yield r
@@ -375,7 +375,10 @@ class RuleOrderGenerator(object):
         else:
             if len(skipped_rules) == len_rules:
                 # Avoid being caught in an infinite loop
-                raise RuntimeError("Unable to resolve rule execution order")
+                raise RuntimeError("Unable to resolve rule execution order. "
+                                   "The most likely reason if that you have "
+                                   "two or more rules that depend on eachother."
+                                   " Please check the rule graph for loops.")
             else:
                 # Recurse across the skipped rules
                 for r in self._process_rules(skipped_rules):

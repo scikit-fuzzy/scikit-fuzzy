@@ -67,6 +67,8 @@ class FuzzyVariableVisualizer(object):
             if crisp_value is not None:
                 y = interp_membership(self.fuzzy_var.universe,
                                       output_mf, crisp_value)
+                # Small values are hard to see, so simply set them to 1 so
+                #  we can see them
                 if y < 0.1:
                     y = 1.
                 self.ax.plot([crisp_value] * 2, [0, y],
