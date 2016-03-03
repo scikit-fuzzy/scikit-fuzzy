@@ -10,9 +10,9 @@ function insert_version_links() {
             }
         }
         document.write(open_list);
-        document.write('<a href="URL">skimage VERSION</a> </li>\n'
+        document.write('<a href="URL">skfuzzy VERSION</a> </li>\n'
                         .replace('VERSION', versions[i])
-                        .replace('URL', 'http://scikit-image.org/docs/' + versions[i]));
+                        .replace('URL', 'http://http://pythonhosted.org/scikit-fuzzy/' + versions[i]));
     }
 }
 

@@ -36,7 +36,7 @@ Sections
 
    * - `Installation Steps <install.html>`_
 
-       How to install skimage.
+       How to install skfuzzy.
 
      - `User Guide <user_guide.html>`_
 

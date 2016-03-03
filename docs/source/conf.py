@@ -159,7 +159,7 @@ html_theme_path = ['themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'skimage v{0} docs'.format(version)
+html_title = 'skfuzzy v{0} docs'.format(version)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
