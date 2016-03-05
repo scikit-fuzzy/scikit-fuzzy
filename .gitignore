@@ -29,3 +29,4 @@ docs/source/_static/random.js
 *_build*
 docs/logo/*.png
 docs/source/gitwash
+.idea/

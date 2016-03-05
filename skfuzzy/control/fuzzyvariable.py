@@ -2,9 +2,11 @@
 fuzzyvariable.py : Contains base fuzzy variable class.
 """
 import numpy as np
+import networkx as nx
 import matplotlib.pyplot as plt
 
 from skfuzzy import defuzz, interp_membership
+from skfuzzy.control.state import StatefulProperty, StatefulProperty
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
 
@@ -13,8 +15,32 @@ try:
 except ImportError:
     from .ordereddict import OrderedDict
 
+class TermPrimitive(object):
+    """Marker class used for type checking when a term
+    or term aggregate is expected"""
+    pass
 
-class FuzzyVariableTerm(object):
+    def membership_value(self):
+        raise NotImplementedError("Implement in concrete class")
+
+    def __and__(self, other):
+        if not isinstance(other, TermPrimitive):
+            raise ValueError("Can only construct 'AND' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'and')
+
+    def __or__(self, other):
+        if not isinstance(other, TermPrimitive):
+            raise ValueError("Can only construct 'OR' from the term "
+                             "of a fuzzy variable")
+
+        return FuzzyVariableTermAggregate(self, other, 'or')
+
+    def __invert__(self):
+        return FuzzyVariableTermAggregate(self, None, 'not')
+
+class FuzzyVariableTerm(TermPrimitive):
     """
     An term and associated member function for a fuzzy varaible.
     For example, if one were creating a FuzzyVariable with a simple three-point
@@ -22,12 +48,15 @@ class FuzzyVariableTerm(object):
     and good.
     """
 
-    def __init__(self, label, membership_function):
-        self.label = label
-        self.mf = membership_function
+    # State variables
+    membership_value = StatefulProperty(None)
+    cuts = StatefulProperty({})
 
+    def __init__(self, label, membership_function):
+        super(FuzzyVariableTerm, self).__init__()
+        self.label = label
         self.parent_variable = None
-        self.membership_value = None
+        self.mf = membership_function
 
     @property
     def full_label(self):
@@ -35,9 +64,6 @@ class FuzzyVariableTerm(object):
         if self.parent_variable is None:
             raise ValueError("This term must be bound to a parent first")
         return self.parent_variable.label + "[" + self.label + "]"
-
-    def __repr__(self):
-        return self.full_label
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
@@ -47,6 +73,98 @@ class FuzzyVariableTerm(object):
         # Emphasize my membership function
         viz.plots[self.label][0].set_linewidth(3)
         viz.fig.show()
+
+    def __repr__(self):
+        return self.full_label
+
+    def __mod__(self, other):
+        from .rule import WeightedConsequent
+        assert isinstance(other, float)
+        return WeightedConsequent(self, other)
+
+
+class FuzzyAggregationMethod(object):
+    def __init__(self, and_func=min, or_func=max):
+        # Default and to OR = max and AND = min
+        self.and_agg_func = and_func
+        self.or_agg_func = or_func
+
+
+class _MembershipValueAccessor(object):
+
+    def __init__(self, agg):
+        assert isinstance(agg, FuzzyVariableTermAggregate)
+        self.agg = agg
+
+    def __getitem__(self, key):
+        from .controlsystem import ControlSystemSimulation
+        assert isinstance(key, ControlSystemSimulation)
+        # Perform aggregation to determine membership
+        term1 = self.agg.term1.membership_value[key]
+        if self.agg.term2 is not None:
+            term2 = self.agg.term2.membership_value[key]
+
+        if self.agg.kind == 'and':
+            return self.agg.agg_method.and_agg_func(
+                term1, term2)
+        elif self.agg.kind == 'or':
+            return self.agg.agg_method.or_agg_func(
+                term1, term2)
+        elif self.agg.kind == 'not':
+            return 1. - self.agg.term1.membership_value[key]
+        else:
+            raise NotImplementedError()
+
+
+
+class FuzzyVariableTermAggregate(TermPrimitive):
+    """
+    Used to track the creation of AND and OR clauses used when building
+    the antecedent of a rule.
+    """
+
+    def __init__(self, term1, term2, kind):
+        assert isinstance(term1, TermPrimitive)
+        if kind in ('and','or'):
+            assert isinstance(term2, TermPrimitive)
+        elif kind == 'not':
+            assert term2 is None
+        else:
+            raise ValueError("Unexpected kind")
+
+        self.term1 = term1
+        self.term2 = term2
+        self.kind = kind
+        self._agg_method = FuzzyAggregationMethod()
+        self.membership_value = _MembershipValueAccessor(self)
+
+    def __repr__(self):
+        def _term_to_str(term):
+            if isinstance(term, FuzzyVariableTerm):
+                return term.full_label
+            elif isinstance(term, FuzzyVariableTermAggregate):
+                return "(%s)" % term
+
+        if self.kind == 'not':
+            return "NOT-%s" % _term_to_str(self.term1)
+
+        return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
+                             _term_to_str(self.term2))
+
+    @property
+    def agg_method(self):
+        return self._agg_method
+    @agg_method.setter
+    def agg_method(self, value):
+        if not isinstance(value, FuzzyAggregationMethod):
+            raise ValueError("Expected FuzzyAggregationMethod")
+        self._agg_method = value
+
+        # Propegate agg method down to all agg terms below me
+        for term in (self.term1, self.term2):
+            if isinstance(term, FuzzyVariableTermAggregate):
+                term.agg_method = value
+
 
 
 class FuzzyVariable(object):
@@ -87,25 +205,6 @@ class FuzzyVariable(object):
         self.terms = OrderedDict()
 
         self._id = id(self)
-        self._crisp_value_accessed = False
-
-        class _NotGenerator(object):
-            def __init__(self, var):
-                self.var = var
-
-            def __getitem__(self, key):
-                # Get the positive version of the term
-                lbl = "NOT-" + key
-                if lbl in self.var.terms.keys():
-                    return self.var[lbl]
-
-                posterm = self.var[key]
-                negterm = FuzzyVariableTerm(lbl, 1. - posterm.mf)
-                if posterm.membership_value is not None:
-                    negterm.membership_value = 1. - posterm.membership_value
-                self.var[lbl] = negterm
-                return negterm
-        self.not_ = _NotGenerator(self)
 
     def __repr__(self):
         return "{0}: {1}".format(self.__name__, self.label)
@@ -154,11 +253,6 @@ class FuzzyVariable(object):
             # function
             item = FuzzyVariableTerm(key, np.asarray(item))
 
-        if self._crisp_value_accessed:
-            # TODO: Overcome this limitation
-            raise ValueError("Cannot add adjectives after accessing the "
-                             "crisp value of this variable.")
-
         mf = item.mf
 
         if mf.size != self.universe.size:
@@ -174,47 +268,6 @@ class FuzzyVariable(object):
         # If above pass, add the new membership function
         item.parent_variable = self
         self.terms[key] = item
-
-    @property
-    def crisp_value(self):
-        """Derive crisp value based on membership of adjectives"""
-        output_mf, cut_mfs = self._find_crisp_value()
-        if len(cut_mfs) == 0:
-            raise ValueError("No terms have memberships.  Make sure you "
-                             "have at least one rule connected to this "
-                             "variable and have run the rules calculation.")
-        self._crisp_value_accessed = True
-        return defuzz(self.universe, output_mf, self.defuzzify_method)
-
-    @crisp_value.setter
-    def crisp_value(self, value):
-        """Propagate crisp value down to adjectives by calculating membership"""
-        if len(self.terms) == 0:
-            raise ValueError("Set Term membership function(s) first")
-
-        for label, adj in self.terms.items():
-            adj.membership_value = \
-                                interp_membership(self.universe, adj.mf, value)
-        self._crisp_value_accessed = True
-
-    def _find_crisp_value(self):
-        # Check we have some adjectives
-        if len(self.terms.keys()) == 0:
-            raise ValueError("Set term membership function(s) first")
-
-        # Initilize membership
-        output_mf = np.zeros_like(self.universe, dtype=np.float64)
-
-        # Build output membership function
-        cut_mfs = {}
-        for label, term in self.terms.items():
-            cut = term.membership_value
-            if cut is None:
-                continue # No membership defined for this adjective
-            cut_mfs[label] = np.minimum(cut, term.mf)
-            np.maximum(output_mf, cut_mfs[label], output_mf)
-
-        return output_mf, cut_mfs
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__

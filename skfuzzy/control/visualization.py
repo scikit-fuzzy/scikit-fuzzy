@@ -4,7 +4,9 @@ visualization.py : Contains classes to help with visualizing a control system
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+
 from .. import defuzz, interp_membership
+
 
 class FuzzyVariableVisualizer(object):
 
@@ -25,15 +27,21 @@ class FuzzyVariableVisualizer(object):
         self.fig, self.ax = plt.subplots()
         self.plots = {}
 
-    def view(self, *args, **kwargs):
+    def view(self, sim=None, *args, **kwargs):
         """
         Visualize this variable and its membership functions with Matplotlib.
         Additionally, show the current output membership functions.
         """
+        from .controlsystem import (CrispValueCalculator, ControlSystem,
+                                    ControlSystemSimulation)
+        if sim is None:
+            # Create an empty simulation so we can view with default values
+            sim = ControlSystemSimulation(ControlSystem())
 
         self._init_plot()
 
-        output_mf, cut_mfs = self.fuzzy_var._find_crisp_value()
+        crispy = CrispValueCalculator(self.fuzzy_var, sim)
+        output_mf, cut_mfs = crispy.find_memberships()
 
         # Plot the output membership functions
         cut_plots = {}
@@ -48,21 +56,29 @@ class FuzzyVariableVisualizer(object):
                     self.fuzzy_var.universe, zeros, cut_mfs[label],
                     facecolor=color, alpha=0.4)
 
-        # Plot defuzzified output if available
-        if len(cut_mfs) > 0:
-            crip_value = defuzz(self.fuzzy_var.universe, output_mf,
-                                self.fuzzy_var.defuzzify_method)
-            if crip_value is not None:
+        # Plot crisp value if available
+        if len(cut_mfs) > 0 and not all(output_mf == 0):
+            crisp_value = None
+            if hasattr(self.fuzzy_var, 'input'):
+                crisp_value = self.fuzzy_var.input[sim]
+            elif hasattr(self.fuzzy_var, 'output'):
+                crisp_value = self.fuzzy_var.output[sim]
+
+            if crisp_value is not None:
                 y = interp_membership(self.fuzzy_var.universe,
-                                      output_mf, crip_value)
-                self.ax.plot([crip_value] * 2, [0, y],
+                                      output_mf, crisp_value)
+                # Small values are hard to see, so simply set them to 1 so
+                #  we can see them
+                if y < 0.1:
+                    y = 1.
+                self.ax.plot([crisp_value] * 2, [0, y],
                               color='k', lw=3, label='crisp value')
 
         return self.fig
 
     def _init_plot(self):
         # Formatting: limits
-        self.ax.set_ylim([0, 1])
+        self.ax.set_ylim([0, 1.01])
         self.ax.set_xlim([self.fuzzy_var.universe.min(),
                      self.fuzzy_var.universe.max()])
 
