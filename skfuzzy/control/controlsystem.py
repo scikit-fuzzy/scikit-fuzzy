@@ -144,7 +144,7 @@ class ControlSystemSimulation(object):
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
-            if antecedent.terms.values()[0].membership_value[self] is not None:
+            if list(antecedent.terms.values())[0].membership_value[self] is not None:
                 raise RuntimeError("Antecedent already has calculated "
                 "membership.  Are you trying to computer a simulation multiple "
                 "times?  Create multiple ControlSystemSimulation objects "
@@ -345,7 +345,7 @@ class RuleOrderGenerator(object):
         # have fuzzy values
         self.calced_graph = nx.DiGraph()
         for a in self.ctrl.antecedents:
-            self.calced_graph.add_star([a, ] + a.terms.values())
+            self.calced_graph.add_star([a, ] + list(a.terms.values()))
 
         self.all_graph = self.ctrl.graph
 
