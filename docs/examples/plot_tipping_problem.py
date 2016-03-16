@@ -1,7 +1,11 @@
 """
-===================
-The Tipping Problem
-===================
+==================================
+The Tipping Problem - The Hard Way
+==================================
+
+ Note: This method computes everything by hand, step by step. For most people,
+ the new API for fuzzy systems will be preferable. The same problem is solved
+ with the new API `in this example <./plot_tipping_problem_newapi.html>`_.
 
 The 'tipping problem' is commonly used to illustrate the power of fuzzy logic
 principles to generate complex behavior from a compact, intuitive set of
@@ -172,9 +176,8 @@ Finally, to get a real world answer, we return to *crisp* logic from the
 world of fuzzy membership functions. For the purposes of this example
 the centroid method will be used.
 
-The result is a tip of 20.2%.
------------------------------
-
+The result is a tip of **20.2%**.
+---------------------------------
 """
 
 # Aggregate all three output membership functions together

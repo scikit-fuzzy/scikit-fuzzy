@@ -127,6 +127,7 @@ gh-pages:
 	$(PYTHON) gh-pages.py
 
 gitwash:
+	git submodule update --init --recursive
 	$(PYTHON) tools/gitwash/gitwash_dumper.py source scikit-fuzzy \
 	--project-url=http://scikit-fuzzy.org \
 	--project-ml-url=http://groups.google.com/group/scikit-fuzzy \
