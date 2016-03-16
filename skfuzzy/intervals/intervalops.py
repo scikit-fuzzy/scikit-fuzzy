@@ -1,6 +1,5 @@
 """
 intervalops.py : Functions for proper mathematical treatment of intervals.
-
 """
 from __future__ import division, print_function
 import numpy as np
@@ -9,7 +8,7 @@ from ..defuzzify import lambda_cut_series
 
 def addval(interval1, interval2):
     """
-    Adds intervals interval1 and interval2.
+    Add intervals interval1 and interval2.
 
     Parameters
     ----------
@@ -40,7 +39,7 @@ def addval(interval1, interval2):
 
 def divval(interval1, interval2):
     """
-    Divides interval2 into interval1, by inverting interval2 and multiplying.
+    Divide ``interval2`` into ``interval1``, by inversion and multiplication.
 
     Parameters
     ----------
@@ -68,7 +67,7 @@ def divval(interval1, interval2):
 
 def dsw_add(x, mfx, y, mfy, n):
     """
-    Add two fuzzy variables together using the restricted DSW method [1]_.
+    Add two fuzzy variables together using the restricted DSW method [1].
 
     Parameters
     ----------
@@ -126,7 +125,7 @@ def dsw_add(x, mfx, y, mfy, n):
 
 def dsw_div(x, mfx, y, mfy, n):
     """
-    Divide one fuzzy variable by another using the restricted DSW method [1]_.
+    Divide one fuzzy variable by another using the restricted DSW method [1].
 
     Parameters
     ----------
@@ -185,7 +184,7 @@ def dsw_div(x, mfx, y, mfy, n):
 
 def dsw_mult(x, mfx, y, mfy, n):
     """
-    Multiply two fuzzy variables using the restricted DSW method [1]_.
+    Multiply two fuzzy variables using the restricted DSW method [1].
 
     Parameters
     ----------
@@ -244,7 +243,7 @@ def dsw_mult(x, mfx, y, mfy, n):
 
 def dsw_sub(x, mfx, y, mfy, n):
     """
-    Subtract a fuzzy variable from another by the restricted DSW method [1]_.
+    Subtract a fuzzy variable from another by the restricted DSW method [1].
 
     Parameters
     ----------
@@ -304,7 +303,7 @@ def dsw_sub(x, mfx, y, mfy, n):
 
 def multval(interval1, interval2):
     """
-    Multiplies intervals interval1 and interval2.
+    Multiply intervals interval1 and interval2.
 
     Parameters
     ----------
@@ -337,7 +336,7 @@ def multval(interval1, interval2):
 
 def scaleval(q, interval):
     """
-    Multiplies scalar q with interval interval.
+    Multiply scalar q with interval ``interval``.
 
     Parameters
     ----------
@@ -365,7 +364,7 @@ def scaleval(q, interval):
 
 def subval(interval1, interval2):
     """
-    Subtracts interval interval2 from interval interval1.
+    Subtract interval interval2 from interval interval1.
 
     Parameters
     ----------
