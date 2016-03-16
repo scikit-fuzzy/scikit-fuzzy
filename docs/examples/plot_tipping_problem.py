@@ -23,7 +23,8 @@ We would formulate this problem as:
 
 * Antecednets (Inputs)
    - `service`
-      * Universe (ie, crisp value range): How good was the service of the waitress, on a scale of 1 to 10?
+      * Universe (ie, crisp value range): How good was the service of the wait
+        staff, on a scale of 0 to 10?
       * Fuzzy set (ie, fuzzy value range): poor, acceptable, amazing
    - `food quality`
       * Universe: How tasty was the food, on a scale of 0 to 10?
@@ -33,9 +34,11 @@ We would formulate this problem as:
       * Universe: How much should we tip, on a scale of 0% to 25%
       * Fuzzy set: low, medium, high
 * Rules
-   - IF the *service* was good  *or* the *food quality* was good, THEN the tip will be high.
+   - IF the *service* was good  *or* the *food quality* was good,
+     THEN the tip will be high.
    - IF the *service* was average, THEN the tip will be medium.
-   - IF the *service* was poor *and* the *food quality* was poor THEN the tip will be low.
+   - IF the *service* was poor *and* the *food quality* was poor
+     THEN the tip will be low.
 * Usage
    - If I tell this controller that I rated:
       * the service as 9.8, and
@@ -46,14 +49,15 @@ We would formulate this problem as:
 
 Creating the Tipping Controller Using the skfuzzy control API
 -------------------------------------------------------------
+
 We can use the `skfuzzy` control API model this controller.  First, let's
 start by defining the fuzzy variables that we use.
 """
 import numpy as np
 import skfuzzy as fuzz
 
-# New Antecedent/Consequent objects hold universe variables and membership functions
-
+# New Antecedent/Consequent objects hold universe variables and membership
+# functions
 quality = fuzz.Antecedent(np.arange(0, 11, 1), 'quality')
 service = fuzz.Antecedent(np.arange(0, 11, 1), 'service')
 tip = fuzz.Consequent(np.arange(0, 26, 1), 'tip')
@@ -62,7 +66,8 @@ tip = fuzz.Consequent(np.arange(0, 26, 1), 'tip')
 quality.automf(3)
 service.automf(3)
 
-# Custom membership functions can be built interactively with a familiar, Pythonic API
+# Custom membership functions can be built interactively with a familiar,
+# Pythonic API
 tip['low'] = fuzz.trimf(tip.universe, [0, 0, 13])
 tip['medium'] = fuzz.trimf(tip.universe, [0, 13, 25])
 tip['high'] = fuzz.trimf(tip.universe, [13, 25, 25])
@@ -112,6 +117,7 @@ rule1.view()
 
 Control System Creation and Simulation
 ---------------------------------------
+
 Now that we have our rules defined, we can simply create a control system
 via:
 """
@@ -150,6 +156,7 @@ tip.view(sim=tipping)
 
 """
 .. image:: PLOT2RST.current_figure
+
 The resulting suggested tip is **20.24%**.
 
 Final thoughts
