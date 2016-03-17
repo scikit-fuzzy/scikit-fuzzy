@@ -9,7 +9,7 @@ expert rules.
 
 If you're new to the world of fuzzy control systems, you might want
 to check out the `Fuzzy Control Primer
-<../../userguide/fuzzy_control_primer.html>`_
+<../userguide/fuzzy_control_primer.html>`_
 before reading through this worked example.
 
 The Tipping Problem
