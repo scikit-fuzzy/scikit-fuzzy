@@ -69,4 +69,4 @@ Example
 -------
 To see a worked example of the tipping problem using the :mod:`scikit-fuzzy`
 library visit the `Fuzzy Control Systems example
-<../../auto_examples/plot_tipping_problem.html>`_.
+<../auto_examples/plot_tipping_problem.html>`_.
