@@ -1,6 +1,5 @@
 """
 cmeans.py : Fuzzy C-means clustering algorithm.
-
 """
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -8,12 +7,12 @@ from scipy.spatial.distance import cdist
 
 def _cmeans0(data, u_old, c, m):
     """
-    Single step in generic fuzzy c-means clustering algorithm. Modified from
-    Ross, Fuzzy Logic w/Engineering Applications (2010) p.352-353, equations
-    10.28 - 10.35.
+    Single step in generic fuzzy c-means clustering algorithm.
+
+    Modified from Ross, Fuzzy Logic w/Engineering Applications (2010),
+    pages 352-353, equations 10.28 - 10.35.
 
     Parameters inherited from cmeans()
-
     """
     # Normalizing, then eliminating any potential zero values.
     u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
@@ -39,8 +38,7 @@ def _cmeans0(data, u_old, c, m):
 
 def _distance(data, centers):
     """
-    Calcuate Euclidean distance from each point to each cluster center,
-    returning results in matrix form.
+    Euclidean distance from each point to each cluster center.
 
     Parameters
     ----------
@@ -65,7 +63,7 @@ def _distance(data, centers):
 def _fp_coeff(u):
     """
     Fuzzy partition coefficient `fpc` relative to fuzzy c-partitioned
-    matrix u. Measures 'fuzziness' in partitioned clustering.
+    matrix `u`. Measures 'fuzziness' in partitioned clustering.
 
     Parameters
     ----------
@@ -86,7 +84,7 @@ def _fp_coeff(u):
 
 def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     """
-    Fuzzy c-means clustering algorithm [1]_.
+    Fuzzy c-means clustering algorithm [1].
 
     Parameters
     ----------
@@ -176,7 +174,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
 def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
                    seed=None):
     """
-    Prediction of new data in given a trained fuzzy c-means framework [1]_.
+    Prediction of new data in given a trained fuzzy c-means framework [1].
 
     Parameters
     ----------

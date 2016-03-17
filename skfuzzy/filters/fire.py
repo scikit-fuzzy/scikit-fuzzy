@@ -10,7 +10,7 @@ from ..membership import trimf
 
 def fire1d(x, l1=0, l2=1):
     """
-    1-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1]_
+    1-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1].
 
     FIRE filtering is nonlinear, and is specifically designed to remove
     impulse (salt and pepper) noise.
@@ -91,7 +91,7 @@ def fire1d(x, l1=0, l2=1):
 
 def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     """
-    2-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1]_
+    2-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1].
 
     FIRE filtering is nonlinear, and is specifically designed to remove
     impulse (salt and pepper) noise.
