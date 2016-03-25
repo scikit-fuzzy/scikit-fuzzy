@@ -14,7 +14,7 @@ Recommended Use
 """
 __all__ = []
 
-__version__ = '0.1.4'
+__version__ = '0.2dev'
 
 ######################
 # Subpackage imports #
@@ -61,6 +61,15 @@ from skfuzzy.control import *
 __all__.extend(_control.__all__)
 
 # Enable testing of the package
+import os.path as osp
+import imp
+import functools
+import warnings
+import sys
+
+pkg_dir = osp.abspath(osp.dirname(__file__))
+data_dir = osp.join(pkg_dir, 'data')
+
 try:
     imp.find_module('nose')
 except ImportError:

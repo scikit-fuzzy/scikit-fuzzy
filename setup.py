@@ -20,7 +20,7 @@ import os
 import sys
 
 import setuptools
-from distutils.command.build_py import setup
+from distutils.command.build_py import build_py
 
 if sys.version_info[0] < 3:
     import __builtin__ as builtins
@@ -36,14 +36,18 @@ else:
 builtins.__SKIMAGE_SETUP__ = True
 
 
-with open('skimage/__init__.py') as fid:
+with open('skfuzzy/__init__.py') as fid:
     for line in fid:
         if line.startswith('__version__'):
             VERSION = line.strip().split()[-1][1:-1]
             break
 
-with open('requirements.txt') as fid:
-    INSTALL_REQUIRES = [l.strip() for l in fid.readlines() if l]
+with open('DEPENDS.txt') as fid:
+    INSTALL_REQUIRES = []
+    for line in fid.readlines():
+        if line == '' or line[0] == '#' or line[0].isspace():
+            continue
+        INSTALL_REQUIRES.append(line.strip())
 
 # requirements for those browsing PyPI
 REQUIRES = [r.replace('>=', ' (>= ') + ')' for r in INSTALL_REQUIRES]
@@ -75,7 +79,7 @@ if __name__ == "__main__":
         from numpy.distutils.core import setup
         extra = {'configuration': configuration}
         # Do not try and upgrade larger dependencies
-        for lib in ['numpy', 'matplotlib']:
+        for lib in ['numpy', 'scipy', 'matplotlib']:
             try:
                 __import__(lib)
                 INSTALL_REQUIRES = [i for i in INSTALL_REQUIRES
@@ -113,13 +117,13 @@ if __name__ == "__main__":
         version=VERSION,
         package_data={
             # Include saved test image
-            '': ['*.npy', '*.md', ],
+            '': ['*.npy', '*.md', '*.txt'],
         },
 
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
-            'Intended Audience :: Developers, scientists',
+            'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
             'Programming Language :: Python',
@@ -130,11 +134,12 @@ if __name__ == "__main__":
             'Operating System :: Unix',
             'Operating System :: MacOS'],
 
-        configuration=configuration,
-        setup_requires=SETUP_REQUIRES,
         install_requires=INSTALL_REQUIRES,
         requires=REQUIRES,
         packages=setuptools.find_packages(exclude=['docs']),
         include_package_data=True,
-        zip_safe=False
+        zip_safe=False,
+
+        cmdclass={'build_py': build_py},
+        **extra
     )
