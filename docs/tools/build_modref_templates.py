@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""Script to auto-generate our API docs.
-"""
+"""Script to auto-generate our API docs."""
 # stdlib imports
 import sys
 
@@ -36,10 +35,10 @@ if __name__ == '__main__':
     # are not (re)generated. This avoids automatic generation of documentation
     # for older or newer versions if such versions are installed on the system.
 
-    setup_lines = open('../setup.py').readlines()
+    source_lines = open('../skimage/__init__.py').readlines()
     version = 'vUndefined'
-    for l in setup_lines:
-        if l.startswith('VERSION'):
+    for l in source_lines:
+        if l.startswith('__version__'):
             source_version = LooseVersion(l.split("'")[1])
             break
 

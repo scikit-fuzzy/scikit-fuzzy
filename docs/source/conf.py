@@ -95,10 +95,10 @@ version = '0.1'
 #import skfuzzy.version
 #release = skfuzzy.version
 
-setup_lines = open('../../setup.py').readlines()
+setup_lines = open('../../skimage/__init__.py').readlines()
 version = 'vUndefined'
 for l in setup_lines:
-    if l.startswith('VERSION'):
+    if l.startswith('__version__'):
         version = l.split("'")[1]
         break
 
