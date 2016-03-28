@@ -1,7 +1,8 @@
 #################################
 # Requirements for scikit-fuzzy #
 #################################
-# The current requirements to install and run the package are stored in
-# ./setup.py and are grabbed from there at install time via Pip.
+# The current requirements to install and run the package
 
--e .
+numpy>=1.6.0
+scipy>=0.9.0
+networkx>=1.9.0

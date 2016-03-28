@@ -15,73 +15,44 @@ MAINTAINER_EMAIL    = 'joshua.dale.warner@gmail.com'
 LICENSE             = 'Modified BSD'
 URL                 = 'https://pypi.python.org/pypi/scikit-fuzzy'
 DOWNLOAD_URL        = 'https://github.com/scikit-fuzzy/scikit-fuzzy'
-VERSION             = '0.2dev'
-PYTHON_VERSION      = (2, 5)
-DEPENDENCIES        = {'numpy': (1, 6),
-                       'scipy': (0, 9),
-                       'networkx': (1, 9)}
-
 
 import os
 import sys
-import re
+
 import setuptools
-from numpy.distutils.core import setup
-try:
-    from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    from distutils.command.build_py import build_py
+from distutils.command.build_py import build_py
+
+if sys.version_info[0] < 3:
+    import __builtin__ as builtins
+else:
+    import builtins
+
+# This is a bit (!) hackish: we are setting a global variable so that the main
+# skimage __init__ can detect if it is being loaded by the setup routine, to
+# avoid attempting to load components that aren't built yet:
+# the numpy distutils extensions that are used by scikit-image to recursively
+# build the compiled extensions in sub-packages is based on the Python import
+# machinery.
+builtins.__SKIMAGE_SETUP__ = True
 
 
-def check_requirements():
-    if sys.version_info < PYTHON_VERSION:
-        raise SystemExit('Python version %d.%d required; found %d.%d.'
-                         % (PYTHON_VERSION[0], PYTHON_VERSION[1],
-                            sys.version_info[0], sys.version_info[1]))
+with open('skfuzzy/__init__.py') as fid:
+    for line in fid:
+        if line.startswith('__version__'):
+            VERSION = line.strip().split()[-1][1:-1]
+            break
 
-    for package_name, min_version in DEPENDENCIES.items():
-        dep_err = False
-        try:
-            package = __import__(package_name)
-        except ImportError:
-            dep_err = True
-        else:
-            package_version = get_package_version(package)
-            if min_version > package_version:
-                dep_err = True
+with open('DEPENDS.txt') as fid:
+    INSTALL_REQUIRES = []
+    for line in fid.readlines():
+        if line == '' or line[0] == '#' or line[0].isspace():
+            continue
+        INSTALL_REQUIRES.append(line.strip())
 
-        if dep_err:
-            raise ImportError('`%s` version %d.%d or later required.'
-                              % ((package_name, ) + min_version))
-
-
-def get_package_version(package):
-    version = []
-    for version_attr in ('version', 'VERSION', '__version__'):
-        if hasattr(package, version_attr) \
-                and isinstance(getattr(package, version_attr), str):
-            version_info = getattr(package, version_attr, '')
-            for part in re.split('\D+', version_info):
-                try:
-                    version.append(int(part))
-                except ValueError:
-                    pass
-
-    return tuple(version)
-
-
-def write_version_py(filename='skfuzzy/version.py'):
-    template = """# THIS FILE IS GENERATED FROM THE SKFUZZY SETUP.PY
-version='%s'
-"""
-
-    vfile = open(os.path.join(os.path.dirname(__file__),
-                              filename), 'w')
-
-    try:
-        vfile.write(template % VERSION)
-    finally:
-        vfile.close()
+# requirements for those browsing PyPI
+REQUIRES = [r.replace('>=', ' (>= ') + ')' for r in INSTALL_REQUIRES]
+REQUIRES = [r.replace('==', ' (== ') for r in REQUIRES]
+REQUIRES = [r.replace('[array]', '') for r in REQUIRES]
 
 
 def configuration(parent_package='', top_path=None):
@@ -91,20 +62,48 @@ def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration(None, parent_package, top_path)
 
-    config.set_options(ignore_setup_xxx_py=True,
-                       assume_default_configuration=True,
-                       delegate_options_to_subpackages=True,
-                       quiet=True)
+    config.set_options(
+        ignore_setup_xxx_py=True,
+        assume_default_configuration=True,
+        delegate_options_to_subpackages=True,
+        quiet=True)
 
     config.add_subpackage('skfuzzy')
-    # config.add_data_dir('skfuzzy/data')
+    config.add_data_dir('skfuzzy/data')
 
     return config
 
 
-if __name__ == '__main__':
-    check_requirements()
-    write_version_py()
+if __name__ == "__main__":
+    try:
+        from numpy.distutils.core import setup
+        extra = {'configuration': configuration}
+        # Do not try and upgrade larger dependencies
+        for lib in ['numpy', 'scipy', 'matplotlib']:
+            try:
+                __import__(lib)
+                INSTALL_REQUIRES = [i for i in INSTALL_REQUIRES
+                                    if lib not in i]
+            except ImportError:
+                pass
+    except ImportError:
+        if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
+                                   sys.argv[1] in ('--help-commands',
+                                                   '--version',
+                                                   'clean')):
+            # For these actions, NumPy is not required.
+            #
+            # They are required to succeed without Numpy for example when
+            # pip is used to install scikit-image when Numpy is not yet
+            # present in the system.
+            from setuptools import setup
+            extra = {}
+        else:
+            print('To install scikit-fuzzy from source, you will need numpy.\n' +
+                  'Install numpy with pip:\n' +
+                  'pip install numpy\n'
+                  'Or use your operating system package manager.')
+            sys.exit(1)
 
     setup(
         name=DISTNAME,
@@ -118,13 +117,13 @@ if __name__ == '__main__':
         version=VERSION,
         package_data={
             # Include saved test image
-            '': ['*.npy', '*.md', ],
+            '': ['*.npy', '*.md', '*.txt'],
         },
 
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
-            'Intended Audience :: Developers, scientists',
+            'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
             'Programming Language :: Python',
@@ -135,8 +134,12 @@ if __name__ == '__main__':
             'Operating System :: Unix',
             'Operating System :: MacOS'],
 
-        configuration=configuration,
+        install_requires=INSTALL_REQUIRES,
+        requires=REQUIRES,
+        packages=setuptools.find_packages(exclude=['docs']),
+        include_package_data=True,
+        zip_safe=False,
 
-        packages=setuptools.find_packages(),
-        zip_safe=False
+        cmdclass={'build_py': build_py},
+        **extra
     )
