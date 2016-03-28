@@ -157,11 +157,11 @@ class ControlSystemSimulation(object):
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
-            # if list(antecedent.terms.values())[0].membership_value[self] is not None:
-            #     raise RuntimeError("Antecedent already has calculated "
-            #     "membership.  Are you trying to computer a simulation multiple "
-            #     "times?  Create multiple ControlSystemSimulation objects "
-            #     "instead.")
+            if list(antecedent.terms.values())[0].membership_value[self] is not None:
+                raise RuntimeError("Antecedent already has calculated "
+                "membership.  Are you trying to computer a simulation multiple "
+                "times?  Create multiple ControlSystemSimulation objects "
+                "instead.")
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs
@@ -297,7 +297,9 @@ class CrispValueCalculator(object):
         return defuzz(self.var.universe, output_mf, self.var.defuzzify_method)
 
     def fuzz(self, value):
-        """Propagate crisp value down to adjectives by calculating membership"""
+        """
+        Propagate crisp value down to adjectives by calculating membership.
+        """
         if len(self.var.terms) == 0:
             raise ValueError("Set Term membership function(s) first")
 
@@ -319,7 +321,7 @@ class CrispValueCalculator(object):
         for label, term in self.var.terms.items():
             cut = term.membership_value[self.sim]
             if cut is None:
-                continue # No membership defined for this adjective
+                continue  # No membership defined for this adjective
             term_mfs[label] = np.minimum(cut, term.mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 

@@ -89,7 +89,8 @@ class Rule(object):
             may be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
             parentheticals to group terms.
         label : string, optional
-        Label to reference the meaning of this rule. Optional, but recommended.
+            Label to reference the meaning of this rule. Optional, but
+            recommended.
         """
         self.label = label
         self.aggregation_method = FuzzyAggregationMethod()
