@@ -1,23 +1,23 @@
 """
-fuzzyvariable.py : Contains base fuzzy variable class.
+fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
 import numpy as np
-import networkx as nx
 import matplotlib.pyplot as plt
 
-from skfuzzy import defuzz, interp_membership
-from skfuzzy.control.state import StatefulProperty, StatefulProperty
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
+from .state import StatefulProperty
 
 try:
     from collections import OrderedDict
 except ImportError:
     from .ordereddict import OrderedDict
 
+
 class TermPrimitive(object):
-    """Marker class used for type checking when a term
-    or term aggregate is expected"""
+    """
+    Marker class for type checking when a term or term aggregate is expected.
+    """
     pass
 
     def membership_value(self):
@@ -28,23 +28,24 @@ class TermPrimitive(object):
             raise ValueError("Can only construct 'AND' from the term "
                              "of a fuzzy variable")
 
-        return FuzzyVariableTermAggregate(self, other, 'and')
+        return TermAggregate(self, other, 'and')
 
     def __or__(self, other):
         if not isinstance(other, TermPrimitive):
             raise ValueError("Can only construct 'OR' from the term "
                              "of a fuzzy variable")
 
-        return FuzzyVariableTermAggregate(self, other, 'or')
+        return TermAggregate(self, other, 'or')
 
     def __invert__(self):
-        return FuzzyVariableTermAggregate(self, None, 'not')
+        return TermAggregate(self, None, 'not')
 
-class FuzzyVariableTerm(TermPrimitive):
+
+class Term(TermPrimitive):
     """
     An term and associated member function for a fuzzy varaible.
     For example, if one were creating a FuzzyVariable with a simple three-point
-    liker scale, three `FuzzyVariableTerm` would be created: poor, average,
+    liker scale, three `Term` would be created: poor, average,
     and good.
     """
 
@@ -53,7 +54,7 @@ class FuzzyVariableTerm(TermPrimitive):
     cuts = StatefulProperty({})
 
     def __init__(self, label, membership_function):
-        super(FuzzyVariableTerm, self).__init__()
+        super(Term, self).__init__()
         self.label = label
         self.parent_variable = None
         self.mf = membership_function
@@ -67,20 +68,17 @@ class FuzzyVariableTerm(TermPrimitive):
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
-        viz = FuzzyVariableVisualizer(self.parent_variable)
+        viz = FuzzyVariableVisualizer(self)
         viz.view(*args, **kwargs)
-
-        # Emphasize my membership function
-        viz.plots[self.label][0].set_linewidth(3)
         viz.fig.show()
 
     def __repr__(self):
         return self.full_label
 
     def __mod__(self, other):
-        from .rule import WeightedConsequent
+        from .rule import WeightedTerm
         assert isinstance(other, float)
-        return WeightedConsequent(self, other)
+        return WeightedTerm(self, other)
 
 
 class FuzzyAggregationMethod(object):
@@ -93,7 +91,7 @@ class FuzzyAggregationMethod(object):
 class _MembershipValueAccessor(object):
 
     def __init__(self, agg):
-        assert isinstance(agg, FuzzyVariableTermAggregate)
+        assert isinstance(agg, TermAggregate)
         self.agg = agg
 
     def __getitem__(self, key):
@@ -116,8 +114,7 @@ class _MembershipValueAccessor(object):
             raise NotImplementedError()
 
 
-
-class FuzzyVariableTermAggregate(TermPrimitive):
+class TermAggregate(TermPrimitive):
     """
     Used to track the creation of AND and OR clauses used when building
     the antecedent of a rule.
@@ -125,10 +122,10 @@ class FuzzyVariableTermAggregate(TermPrimitive):
 
     def __init__(self, term1, term2, kind):
         assert isinstance(term1, TermPrimitive)
-        if kind in ('and','or'):
+        if kind in ('and', 'or'):
             assert isinstance(term2, TermPrimitive)
         elif kind == 'not':
-            assert term2 is None
+            assert term2 is None, "NOT (~) operates on a single Term, not two."
         else:
             raise ValueError("Unexpected kind")
 
@@ -140,9 +137,9 @@ class FuzzyVariableTermAggregate(TermPrimitive):
 
     def __repr__(self):
         def _term_to_str(term):
-            if isinstance(term, FuzzyVariableTerm):
+            if isinstance(term, Term):
                 return term.full_label
-            elif isinstance(term, FuzzyVariableTermAggregate):
+            elif isinstance(term, TermAggregate):
                 return "(%s)" % term
 
         if self.kind == 'not':
@@ -162,7 +159,7 @@ class FuzzyVariableTermAggregate(TermPrimitive):
 
         # Propegate agg method down to all agg terms below me
         for term in (self.term1, self.term2):
-            if isinstance(term, FuzzyVariableTermAggregate):
+            if isinstance(term, TermAggregate):
                 term.agg_method = value
 
 
@@ -243,7 +240,7 @@ class FuzzyVariable(object):
 
           variable['new_label'] = new_mf
         """
-        if isinstance(item, FuzzyVariableTerm):
+        if isinstance(item, Term):
             if item.label != key:
                 raise ValueError("Term's label must match new key")
             if item.parent_variable is not None:
@@ -251,7 +248,7 @@ class FuzzyVariable(object):
         else:
             # Try to create a term from item, assuming it is a membership
             # function
-            item = FuzzyVariableTerm(key, np.asarray(item))
+            item = Term(key, np.asarray(item))
 
         mf = item.mf
 
@@ -274,7 +271,6 @@ class FuzzyVariable(object):
         fig = FuzzyVariableVisualizer(self).view(*args, **kwargs)
         fig.show()
 
-
     def automf(self, number=5, variable_type='quality', names=None,
                invert=False):
         """
@@ -291,8 +287,8 @@ class FuzzyVariable(object):
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
         names : list
-            List of names to use when creating mebership functions (if you don't
-            want to use the default ones)
+            List of names to use when creating mebership functions if you wish
+            to override the default. Naming proceeds from lowest to highest.
         invert : bool
             Reverses the naming order if True. Membership function peaks still
             march from lowest to highest.
