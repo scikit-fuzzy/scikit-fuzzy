@@ -35,16 +35,16 @@ class FuzzyVariableVisualizer(object):
         """
         from .fuzzyvariable import FuzzyVariable, Term
 
-        assert (isinstance(fuzzy_var, FuzzyVariable) or
-                isinstance(fuzzy_var, Term))
-
         # self.term allows us to know if this is a Term quickly, later
         self.term = None
         if isinstance(fuzzy_var, Term):
             self.term = fuzzy_var.label
             self.fuzzy_var = fuzzy_var.parent_variable
-        else:
+        elif isinstance(fuzzy_var, FuzzyVariable):
             self.fuzzy_var = fuzzy_var
+        else:
+            raise ValueError("`FuzzyVariableVisualizer` can only be called "
+                             "with a `FuzzyVariable` or a `Term`.")
 
         self.fig, self.ax = plt.subplots()
         self.plots = {}

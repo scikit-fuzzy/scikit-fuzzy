@@ -92,7 +92,6 @@ class Rule(object):
             Label to reference the meaning of this rule. Optional, but
             recommended.
         """
-        self.label = label
         self.aggregation_method = FuzzyAggregationMethod()
 
         self._antecedent = None
@@ -102,12 +101,18 @@ class Rule(object):
         if consequent is not None:
             self.consequent = consequent
 
+        if label is not None:
+            self.label = label
+        else:
+            self.label = id(self)
+
     def __repr__(self):
         """
         Concise, readable summary of the fuzzy rule.
         """
-        if self.label is not None:
-            return self.label
+        out = ""
+        if isinstance(self.label, str):
+            out += self.label + ": "
         if len(self.consequent) == 1:
             cons = self.consequent[0]
         else:

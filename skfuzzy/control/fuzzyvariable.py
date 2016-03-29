@@ -43,10 +43,10 @@ class TermPrimitive(object):
 
 class Term(TermPrimitive):
     """
-    An term and associated member function for a fuzzy varaible.
+    A Term is a universe and associated specific membership function.
+
     For example, if one were creating a FuzzyVariable with a simple three-point
-    liker scale, three `Term` would be created: poor, average,
-    and good.
+    liker scale, three `Term` would be created: poor, average, and good.
     """
 
     # State variables
