@@ -48,7 +48,6 @@ def test_instantiate_antecedent():
     # Assure expected behavior
     tst.assert_equal(universe, ant.universe)
     assert ant.label == label
-    assert ant.input is None
     assert ant._id == id(ant)
     assert_empty_ordereddict(ant.terms)
     assert ant.__name__ == 'Antecedent'
@@ -275,36 +274,6 @@ def test_add_mf():
 
 
 @nose.with_setup(setup)
-def test_set_patch():
-    global con
-
-    # Consequent only test, the analogue of Antecedent's input
-    con.automf(3)
-
-    # Setting a patch
-    con.set_patch('average', 0.4)
-
-    # Overriding it with a higher patch
-    con.set_patch('average', 0.55)
-
-    # Setting the other patches
-    con.set_patch('good', 0.3)
-    con.set_patch('poor', 0.88)
-
-    tst.assert_allclose(con.output, 3.6644951140065136)
-
-
-@nose.with_setup(setup)
-def test_set_input():
-    global ant
-    ant.automf(3)
-    ant.input = 2.3
-
-    assert ant.input == 2.3, "Value is %s" % ant.input
-    assert ant.crisp_value == 2.3, "Value is %s" % ant.crisp_value
-
-
-@nose.with_setup(setup)
 def test_add_bad_mf():
     global ant
     global con
@@ -314,16 +283,6 @@ def test_add_bad_mf():
 
     tst.assert_raises(ValueError, con.__setitem__, 'new_mf', np.ones(30))
     tst.assert_raises(ValueError, con.__setitem__, 'low', np.arange(10))
-
-
-@nose.with_setup(setup)
-def test_cannot_compute():
-    global ant
-    global con
-    with tst.assert_raises(ValueError):
-        ant.input
-    with tst.assert_raises(ValueError):
-        con.output
 
 
 if __name__ == '__main__':

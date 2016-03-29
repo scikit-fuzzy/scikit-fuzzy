@@ -1,39 +1,63 @@
 """
-visualization.py : Contains classes to help with visualizing a control system
+visualization.py : Visualize fuzzy control systems.
 """
+from __future__ import print_function, division
+
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from .. import defuzz, interp_membership
+from ..fuzzymath.fuzzy_ops import interp_membership
 
 
 class FuzzyVariableVisualizer(object):
+    """
+    Visualize a fuzzy variable and its membership functions.
+
+    Parameters
+    ----------
+    fuzzy_var : FuzzyVariable or Term
+        Fuzzy variable to be plotted.
+
+    Returns
+    -------
+    figure : matplotlib Figure
+        Figure object containing the visualization.
+    """
 
     def __init__(self, fuzzy_var):
         """
+        Initialize the fuzzy variable plot.
 
         Parameters
         ----------
-        fuzzy_var : FuzzyVariable to plot
-
-        Returns
-        -------
-
+        fuzzy_var : FuzzyVariable or Term to plot
         """
-        from .fuzzyvariable import FuzzyVariable
-        assert isinstance(fuzzy_var, FuzzyVariable)
-        self.fuzzy_var = fuzzy_var
+        from .fuzzyvariable import FuzzyVariable, Term
+
+        assert (isinstance(fuzzy_var, FuzzyVariable) or
+                isinstance(fuzzy_var, Term))
+
+        # self.term allows us to know if this is a Term quickly, later
+        self.term = None
+        if isinstance(fuzzy_var, Term):
+            self.term = fuzzy_var.label
+            self.fuzzy_var = fuzzy_var.parent_variable
+        else:
+            self.fuzzy_var = fuzzy_var
+
         self.fig, self.ax = plt.subplots()
         self.plots = {}
 
     def view(self, sim=None, *args, **kwargs):
         """
         Visualize this variable and its membership functions with Matplotlib.
-        Additionally, show the current output membership functions.
+
+        The current output membership function will be shown in bold.
         """
         from .controlsystem import (CrispValueCalculator, ControlSystem,
                                     ControlSystemSimulation)
+
         if sim is None:
             # Create an empty simulation so we can view with default values
             sim = ControlSystemSimulation(ControlSystem())
@@ -72,22 +96,27 @@ class FuzzyVariableVisualizer(object):
                 if y < 0.1:
                     y = 1.
                 self.ax.plot([crisp_value] * 2, [0, y],
-                              color='k', lw=3, label='crisp value')
+                             color='k', lw=3, label='crisp value')
 
-        return self.fig
+        return self.fig, self.ax
 
     def _init_plot(self):
         # Formatting: limits
         self.ax.set_ylim([0, 1.01])
         self.ax.set_xlim([self.fuzzy_var.universe.min(),
-                     self.fuzzy_var.universe.max()])
+                          self.fuzzy_var.universe.max()])
 
         # Make the plots
         for key, term in self.fuzzy_var.terms.items():
+            # If this is a Term, bold the active mf
+            lw = 1
+            if self.term == key:
+                lw = 3
+
             self.plots[key] = self.ax.plot(self.fuzzy_var.universe,
-                                             term.mf,
-                                             label=key,
-                                             lw=1)
+                                           term.mf,
+                                           label=key,
+                                           linewidth=lw)
 
         # Place legend in upper left
         self.ax.legend(framealpha=0.5)
@@ -121,9 +150,7 @@ class ControlSystemVisualizer(object):
         """
         self.ctrl = control_system
 
-
-        self.fig = plt.figure()
-        self.ax = self.fig.add_axes((0,0,1,1))
+        self.fig, self.ax = plt.subplots()
 
     def view(self):
         nx.draw(self.ctrl.graph, ax=self.ax)

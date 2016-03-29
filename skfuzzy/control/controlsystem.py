@@ -1,5 +1,5 @@
 """
-controlsystem.py : Contains framework for fuzzy logic control systems.
+controlsystem.py : Framework for the new fuzzy logic control system API.
 
 """
 from __future__ import print_function
@@ -10,10 +10,9 @@ import matplotlib.pylab as plt
 
 from skfuzzy import interp_membership, defuzz
 from .antecedent_consequent import Antecedent, Consequent
-from .fuzzyvariable import FuzzyVariable, FuzzyVariableTerm, \
-    FuzzyVariableTermAggregate
+from .fuzzyvariable import FuzzyVariable, Term, TermAggregate
 from .visualization import ControlSystemVisualizer
-from .rule import Rule, WeightedConsequent
+from .rule import Rule, WeightedTerm
 
 try:
     from collections import OrderedDict
@@ -28,7 +27,6 @@ class ControlSystem(object):
     def __init__(self, rules=None):
         self.graph = nx.DiGraph()
         self._rule_generator = RuleOrderGenerator(self)
-
 
         # Construct a system from provided rules, if given
         if rules is not None:
@@ -52,23 +50,34 @@ class ControlSystem(object):
 
     @property
     def antecedents(self):
+        """
+        Generator which yields Antecedents in the system.
+        """
         for node in self.graph.nodes():
             if isinstance(node, Antecedent):
                 yield node
+
     @property
     def consequents(self):
+        """Generator which yields Consequents in the system."""
         for node in self.graph.nodes():
             if isinstance(node, Consequent):
                 yield node
+
     @property
     def fuzzy_variables(self):
+        """
+        Generator which yields fuzzy variables in the system.
+
+        This includes Antecedents, Consequents, and Intermediaries.
+        """
         for node in self.graph.nodes():
             if isinstance(node, FuzzyVariable):
                 yield node
 
     def addrule(self, rule):
         """
-        Add a new rule to the graph.
+        Add a new rule to the system.
         """
         if not isinstance(rule, Rule):
             raise ValueError("rule is not a Rule object")
@@ -77,8 +86,12 @@ class ControlSystem(object):
         self.graph = nx.compose(self.graph, rule.graph)
 
     def view(self):
+        """
+        View a representation of the system NetworkX graph.
+        """
         fig = ControlSystemVisualizer(self).view()
         fig.show()
+
 
 class _InputAcceptor(object):
     def __init__(self, simulation):
@@ -88,7 +101,7 @@ class _InputAcceptor(object):
     def __setitem__(self, key, value):
         # Find the antecedent we should set the input for
         matches = [n for n in self.sim.ctrl.graph.nodes()
-                           if isinstance(n, Antecedent) and n.label == key]
+                   if isinstance(n, Antecedent) and n.label == key]
         if len(matches) == 0:
             raise ValueError("Unexpected input: " + key)
         assert len(matches) == 1
@@ -98,13 +111,13 @@ class _InputAcceptor(object):
             if self.sim.clip_to_bounds:
                 value = var.universe.max()
             else:
-                raise ValueError("Value is out of bounds.  Max is %s" %
+                raise ValueError("Input value out of bounds.  Max is %s" %
                                  max(var.universe))
         if value < var.universe.min():
             if self.sim.clip_to_bounds:
                 value = var.universe.min()
             else:
-                raise ValueError("Value is out of bounds.  Min is %s" %
+                raise ValueError("Input value is out of bounds.  Min is %s" %
                                  min(var.universe))
 
         var.input[self.sim] = value
@@ -155,7 +168,6 @@ class ControlSystemSimulation(object):
         for rule in self.ctrl.rules:
             self.compute_rule(rule)
 
-
         # Collect the results and present them as a dict
         for consequent in self.ctrl.consequents:
             consequent.output[self] = \
@@ -172,10 +184,10 @@ class ControlSystemSimulation(object):
         #  antecedent by AND-ing or OR-ing together all the membership values
         #  of the terms that make up the accomplishment condition.
         #  The process of actually aggregating everything is delegated to the
-        #  FuzzyVariableTermAggregation class, but we can tell that class
+        #  TermAggregation class, but we can tell that class
         #  what aggregation style this rule mandates
 
-        if isinstance(rule.antecedent, FuzzyVariableTermAggregate):
+        if isinstance(rule.antecedent, TermAggregate):
             rule.antecedent.agg_method = rule.aggregation_method
         rule.aggregate_firing[self] = rule.antecedent.membership_value[self]
 
@@ -184,15 +196,15 @@ class ControlSystemSimulation(object):
         #  which is what we determined in step 1.  The only difference would
         #  be if the consequent has a weight, which we would apply now.
         for c in rule.consequent:
-            assert isinstance(c, WeightedConsequent)
+            assert isinstance(c, WeightedTerm)
             c.activation[self] = rule.aggregate_firing[self] * c.weight
 
         # Step 3: Accumulation.  Apply the activation to each consequent,
         #   accumulating multiple rule firings into a single membership value.
         #   The process of actual accumulation is delegated to the
-        #   FuzzyVariableTerm which uses its parent's accumulation method
+        #   Term which uses its parent's accumulation method
         for c in rule.consequent:
-            assert isinstance(c, WeightedConsequent)
+            assert isinstance(c, WeightedTerm)
             term = c.term
             value = c.activation[self]
 
@@ -233,7 +245,7 @@ class ControlSystemSimulation(object):
 
             print("  Aggregation (IF-clause):")
             for term in r.antecedent_terms:
-                assert isinstance(term, FuzzyVariableTerm)
+                assert isinstance(term, Term)
                 print("  - {0:<55}: {1}".format(term.full_label,
                                                 term.membership_value[self]))
             print("    {0:>54} = {1}".format(r.antecedent,
@@ -241,7 +253,7 @@ class ControlSystemSimulation(object):
 
             print("  Activation (THEN-clause):")
             for c in r.consequent:
-                assert isinstance(c, WeightedConsequent)
+                assert isinstance(c, WeightedTerm)
                 print("    {0:>54} : {1}".format(c,
                                                  c.activation[self]))
             print("")
@@ -251,18 +263,19 @@ class ControlSystemSimulation(object):
         print(" Intermediaries and Conquests ")
         print("==============================")
         for c in self.ctrl.consequents:
-            print("{0:<36} = {1}".format(c,
-                                         CrispValueCalculator(c, self).defuzz()))
+            print("{0:<36} = {1}".format(
+                c, CrispValueCalculator(c, self).defuzz()))
 
             for term in c.terms.values():
                 print("  %s:" % term.label)
                 for cut_rule, cut_value in term.cuts[self].items():
-                    if cut_rule not in rule_number.keys(): continue
+                    if cut_rule not in rule_number.keys():
+                        continue
                     print("    {0:>32} : {1}".format(rule_number[cut_rule],
                                                      cut_value))
                 accu = "Accumulate using %s" % c.accumulation_method.func_name
                 print("    {0:>32} : {1}".format(accu,
-                                                term.membership_value[self]))
+                                                 term.membership_value[self]))
             print("")
 
 
@@ -275,7 +288,7 @@ class CrispValueCalculator(object):
         self.sim = sim
 
     def defuzz(self):
-        """Derive crisp value based on membership of adjectives"""
+        """Derive crisp value based on membership of adjective(s)."""
         output_mf, cut_mfs = self.find_memberships()
         if len(cut_mfs) == 0:
             raise ValueError("No terms have memberships.  Make sure you "
@@ -284,7 +297,9 @@ class CrispValueCalculator(object):
         return defuzz(self.var.universe, output_mf, self.var.defuzzify_method)
 
     def fuzz(self, value):
-        """Propagate crisp value down to adjectives by calculating membership"""
+        """
+        Propagate crisp value down to adjectives by calculating membership.
+        """
         if len(self.var.terms) == 0:
             raise ValueError("Set Term membership function(s) first")
 
@@ -306,7 +321,7 @@ class CrispValueCalculator(object):
         for label, term in self.var.terms.items():
             cut = term.membership_value[self.sim]
             if cut is None:
-                continue # No membership defined for this adjective
+                continue  # No membership defined for this adjective
             term_mfs[label] = np.minimum(cut, term.mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 
@@ -315,39 +330,58 @@ class CrispValueCalculator(object):
 
 class RuleOrderGenerator(object):
     """
-    Generator object which yields rules in the correct order required for
-    calculation.
+    Generator to yield rules in the correct order for calculation.
+
+    Parameters
+    ----------
+    control_system : ControlSystem
+        Fuzzy control system object, instance of `skfuzzy.ControlSystem`.
+
+    Returns
+    -------
+    out : Rule
+        Fuzzy rules in computation order.
     """
 
-    def __init__(self, ctrl):
-        assert isinstance(ctrl, ControlSystem)
-        self.ctrl = ctrl
+    def __init__(self, control_system):
+        """
+        Generator to yield rules in the correct order for calculation.
+
+        Parameters
+        ----------
+        control_system : ControlSystem
+            Fuzzy control system object, instance of `skfuzzy.ControlSystem`.
+        """
+        assert isinstance(control_system, ControlSystem)
+        self.control_system = control_system
         self._cache = []
         self._cached_graph = None
 
-
     def __iter__(self):
+        """
+        Method to yield the fuzzy rules in order for computation.
+        """
         # Determine if we can return the cached version or must calc new
-        if self._cached_graph is not self.ctrl.graph:
+        if self._cached_graph is not self.control_system.graph:
             # The controller is still using a different version of the graph
             #  than we created the rule order for.  Thus, make new cache
             self._init_state()
             self._cache = list(self._process_rules(self.all_rules[:]))
-            self._cached_graph = self.ctrl.graph
+            self._cached_graph = self.control_system.graph
 
         for n, r in enumerate(self._cache):
             yield r
-        assert n == len(self.all_rules)-1, "Not all rules exposed"
+        assert n == len(self.all_rules) - 1, "Not all rules exposed"
 
     def _init_state(self):
         # This graph will represent what's been calculated so far.  We
         # initialize it to just the antecedents as they, by definition, already
         # have fuzzy values
         self.calced_graph = nx.DiGraph()
-        for a in self.ctrl.antecedents:
+        for a in self.control_system.antecedents:
             self.calced_graph.add_star([a, ] + list(a.terms.values()))
 
-        self.all_graph = self.ctrl.graph
+        self.all_graph = self.control_system.graph
 
         self.all_rules = []
         for node in self.all_graph.nodes():
@@ -376,9 +410,9 @@ class RuleOrderGenerator(object):
             if len(skipped_rules) == len_rules:
                 # Avoid being caught in an infinite loop
                 raise RuntimeError("Unable to resolve rule execution order. "
-                                   "The most likely reason if that you have "
-                                   "two or more rules that depend on eachother."
-                                   " Please check the rule graph for loops.")
+                                   "The most likely reason is two or more "
+                                   "rules that depend on each other.\n"
+                                   "Please check the rule graph for loops.")
             else:
                 # Recurse across the skipped rules
                 for r in self._process_rules(skipped_rules):
@@ -389,7 +423,7 @@ class RuleOrderGenerator(object):
         # the predecessor-degree of each predecessor node is the same
         # in both the calculation graph and overall graph
         for p in self.all_graph.predecessors_iter(rule):
-            assert isinstance(p, FuzzyVariableTerm)
+            assert isinstance(p, Term)
             if p not in self.calced_graph:
                 return False
 
