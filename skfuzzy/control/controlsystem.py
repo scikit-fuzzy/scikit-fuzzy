@@ -113,6 +113,7 @@ class _InputAcceptor(object):
         # Find the antecedent we should set the input for
         matches = [n for n in self.sim.ctrl.graph.nodes()
                    if isinstance(n, Antecedent) and n.label == key]
+
         if len(matches) == 0:
             raise ValueError("Unexpected input: " + key)
         assert len(matches) == 1
@@ -131,7 +132,9 @@ class _InputAcceptor(object):
                 raise ValueError("Input value is out of bounds.  Min is %s" %
                                  min(var.universe))
 
-        var.input[self.sim] = value
+        var.input['current'] = value
+        self.sim._update_unique_id()
+        self._update_to_current()
 
     def __repr__(self):
         """
@@ -143,6 +146,14 @@ class _InputAcceptor(object):
             out += "{0} : {1}\n".format(key, val)
         return out
 
+    def _update_to_current(self):
+        # Find all antecedents
+        matches = [n for n in self.sim.ctrl.graph.nodes()
+                   if isinstance(n, Antecedent)]
+
+        for antecedent in matches:
+            antecedent.input[self.sim] = antecedent.input['current']
+
     def get_inputs(self):
         """
         Find and return all antecedent inputs available.
@@ -153,7 +164,7 @@ class _InputAcceptor(object):
         inputs = OrderedDict()
         for antecedent in antecedents:
             try:
-                inputs[antecedent.label] = antecedent.input[self.sim]
+                inputs[antecedent.label] = antecedent.input['current']
             except AttributeError:
                 # No system ID yet, because no assigned values
                 inputs[antecedent.label] = None
@@ -212,26 +223,21 @@ class ControlSystemSimulation(object):
             Contains key:value pairs where the key is the label for a
             connected Antecedent and the value is the input.
         """
+        # Have to set this twice - first time to get the unique ID,
+        #  second time to actually pass them into the correct ID.
         for label, value in input_dict.items():
             self.input[label] = value
-        self._update_unique_id()
 
     def compute(self):
         """
         Compute the fuzzy system.
         """
-        # Lazy updating of system ID - only when computing
-        temp = self.get_inputs()
-        self._update_unique_id()
-        self.inputs(temp)
-
         # Check if any fuzzy variables lack input values and fuzzify inputs
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
-            if list(antecedent.terms.values())[0].membership_value[self] is not None:
+            # if list(antecedent.terms.values())[0].membership_value[self] is not None:
                 # Clear all previously existing membership values
-                pass
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs

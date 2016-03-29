@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 import numpy.testing as tst
 import nose
@@ -5,7 +7,6 @@ import nose
 from skfuzzy.control import (Antecedent, Consequent, Rule, ControlSystem,
                              ControlSystemSimulation)
 from skfuzzy import trimf
-from nose.tools import assert_raises
 
 
 def test_tipping_problem():
@@ -57,6 +58,7 @@ def test_bad_rules():
     not_rules = ['me', 192238, 42, dict()]
     tst.assert_raises(ValueError, ControlSystem, not_rules)
 
+
 def setup_rule_order():
     global a, b, c, d
     a = Antecedent(np.linspace(0, 10, 11), 'a')
@@ -66,6 +68,7 @@ def setup_rule_order():
 
     for v in (a,b,c,d):
         v.automf(3)
+
 
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
@@ -81,6 +84,7 @@ def test_rule_order():
     resolved = list(ctrl.rules)
     assert resolved == [r1, r2, r3], "Order given was: %s" % resolved
 
+
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
@@ -91,9 +95,9 @@ def test_unresolvable_rule_order():
     r2 = Rule(c['poor'] | b['poor'], c['poor'], label='r2')
     r3 = Rule(c['good'] | a['good'], d['good'], label='r3')
 
-    ctrl = ControlSystem([r1, r2, r3])
     ex_msg = "Unable to resolve rule execution order"
-    with assert_raises(RuntimeError, expected_regexp=ex_msg):
+    with tst.assert_raises(RuntimeError, expected_regexp=ex_msg):
+        ctrl = ControlSystem([r1, r2, r3])
         list(ctrl.rules)
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ class StatefulProperty(object):
 
     def __init__(self, initial_condition=None):
         self.default = initial_condition
-        self.data = {}
+        self.data = {'current': None}
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -27,10 +27,15 @@ class StatePerSimulation(object):
 
     def __init__(self, initial_condition=None):
         self.default = initial_condition
-        self._sim_data = {}
+        self._sim_data = {'current': None}
 
     def __getitem__(self, key):
         from .controlsystem import ControlSystemSimulation
+
+        # Shortcut for current sim value, to carry across unique ID updates
+        if key == 'current':
+            return self._sim_data[key]
+
         assert isinstance(key, ControlSystemSimulation)
 
         # Access all state data via the unique identifier string
@@ -48,6 +53,12 @@ class StatePerSimulation(object):
 
     def __setitem__(self, key, value):
         from .controlsystem import ControlSystemSimulation
+
+        # Shortcut for current sim value, to carry across unique ID updates
+        if key == 'current':
+            self._sim_data[key] = value
+            return
+
         assert isinstance(key, ControlSystemSimulation)
 
         # Access all state data via the unique identifier string
