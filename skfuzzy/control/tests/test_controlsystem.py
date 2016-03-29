@@ -1,5 +1,7 @@
 from __future__ import division
 
+import sys
+
 import numpy as np
 import numpy.testing as tst
 import nose
@@ -85,6 +87,8 @@ def test_rule_order():
     assert resolved == [r1, r2, r3], "Order given was: %s" % resolved
 
 
+# The assert_raises decorator does not work in Python 2.6
+@tst.decorators.skipif(sys.version_info < (2, 7))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
