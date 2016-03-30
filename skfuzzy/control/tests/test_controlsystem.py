@@ -68,7 +68,7 @@ def setup_rule_order():
     c = Antecedent(np.linspace(0, 10, 11), 'c')
     d = Antecedent(np.linspace(0, 10, 11), 'd')
 
-    for v in (a,b,c,d):
+    for v in (a, b, c, d):
         v.automf(3)
 
 

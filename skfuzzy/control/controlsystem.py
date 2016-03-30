@@ -140,7 +140,7 @@ class _InputAcceptor(object):
         """
         Print a convenient string representation of all current input data.
         """
-        current_inputs = self.get_inputs()
+        current_inputs = self._get_inputs()
         out = ""
         for key, val in current_inputs.iteritems():
             out += "{0} : {1}\n".format(key, val)
@@ -154,7 +154,7 @@ class _InputAcceptor(object):
         for antecedent in matches:
             antecedent.input[self.sim] = antecedent.input['current']
 
-    def get_inputs(self):
+    def _get_inputs(self):
         """
         Find and return all antecedent inputs available.
         """
@@ -183,15 +183,25 @@ class ControlSystemSimulation(object):
     clip_to_bounds : bool, optional
         Controls if input values should be clipped to the consequent universe
         range. Default is True.
+    cache : bool, optional
+        Controls if results should be stored for reference in fuzzy variable
+        objects, allowing fast lookup for repeated runs of `.compute()`.
+        If your system is small or you are prototyping, leave this `True`.
+        If your system is large and you have memory concerns, for example with
+        embedded devices, set this to `False`.
     """
 
-    def __init__(self, control_system, clip_to_bounds=True):
+    def __init__(self, control_system, clip_to_bounds=True, cache=True):
         assert isinstance(control_system, ControlSystem)
         self.ctrl = control_system
 
         self.input = _InputAcceptor(self)
         self.output = OrderedDict()
-        self.unique_id = self._update_unique_id()
+        self.cache = cache
+        if self.cache is not True:
+            self.unique_id = 'current'
+        else:
+            self.unique_id = self._update_unique_id()
 
         self.clip_to_bounds = clip_to_bounds
 
@@ -202,16 +212,20 @@ class ControlSystemSimulation(object):
         Generated at runtime from the system state. Used as key to access data
         from `StatePerSimulation` objects, enabling multiple runs.
         """
+        #
+        if self.cache is not True:
+            return
+
         # The string to be hashed is the concatenation of:
         #  * the control system ID, which is independent of inputs
-        #  * hash of the current input dictionary
+        #  * hash of the current input OrderedDict
 
         # Simple hashes and Python ids are fast and serve our purposes.
         self.unique_id = (str(id(self.ctrl)) +
-                          str(hash(self.get_inputs().__repr__())))
+                          str(hash(self._get_inputs().__repr__())))
 
-    def get_inputs(self):
-        return self.input.get_inputs()
+    def _get_inputs(self):
+        return self.input._get_inputs()
 
     def inputs(self, input_dict):
         """
@@ -236,8 +250,6 @@ class ControlSystemSimulation(object):
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
-            # if list(antecedent.terms.values())[0].membership_value[self] is not None:
-                # Clear all previously existing membership values
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs
@@ -285,7 +297,6 @@ class ControlSystemSimulation(object):
 
             # Find new membership value
             if term.membership_value[self] is None:
-                assert len(term.cuts[self]) == 0, "Membership value already set"
                 term.membership_value[self] = value
             else:
                 # Use the accumulation method of variable to determine

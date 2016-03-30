@@ -27,7 +27,7 @@ class StatePerSimulation(object):
 
     def __init__(self, initial_condition=None):
         self.default = initial_condition
-        self._sim_data = {'current': None}
+        self._sim_data = {'current': initial_condition}
 
     def __getitem__(self, key):
         from .controlsystem import ControlSystemSimulation
