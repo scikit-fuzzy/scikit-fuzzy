@@ -64,6 +64,8 @@ class Rule(object):
         parentheticals to group terms.
     label : string, optional
         Label to reference the meaning of this rule. Optional, but recommended.
+        If provided, the label must be unique among rules in any particular
+        `ControlSystem`.
 
     Notes
     -----

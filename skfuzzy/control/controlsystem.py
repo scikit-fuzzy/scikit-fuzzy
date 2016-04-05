@@ -189,12 +189,11 @@ class ControlSystemSimulation(object):
     cache : bool, optional
         Controls if results should be stored for reference in fuzzy variable
         objects, allowing fast lookup for repeated runs of `.compute()`.
-        If your system is small or you are prototyping, leave this `True`.
-        If your system is large and you have memory concerns, for example with
-        embedded devices, set this to `False`.
+        If your system is small and accepts only integer inputs, consider
+        setting this `True`. For most other uses, leave this off (`False`).
     """
 
-    def __init__(self, control_system, clip_to_bounds=True, cache=True):
+    def __init__(self, control_system, clip_to_bounds=True, cache=False):
         assert isinstance(control_system, ControlSystem)
         self.ctrl = control_system
 
