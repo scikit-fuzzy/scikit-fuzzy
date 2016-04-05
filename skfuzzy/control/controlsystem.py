@@ -327,7 +327,7 @@ class ControlSystemSimulation(object):
                 term.membership_value[self] = accu(value,
                                                    term.membership_value[self])
 
-            term.cuts[self][rule] = value
+            term.cuts[self][rule.label] = value
 
     def print_state(self):
         if self.ctrl.consequents.next().output[self] is None:
