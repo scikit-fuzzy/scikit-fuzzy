@@ -206,6 +206,7 @@ class ControlSystemSimulation(object):
             self.unique_id = self._update_unique_id()
 
         self.clip_to_bounds = clip_to_bounds
+        self._calculated = []
 
     def _update_unique_id(self):
         """
@@ -251,6 +252,14 @@ class ControlSystemSimulation(object):
         """
         self.input._update_to_current()
 
+        # Shortcut with lookup if this calculation was done before
+        if self.cache is not False and self.unique_id in self._calculated:
+            for consequent in self.ctrl.consequents:
+                self.output[consequent.label] = consequent.output[self]
+            return
+
+        # If we get here, cache is disabled OR the inputs are novel. Compute!
+
         # Check if any fuzzy variables lack input values and fuzzify inputs
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
@@ -270,6 +279,10 @@ class ControlSystemSimulation(object):
             consequent.output[self] = \
                 CrispValueCalculator(consequent, self).defuzz()
             self.output[consequent.label] = consequent.output[self]
+
+        # Make note of this run so we can easily find it again
+        if self.cache is not False:
+            self._calculated.append(self.unique_id)
 
     def compute_rule(self, rule):
         """
