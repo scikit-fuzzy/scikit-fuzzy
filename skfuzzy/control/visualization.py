@@ -88,13 +88,18 @@ class FuzzyVariableVisualizer(object):
             elif hasattr(self.fuzzy_var, 'output'):
                 crisp_value = self.fuzzy_var.output[sim]
 
+            # Draw the crisp value at the actual cut height
             if crisp_value is not None:
-                y = interp_membership(self.fuzzy_var.universe,
-                                      output_mf, crisp_value)
-                # Small values are hard to see, so simply set them to 1 so
-                #  we can see them
+                y = 0.
+                for key, term in self.fuzzy_var.terms.items():
+                    if key in cut_mfs:
+                        y = max(y, interp_membership(self.fuzzy_var.universe,
+                                                     term.mf, crisp_value))
+
+                # Small cut values are hard to see, so simply set them to 1
                 if y < 0.1:
                     y = 1.
+
                 self.ax.plot([crisp_value] * 2, [0, y],
                              color='k', lw=3, label='crisp value')
 
