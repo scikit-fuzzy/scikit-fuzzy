@@ -1,8 +1,7 @@
 """
 controlsystem.py : Framework for the new fuzzy logic control system API.
-
 """
-from __future__ import print_function
+from __future__ import print_function, division
 
 import numpy as np
 import networkx as nx
@@ -80,7 +79,15 @@ class ControlSystem(object):
         Add a new rule to the system.
         """
         if not isinstance(rule, Rule):
-            raise ValueError("rule is not a Rule object")
+            raise ValueError("Input rule must be a Rule object!")
+
+        # Ensure no label duplication
+        labels = []
+        for r in self.rules:
+            if r.label in labels:
+                raise ValueError("Input rule cannot have same label, '{0}', "
+                                 "as any other rule.".format(r.label))
+            labels.append(r.label)
 
         # Combine the two graphs, which may not be disjoint
         self.graph = nx.compose(self.graph, rule.graph)
@@ -94,6 +101,10 @@ class ControlSystem(object):
 
 
 class _InputAcceptor(object):
+    """
+    Set a single input value to an Antecedent in this ControlSystemSimulation.
+    """
+
     def __init__(self, simulation):
         assert isinstance(simulation, ControlSystemSimulation)
         self.sim = simulation
@@ -102,6 +113,7 @@ class _InputAcceptor(object):
         # Find the antecedent we should set the input for
         matches = [n for n in self.sim.ctrl.graph.nodes()
                    if isinstance(n, Antecedent) and n.label == key]
+
         if len(matches) == 0:
             raise ValueError("Unexpected input: " + key)
         assert len(matches) == 1
@@ -120,19 +132,104 @@ class _InputAcceptor(object):
                 raise ValueError("Input value is out of bounds.  Min is %s" %
                                  min(var.universe))
 
-        var.input[self.sim] = value
+        var.input['current'] = value
+        self.sim._update_unique_id()
+        self._update_to_current()
+
+    def __repr__(self):
+        """
+        Print a convenient string representation of all current input data.
+        """
+        current_inputs = self._get_inputs()
+        out = ""
+        for key, val in current_inputs.iteritems():
+            out += "{0} : {1}\n".format(key, val)
+        return out
+
+    def _update_to_current(self):
+        if self.sim.unique_id == 'current':
+            return
+
+        # Find all antecedents
+        matches = [n for n in self.sim.ctrl.graph.nodes()
+                   if isinstance(n, Antecedent)]
+
+        for antecedent in matches:
+            antecedent.input[self.sim] = antecedent.input['current']
+
+    def _get_inputs(self):
+        """
+        Find and return all antecedent inputs available.
+        """
+        antecedents = [n for n in self.sim.ctrl.graph.nodes()
+                       if isinstance(n, Antecedent)]
+
+        inputs = OrderedDict()
+        for antecedent in antecedents:
+            try:
+                inputs[antecedent.label] = antecedent.input['current']
+            except AttributeError:
+                # No system ID yet, because no assigned values
+                inputs[antecedent.label] = None
+
+        return inputs
 
 
 class ControlSystemSimulation(object):
+    """
+    Calculate results from a ControlSystem.
 
-    def __init__(self, control_system, clip_to_bounds = False):
+    Parameters
+    ----------
+    control_system : ControlSystem
+        A fuzzy ControlSystem object.
+    clip_to_bounds : bool, optional
+        Controls if input values should be clipped to the consequent universe
+        range. Default is True.
+    cache : bool, optional
+        Controls if results should be stored for reference in fuzzy variable
+        objects, allowing fast lookup for repeated runs of `.compute()`.
+        If your system is small and accepts only integer inputs, consider
+        setting this `True`. For most other uses, leave this off (`False`).
+    """
+
+    def __init__(self, control_system, clip_to_bounds=True, cache=False):
         assert isinstance(control_system, ControlSystem)
         self.ctrl = control_system
 
         self.input = _InputAcceptor(self)
         self.output = OrderedDict()
+        self.cache = cache
+        if self.cache is not True:
+            self.unique_id = 'current'
+        else:
+            self.unique_id = self._update_unique_id()
 
         self.clip_to_bounds = clip_to_bounds
+        self._calculated = []
+
+    def _update_unique_id(self):
+        """
+        Unique hash of this control system including a specific set of inputs.
+
+        Generated at runtime from the system state. Used as key to access data
+        from `StatePerSimulation` objects, enabling multiple runs.
+        """
+        #
+        if self.cache is not True:
+            self.unique_id = 'current'
+            return
+
+        # The string to be hashed is the concatenation of:
+        #  * the control system ID, which is independent of inputs
+        #  * hash of the current input OrderedDict
+
+        # Simple hashes and Python ids are fast and serve our purposes.
+        self.unique_id = (str(id(self.ctrl)) +
+                          str(hash(self._get_inputs().__repr__())))
+
+    def _get_inputs(self):
+        return self.input._get_inputs()
 
     def inputs(self, input_dict):
         """
@@ -144,6 +241,8 @@ class ControlSystemSimulation(object):
             Contains key:value pairs where the key is the label for a
             connected Antecedent and the value is the input.
         """
+        # Have to set this twice - first time to get the unique ID,
+        #  second time to actually pass them into the correct ID.
         for label, value in input_dict.items():
             self.input[label] = value
 
@@ -151,21 +250,28 @@ class ControlSystemSimulation(object):
         """
         Compute the fuzzy system.
         """
-        # TODO: Tracking and caching
+        self.input._update_to_current()
+
+        # Shortcut with lookup if this calculation was done before
+        if self.cache is not False and self.unique_id in self._calculated:
+            for consequent in self.ctrl.consequents:
+                self.output[consequent.label] = consequent.output[self]
+            return
+
+        # If we get here, cache is disabled OR the inputs are novel. Compute!
 
         # Check if any fuzzy variables lack input values and fuzzify inputs
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
                 raise ValueError("All antecedents must have input values!")
-            if list(antecedent.terms.values())[0].membership_value[self] is not None:
-                raise RuntimeError("Antecedent already has calculated "
-                "membership.  Are you trying to computer a simulation multiple "
-                "times?  Create multiple ControlSystemSimulation objects "
-                "instead.")
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs
         for rule in self.ctrl.rules:
+            # Clear results of prior runs from Terms if needed.
+            if self.cache is not True:
+                for c in rule.consequent:
+                    c.term.membership_value[self] = None
             self.compute_rule(rule)
 
         # Collect the results and present them as a dict
@@ -174,11 +280,14 @@ class ControlSystemSimulation(object):
                 CrispValueCalculator(consequent, self).defuzz()
             self.output[consequent.label] = consequent.output[self]
 
+        # Make note of this run so we can easily find it again
+        if self.cache is not False:
+            self._calculated.append(self.unique_id)
+
     def compute_rule(self, rule):
         """
         Implements rule according to the three step method of
         Mamdani inference: Aggregation, activation, and accumulation
-
         """
         # Step 1: Aggregation.  This finds the net accomplishment of the
         #  antecedent by AND-ing or OR-ing together all the membership values
@@ -210,7 +319,6 @@ class ControlSystemSimulation(object):
 
             # Find new membership value
             if term.membership_value[self] is None:
-                assert len(term.cuts[self]) == 0, "Membership value already set"
                 term.membership_value[self] = value
             else:
                 # Use the accumulation method of variable to determine
@@ -219,7 +327,7 @@ class ControlSystemSimulation(object):
                 term.membership_value[self] = accu(value,
                                                    term.membership_value[self])
 
-            term.cuts[self][rule] = value
+            term.cuts[self][rule.label] = value
 
     def print_state(self):
         if self.ctrl.consequents.next().output[self] is None:
@@ -307,7 +415,6 @@ class CrispValueCalculator(object):
             term.membership_value[self.sim] = \
                 interp_membership(self.var.universe, term.mf, value)
 
-
     def find_memberships(self):
         # Check we have some adjectives
         if len(self.var.terms.keys()) == 0:
@@ -371,7 +478,13 @@ class RuleOrderGenerator(object):
 
         for n, r in enumerate(self._cache):
             yield r
-        assert n == len(self.all_rules) - 1, "Not all rules exposed"
+        else:
+            n = 0
+
+        if n == 0:
+            pass
+        else:
+            assert n == len(self.all_rules) - 1, "Not all rules exposed"
 
     def _init_state(self):
         # This graph will represent what's been calculated so far.  We
