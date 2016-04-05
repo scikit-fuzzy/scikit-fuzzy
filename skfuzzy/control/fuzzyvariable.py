@@ -68,9 +68,8 @@ class Term(TermPrimitive):
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
-        viz = FuzzyVariableVisualizer(self)
-        viz.view(*args, **kwargs)
-        viz.fig.show()
+        fig, ax = FuzzyVariableVisualizer(self).view(*args, **kwargs)
+        fig.show()
 
     def __repr__(self):
         return self.full_label
@@ -269,7 +268,7 @@ class FuzzyVariable(object):
 
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
-        fig = FuzzyVariableVisualizer(self).view(*args, **kwargs)
+        fig, ax = FuzzyVariableVisualizer(self).view(*args, **kwargs)
         fig.show()
 
     def automf(self, number=5, variable_type='quality', names=None,
