@@ -402,7 +402,15 @@ class CrispValueCalculator(object):
             raise ValueError("No terms have memberships.  Make sure you "
                              "have at least one rule connected to this "
                              "variable and have run the rules calculation.")
-        return defuzz(self.var.universe, output_mf, self.var.defuzzify_method)
+        try:
+            return defuzz(self.var.universe, output_mf,
+                          self.var.defuzzify_method)
+        except AssertionError:
+            raise ValueError("Crisp output cannot be calculated, likely "
+                             "because the system is too sparse. Check to "
+                             "make sure this set of input values will "
+                             "activate at least one connected Term in each "
+                             "Antecedent via the current set of Rules.")
 
     def fuzz(self, value):
         """
