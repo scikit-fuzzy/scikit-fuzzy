@@ -151,6 +151,7 @@ class TermAggregate(TermPrimitive):
     @property
     def agg_method(self):
         return self._agg_method
+
     @agg_method.setter
     def agg_method(self, value):
         if not isinstance(value, FuzzyAggregationMethod):
@@ -161,7 +162,6 @@ class TermAggregate(TermPrimitive):
         for term in (self.term1, self.term2):
             if isinstance(term, TermAggregate):
                 term.agg_method = value
-
 
 
 class FuzzyVariable(object):
@@ -184,6 +184,7 @@ class FuzzyVariable(object):
     This class is designed as the base class underlying the Antecedent and
     Consequent classes, not for individual use.
     """
+
     def __init__(self, universe, label, defuzzify_method='centroid'):
         """
         Initialization of fuzzy variable
@@ -211,7 +212,7 @@ class FuzzyVariable(object):
 
     def __getitem__(self, key):
         """
-        Calling variable['label'] will return the 'label' term
+        Calling `variable['label']` will return the 'label' term
         """
         if key in self.terms.keys():
             return self.terms[key]

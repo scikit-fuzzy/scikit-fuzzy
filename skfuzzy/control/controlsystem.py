@@ -147,6 +147,9 @@ class _InputAcceptor(object):
         return out
 
     def _update_to_current(self):
+        if self.sim.unique_id == 'current':
+            return
+
         # Find all antecedents
         matches = [n for n in self.sim.ctrl.graph.nodes()
                    if isinstance(n, Antecedent)]
@@ -214,6 +217,7 @@ class ControlSystemSimulation(object):
         """
         #
         if self.cache is not True:
+            self.unique_id = 'current'
             return
 
         # The string to be hashed is the concatenation of:
@@ -246,6 +250,8 @@ class ControlSystemSimulation(object):
         """
         Compute the fuzzy system.
         """
+        self.input._update_to_current()
+
         # Check if any fuzzy variables lack input values and fuzzify inputs
         for antecedent in self.ctrl.antecedents:
             if antecedent.input[self] is None:
@@ -254,6 +260,10 @@ class ControlSystemSimulation(object):
 
         # Calculate rules, taking inputs and accumulating outputs
         for rule in self.ctrl.rules:
+            # Clear results of prior runs from Terms if needed.
+            if self.cache is not True:
+                for c in rule.consequent:
+                    c.term.membership_value[self] = None
             self.compute_rule(rule)
 
         # Collect the results and present them as a dict

@@ -5,7 +5,7 @@ class StatefulProperty(object):
 
     def __init__(self, initial_condition=None):
         self.default = initial_condition
-        self.data = {'current': None}
+        self.data = {'current': initial_condition}
 
     def __get__(self, instance, owner):
         if instance is None:
