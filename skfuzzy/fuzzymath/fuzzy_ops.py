@@ -219,7 +219,7 @@ def fuzzy_add(x, a, y, b):
     c = c[zz_index]
 
     # Initialize loop
-    z, mfz = np.empty(0), np.empty(0)
+    z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
     for i in range(len(c)):
@@ -303,7 +303,7 @@ def fuzzy_div(x, a, y, b):
     c = c[zz_index]
 
     # Initialize loop
-    z, mfz = np.empty(0), np.empty(0)
+    z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
     for i in range(len(c)):
@@ -368,7 +368,7 @@ def fuzzy_min(x, a, y, b):
     c = c[zz_index]
 
     # Initialize loop
-    z, mfz = np.empty(0), np.empty(0)
+    z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
     for i in range(len(c)):
@@ -433,7 +433,7 @@ def fuzzy_mult(x, a, y, b):
     c = c[zz_index]
 
     # Initialize loop
-    z, mfz = np.empty(0), np.empty(0)
+    z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
     for i in range(len(c)):
@@ -498,7 +498,7 @@ def fuzzy_sub(x, a, y, b):
     c = c[zz_index]
 
     # Initialize loop
-    z, mfz = np.empty(0), np.empty(0)
+    z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
     for i in range(len(c)):

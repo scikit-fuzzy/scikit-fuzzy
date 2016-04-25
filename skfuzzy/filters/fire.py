@@ -74,8 +74,8 @@ def fire1d(x, l1=0, l2=1):
     mne = np.interp(dxx, dx, ne)
 
     # Build output correction functions all at once
-    lam = np.empty((0, len(mpo)))
-    lam2 = np.empty((0, len(mne)))
+    lam = np.zeros((0, len(mpo)))
+    lam2 = np.zeros((0, len(mne)))
     for rule in rules:
         lam = np.vstack((lam, np.atleast_2d(mpo[:, rule].min(axis=1))))
         lam2 = np.vstack((lam2, np.atleast_2d(mne[:, rule].min(axis=1))))
