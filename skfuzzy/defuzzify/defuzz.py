@@ -58,7 +58,43 @@ def centroid(x, mfx):
     skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.dcentroid
 
     """
-    return (x * mfx).sum() / np.fmax(mfx.sum(),
+
+    '''
+    As we suppose linearity between each pair of points of x, we can calculate the exact area of the figure
+    (a triangle or a rectangle).
+    '''
+    sum_moment_area = 0.0
+    sum_area = 0.0
+    #If the membership function is a singleton fuzzy set:
+    if len(x)==1:
+        return x[0]*mfx[0]/np.fmax(mfx[0],
+                                     np.finfo(float).eps).astype(float)
+    #else return the sum of moment*area/sum of area
+    for i in range(1,len(x)):
+        x1 = x[i-1]
+        x2 = x[i]
+        y1 = mfx[i-1]
+        y2 = mfx[i]
+
+        #if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or zero width
+        if not(y1 == y2 == 0.0 or x1==x2):
+            if y1==y2: #rectangle
+                moment = 0.5 * (x1 + x2)
+                area = (x2 - x1) * y1
+            elif y1==0.0 and y2 != 0.0: # triangle, height y2
+                moment = 2.0/3.0 * (x2-x1) + x1
+                area = 0.5 * (x2 - x1) * y2
+            elif y2 == 0.0 and y1 != 0.0: # triangle, height y1
+                moment = 1.0/3.0 * (x2 - x1) + x1
+                area = 0.5 * (x2 - x1) * y1
+            else:
+                moment = (2.0/3.0 * (x2 - x1) * (y2 + 0.5 * y1))/(y1 + y2) + x1
+                area = 0.5 * (x2 - x1) * (y1 + y2)
+            sum_moment_area += moment*area
+            sum_area += area
+
+
+    return sum_moment_area / np.fmax(sum_area,
                                      np.finfo(float).eps).astype(float)
 
 
@@ -86,9 +122,100 @@ def dcentroid(x, mfx, x0):
 
     """
     x = x - x0
-    u = (x * mfx).sum(axis=0).astype(float) / np.fmax(mfx.sum(axis=0),
-                                                      np.finfo(float).eps)
+    u = centroid(x,mfx)
     return x0 + u
+
+def bisector(x, mfx):
+    """
+    Defuzzification using bisector (`division of the area in two equally parts`) method.
+
+    Parameters
+    ----------
+    x : 1d array, length M
+        Independent variable
+    mfx : 1d array, length M
+        Fuzzy membership function
+
+    Returns
+    -------
+    u : 1d array, length M
+        Defuzzified result
+
+    See also
+    --------
+    skfuzzy.defuzzify.defuzz
+
+    """
+    '''
+    As we suppose linearity between each pair of points of x, we can calculate the exact area of the figure
+    (a triangle or a rectangle).
+    '''
+    sum_area = 0.0
+    accum_area = [0.0]*(len(x)-1)
+    #If the membership function is a singleton fuzzy set:
+    if len(x)==1:
+        return x[0]
+    #else return the sum of moment*area/sum of area
+    for i in range(1,len(x)):
+        x1 = x[i-1]
+        x2 = x[i]
+        y1 = mfx[i-1]
+        y2 = mfx[i]
+
+        #if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or zero width
+        if not(y1 == y2 == 0.0 or x1==x2):
+            if y1==y2: #rectangle
+                area = (x2 - x1) * y1
+            elif y1==0.0 and y2 != 0.0: # triangle, height y2
+                area = 0.5 * (x2 - x1) * y2
+            elif y2 == 0.0 and y1 != 0.0: # triangle, height y1
+                area = 0.5 * (x2 - x1) * y1
+            else:
+                area = 0.5 * (x2 - x1) * (y1 + y2)
+            sum_area += area
+            accum_area[i-1] = sum_area
+
+    #index to the figure which cointains the x point that divide the area of the whole fuzzy set in two
+    index = np.nonzero(np.array(accum_area)>=sum_area/2.0)[0][0]
+
+    #subarea will be the area in the left part of the bisection for this set
+    if index == 0:
+        subarea = 0
+    else:
+        subarea = accum_area[index-1]
+    x1 = x[index]
+    x2 = x[index+1]
+    y1 = mfx[index]
+    y2 = mfx[index+1]
+
+    #We are interested only in the subarea inside the figure in which the bisection is present.
+    subarea = sum_area/2.0 - subarea
+
+    if y1==y2: #rectangle
+        u = subarea/y1 + x1
+    elif y1==0.0 and y2 != 0.0: # triangle, height y2
+        a = 1.0
+        b = -2.0*x1
+        c = x1*x1 - (x2-x1)*2.0*subarea/y2
+        u = (-b + np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+    elif y2 == 0.0 and y1 != 0.0: # triangle, height y1
+        a = 1.0
+        b = -2.0*x2
+        c = x2*x2 - ((x2-x1)*(x2-x1)*y1 - 2.0*subarea*(x2-x1))/y1
+        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+    elif y2>y1:
+        a = 1.0
+        b = -2.0*x1
+        c = x1*x1-(2.0*subarea*(x2-x1))/(y2-y1)
+        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+    else:
+        a = 1.0
+        b = -2.0*x1
+        c = x1*x1-(2.0*subarea*(x2-x1))/(y1-y2)
+        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+
+    return u
+
 
 
 def defuzz(x, mfx, mode):
@@ -128,18 +255,14 @@ def defuzz(x, mfx, mode):
                           identical.'
 
     if 'centroid' in mode or 'bisector' in mode:
-        tot_area = mfx.sum()
+        tot_area = mfx.sum() #It is not the total area, but it is enough for the following assertion
         assert tot_area != 0, 'Total area is zero in defuzzification!'
 
         if 'centroid' in mode:
             return centroid(x, mfx)
 
         elif 'bisector' in mode:
-            tmp = 0
-            for k in range(n):
-                tmp += mfx[k]
-                if tmp >= tot_area / 2.:
-                    return x[k]
+            return bisector(x, mfx)
 
     elif 'mom' in mode:
         return np.mean(x[mfx == mfx.max()])
