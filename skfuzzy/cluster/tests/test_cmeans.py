@@ -10,8 +10,8 @@ def setup():
     np.random.seed(42)
 
     # Generate pseudo-random reasonably well distinguished clusters
-    xpts = np.empty(0)
-    ypts = np.empty(0)
+    xpts = np.zeros(0)
+    ypts = np.zeros(0)
 
     x_corr = [7, 1, 4]
     y_corr = [3, 2, 1]
@@ -90,9 +90,9 @@ def test_fuzzy_cmeans_predict():
     global y_corr
 
     # Generate slightly smaller new dataset, clustered tighter around seeds
-    xtest = np.empty(0)
-    ytest = np.empty(0)
-    cluster = np.empty(0)
+    xtest = np.zeros(0)
+    ytest = np.zeros(0)
+    cluster = np.zeros(0)
 
     # Given this initialization, the clustering will be [1, 2, 0]
     for x, y, label in zip(x_corr, y_corr, [1, 2, 0]):

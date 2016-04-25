@@ -150,7 +150,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
-    jm = np.empty(0)
+    jm = np.zeros(0)
     p = 0
 
     # Main cmeans loop
@@ -242,7 +242,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
-    jm = np.empty(0)
+    jm = np.zeros(0)
     p = 0
 
     # Main cmeans loop
