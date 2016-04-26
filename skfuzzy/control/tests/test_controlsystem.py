@@ -53,7 +53,7 @@ def test_tipping_problem():
     tip_sim2.compute()
 
     assert tip_sim.output == tip_sim2.output
-    tst.assert_allclose(tip_sim.output['tip'], 20.244508118433625)
+    tst.assert_allclose(tip_sim.output['tip'], 19.847607362)
 
 
 def test_bad_rules():

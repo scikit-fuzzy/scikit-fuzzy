@@ -191,29 +191,19 @@ def bisector(x, mfx):
     #We are interested only in the subarea inside the figure in which the bisection is present.
     subarea = sum_area/2.0 - subarea
 
+    x2minusx1 = x2 - x1;
     if y1==y2: #rectangle
         u = subarea/y1 + x1
     elif y1==0.0 and y2 != 0.0: # triangle, height y2
-        a = 1.0
-        b = -2.0*x1
-        c = x1*x1 - (x2-x1)*2.0*subarea/y2
-        u = (-b + np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+        root = np.sqrt(2.0*subarea*x2minusx1/y2)
+        u = (x1 + root)
     elif y2 == 0.0 and y1 != 0.0: # triangle, height y1
-        a = 1.0
-        b = -2.0*x2
-        c = x2*x2 - ((x2-x1)*(x2-x1)*y1 - 2.0*subarea*(x2-x1))/y1
-        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
-    elif y2>y1:
-        a = 1.0
-        b = -2.0*x1
-        c = x1*x1-(2.0*subarea*(x2-x1))/(y2-y1)
-        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
+        root = np.sqrt(x2minusx1*x2minusx1 - (2.0*subarea*x2minusx1/y1))
+        u = (x2 - root)
     else:
-        a = 1.0
-        b = -2.0*x1
-        c = x1*x1-(2.0*subarea*(x2-x1))/(y1-y2)
-        u = (-b - np.sqrt(b*b - 4.0*a*c))/(2.0*a)
-
+        m = (y2-y1)/x2minusx1
+        root = np.sqrt(y1*y1 + 2.0*m*subarea)
+        u = (x1 - (y1 - root)/m)
     return u
 
 

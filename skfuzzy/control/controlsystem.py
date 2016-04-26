@@ -438,7 +438,8 @@ class CrispValueCalculator(object):
             cut = term.membership_value[self.sim]
             if cut is None:
                 continue  # No membership defined for this adjective
-            add_universe.update(interp_value(self.var.universe, term.mf, cut))
+            add_xx = interp_value(self.var.universe, term.mf, cut)
+            add_universe.update(add_xx)
         # We are only interested in points not in self.var.universe
         add_universe = add_universe-set(self.var.universe)
         upsampled_universe = zip(self.var.universe.tolist() + list(add_universe), range(len(self.var.universe))+[None]*len(add_universe))
@@ -455,7 +456,8 @@ class CrispValueCalculator(object):
             cut = term.membership_value[self.sim]
             if cut is None:
                 continue  # No membership defined for this adjective
-            upsampled_mf = [term.mf[i] if i is not None else cut for i in upsampled_mf_indices]
+            upsampled_mf = [term.mf[upsampled_mf_indices[i]] if upsampled_mf_indices[i] is not None else \
+                                interp_membership(self.var.universe, term.mf, upsampled_universe[i]) for i in xrange(len(upsampled_mf_indices))]
             term_mfs[label] = np.minimum(cut, upsampled_mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 

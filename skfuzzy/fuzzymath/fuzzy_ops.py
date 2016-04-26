@@ -689,7 +689,7 @@ def interp_value(x, xmf, y):
     membership value ``u(xx)`` is ``y`` using linear interpolation.
     """
 
-    indices = np.nonzero([True if xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1] else False for i in range(len(x)-1)])[0]
+    indices = np.nonzero([True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y) else False for i in range(len(x)-1)])[0]
 
     # We have len(indices) values in ``x``
     xx = [0.0]*len(indices)
