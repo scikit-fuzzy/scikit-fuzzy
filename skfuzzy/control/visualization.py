@@ -65,11 +65,11 @@ class FuzzyVariableVisualizer(object):
         self._init_plot()
 
         crispy = CrispValueCalculator(self.fuzzy_var, sim)
-        output_mf, cut_mfs = crispy.find_memberships()
+        ups_universe, output_mf, cut_mfs = crispy.find_memberships()
 
         # Plot the output membership functions
         cut_plots = {}
-        zeros = np.zeros_like(self.fuzzy_var.universe, dtype=np.float64)
+        zeros = np.zeros_like(ups_universe, dtype=np.float64)
 
         for label, mf_plot in self.plots.items():
             # Only attempt to plot those with cuts
@@ -77,7 +77,7 @@ class FuzzyVariableVisualizer(object):
                 # Harmonize color between mf plots and filled overlays
                 color = mf_plot[0].get_color()
                 cut_plots[label] = self.ax.fill_between(
-                    self.fuzzy_var.universe, zeros, cut_mfs[label],
+                    ups_universe, zeros, cut_mfs[label],
                     facecolor=color, alpha=0.4)
 
         # Plot crisp value if available

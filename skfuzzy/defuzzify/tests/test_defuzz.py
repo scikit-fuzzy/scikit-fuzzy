@@ -8,13 +8,13 @@ def test_centroid():
     def helper_centroid(mean=0, sigma=1):
         x = np.arange(21) - 10
         gmf = fuzz.gaussmf(x, mean, sigma)
-        assert_allclose(mean, fuzz.centroid(x, gmf), atol=1e-3)
+        assert_allclose(mean, fuzz.centroid(x, gmf), atol=1e-2)
         return None
 
     def helper_dcentroid(mean=0, sigma=1, dc=0):
         x = np.arange(21) - 10
         gmf = fuzz.gaussmf(x, mean, sigma)
-        assert_allclose(mean, fuzz.dcentroid(x, gmf, dc), atol=1e-3)
+        assert_allclose(mean, fuzz.dcentroid(x, gmf, dc), atol=1e-2)
         assert_allclose(fuzz.centroid(x, gmf),
                         fuzz.dcentroid(x, gmf, 0))
         return None
@@ -31,7 +31,7 @@ def test_defuzz():
     gmf = fuzz.gaussmf(x, 0, 2)
 
     assert_allclose(0, fuzz.defuzz(x, gmf, 'centroid'), atol=1e-9)
-    assert_allclose(0, fuzz.defuzz(x, gmf, 'bisector'))
+    assert_allclose(0, fuzz.defuzz(x, gmf, 'bisector'), atol=1e-9)
     assert_allclose(0, fuzz.defuzz(x, gmf, 'mom'))
     assert_allclose(0, fuzz.defuzz(x, gmf, 'som'))
     assert_allclose(0, fuzz.defuzz(x, gmf, 'lom'))
