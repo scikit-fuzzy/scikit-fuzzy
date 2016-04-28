@@ -63,12 +63,12 @@ def centroid(x, mfx):
     As we suppose linearity between each pair of points of x, we can calculate the exact area of the figure
     (a triangle or a rectangle).
     '''
+
     sum_moment_area = 0.0
     sum_area = 0.0
     #If the membership function is a singleton fuzzy set:
     if len(x)==1:
-        return x[0]*mfx[0]/np.fmax(mfx[0],
-                                     np.finfo(float).eps).astype(float)
+        return x[0]*mfx[0]/np.fmax(mfx[0], np.finfo(float).eps).astype(float)
     #else return the sum of moment*area/sum of area
     for i in range(1,len(x)):
         x1 = x[i-1]
@@ -94,8 +94,7 @@ def centroid(x, mfx):
             sum_area += area
 
 
-    return sum_moment_area / np.fmax(sum_area,
-                                     np.finfo(float).eps).astype(float)
+    return sum_moment_area / np.fmax(sum_area, np.finfo(float).eps).astype(float)
 
 
 def dcentroid(x, mfx, x0):
@@ -122,8 +121,7 @@ def dcentroid(x, mfx, x0):
 
     """
     x = x - x0
-    u = centroid(x,mfx)
-    return x0 + u
+    return x0 + centroid(x, mfx)
 
 def bisector(x, mfx):
     """
@@ -245,8 +243,8 @@ def defuzz(x, mfx, mode):
                           identical.'
 
     if 'centroid' in mode or 'bisector' in mode:
-        tot_area = mfx.sum() #It is not the total area, but it is enough for the following assertion
-        assert tot_area != 0, 'Total area is zero in defuzzification!'
+        zero_truth_degree = mfx.sum() == 0 #It is not the total area, but it is enough for the following assertion
+        assert not zero_truth_degree, 'Total area is zero in defuzzification!'
 
         if 'centroid' in mode:
             return centroid(x, mfx)

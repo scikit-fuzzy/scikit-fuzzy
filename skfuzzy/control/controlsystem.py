@@ -7,7 +7,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pylab as plt
 
-from skfuzzy import interp_membership, interp_value, defuzz
+from skfuzzy import interp_membership, interp_universe, defuzz
 from .antecedent_consequent import Antecedent, Consequent
 from .fuzzyvariable import FuzzyVariable, Term, TermAggregate
 from .visualization import ControlSystemVisualizer
@@ -430,22 +430,24 @@ class CrispValueCalculator(object):
 
         '''
         First we have to upsample the universe of self.var in order to add the key points of the membership function
-        based on the activation level for this consequent, using the interp_value function, which interpolates the `xx`
-        values in the universe such that its membership function value is the activation level.
+        based on the activation level for this consequent, using the interp_universe function, which interpolates
+        the `xx` values in the universe such that its membership function value is the activation level.
         '''
         add_universe = set()
         for label, term in self.var.terms.items():
             cut = term.membership_value[self.sim]
             if cut is None:
                 continue  # No membership defined for this adjective
-            add_xx = interp_value(self.var.universe, term.mf, cut)
+            add_xx = interp_universe(self.var.universe, term.mf, cut)
             add_universe.update(add_xx)
         # We are only interested in points not in self.var.universe
         add_universe = add_universe-set(self.var.universe)
-        upsampled_universe = zip(self.var.universe.tolist() + list(add_universe), range(len(self.var.universe))+[None]*len(add_universe))
+        #We want to sort the universe values and keep related their indices to access to their mf values
+        upsampled_universe = list(zip(self.var.universe.tolist() + list(add_universe),
+                                 list(range(len(self.var.universe)))+[None]*len(add_universe)))
         upsampled_universe.sort(key=lambda element: element[0])
-        upsampled_mf_indices = map(lambda element: element[1], upsampled_universe)
-        upsampled_universe = np.array(map(lambda element: element[0],upsampled_universe))
+        upsampled_mf_indices = [element[1] for element in upsampled_universe]
+        upsampled_universe = np.array([element[0] for element in upsampled_universe])
 
         # Initilize membership
         output_mf = np.zeros_like(upsampled_universe, dtype=np.float64)
@@ -456,8 +458,9 @@ class CrispValueCalculator(object):
             cut = term.membership_value[self.sim]
             if cut is None:
                 continue  # No membership defined for this adjective
-            upsampled_mf = [term.mf[upsampled_mf_indices[i]] if upsampled_mf_indices[i] is not None else \
-                                interp_membership(self.var.universe, term.mf, upsampled_universe[i]) for i in xrange(len(upsampled_mf_indices))]
+            upsampled_mf = [term.mf[upsampled_mf_indices[i]] if upsampled_mf_indices[i] is not None
+                            else interp_membership(self.var.universe, term.mf, upsampled_universe[i])
+                            for i in range(len(upsampled_mf_indices))]
             term_mfs[label] = np.minimum(cut, upsampled_mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 

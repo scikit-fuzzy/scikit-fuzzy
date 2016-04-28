@@ -661,10 +661,9 @@ def interp_membership(x, xmf, xx):
     return xxmf
 
 
-def interp_value(x, xmf, y):
+def interp_universe(x, xmf, y):
     """
-    Finds the degree of membership ``u(xx)`` for a given value of ``x = xx``.
-
+F   Find interpolated universe value(s) for a given fuzzy membership value.
     Parameters
     ----------
     x : 1d array
@@ -672,24 +671,30 @@ def interp_value(x, xmf, y):
     xmf : 1d array
         Fuzzy membership function for ``x``.  Same length as ``x``.
     y : float
-        Membership function value at ``x``.
+        Specific fuzzy membership value.
 
     Returns
     -------
-    xx : 1d array
-        Array of discrete singleton values on universe ``x`` whose
+    xx : list
+        List of discrete singleton values on universe ``x`` whose
         membership function value is y, ``u(xx[i])==y``.
+        If there are not points xx[i] such that ``u(xx[i])==y``
+        it returns an empty list.
 
     Notes
     -----
     For use in Fuzzy Logic, where an interpolated discrete value ``xx`` which its
     membership function value u(xx) equals ``y`` is given. Then, consider a
-    new value x = xx, which does not correspond to any discrete
-    values of ``x``. This function computes the value of ``x`` such that its
+    new value xx, which does not correspond to any discrete values of ``x``.
+    This function computes the value of ``x`` such that its
     membership value ``u(xx)`` is ``y`` using linear interpolation.
     """
 
-    indices = np.nonzero([True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y) else False for i in range(len(x)-1)])[0]
+    #If y is between xmf[i] and xmf[i+1] there is a cut point.
+    #Moreover, if y==xmf[i+1] we will interpret it as a cut point. However, in the next iteration (i+1 will be i)
+    #we will interpret it as well as a cut point! That is the reason for the `and` part.
+    indices = np.nonzero([True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y)
+                          else False for i in range(len(x)-1)])[0]
 
     # We have len(indices) values in ``x``
     xx = [0.0]*len(indices)
