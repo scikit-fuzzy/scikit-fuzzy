@@ -7,7 +7,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pylab as plt
 
-from skfuzzy import interp_membership, defuzz
+from skfuzzy import interp_membership, interp_universe, defuzz
 from .antecedent_consequent import Antecedent, Consequent
 from .fuzzyvariable import FuzzyVariable, Term, TermAggregate
 from .visualization import ControlSystemVisualizer
@@ -397,13 +397,13 @@ class CrispValueCalculator(object):
 
     def defuzz(self):
         """Derive crisp value based on membership of adjective(s)."""
-        output_mf, cut_mfs = self.find_memberships()
+        ups_universe, output_mf, cut_mfs = self.find_memberships()
         if len(cut_mfs) == 0:
             raise ValueError("No terms have memberships.  Make sure you "
                              "have at least one rule connected to this "
                              "variable and have run the rules calculation.")
         try:
-            return defuzz(self.var.universe, output_mf,
+            return defuzz(ups_universe, output_mf,
                           self.var.defuzzify_method)
         except AssertionError:
             raise ValueError("Crisp output cannot be calculated, likely "
@@ -428,8 +428,29 @@ class CrispValueCalculator(object):
         if len(self.var.terms.keys()) == 0:
             raise ValueError("Set term membership function(s) first")
 
+        '''
+        First we have to upsample the universe of self.var in order to add the key points of the membership function
+        based on the activation level for this consequent, using the interp_universe function, which interpolates
+        the `xx` values in the universe such that its membership function value is the activation level.
+        '''
+        add_universe = set()
+        for label, term in self.var.terms.items():
+            cut = term.membership_value[self.sim]
+            if cut is None:
+                continue  # No membership defined for this adjective
+            add_xx = interp_universe(self.var.universe, term.mf, cut)
+            add_universe.update(add_xx)
+        # We are only interested in points not in self.var.universe
+        add_universe = add_universe-set(self.var.universe)
+        #We want to sort the universe values and keep related their indices to access to their mf values
+        upsampled_universe = list(zip(self.var.universe.tolist() + list(add_universe),
+                                 list(range(len(self.var.universe)))+[None]*len(add_universe)))
+        upsampled_universe.sort(key=lambda element: element[0])
+        upsampled_mf_indices = [element[1] for element in upsampled_universe]
+        upsampled_universe = np.array([element[0] for element in upsampled_universe])
+
         # Initilize membership
-        output_mf = np.zeros_like(self.var.universe, dtype=np.float64)
+        output_mf = np.zeros_like(upsampled_universe, dtype=np.float64)
 
         # Build output membership function
         term_mfs = {}
@@ -437,10 +458,13 @@ class CrispValueCalculator(object):
             cut = term.membership_value[self.sim]
             if cut is None:
                 continue  # No membership defined for this adjective
-            term_mfs[label] = np.minimum(cut, term.mf)
+            upsampled_mf = [term.mf[upsampled_mf_indices[i]] if upsampled_mf_indices[i] is not None
+                            else interp_membership(self.var.universe, term.mf, upsampled_universe[i])
+                            for i in range(len(upsampled_mf_indices))]
+            term_mfs[label] = np.minimum(cut, upsampled_mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 
-        return output_mf, term_mfs
+        return upsampled_universe, output_mf, term_mfs
 
 
 class RuleOrderGenerator(object):

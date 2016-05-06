@@ -5,7 +5,7 @@ from skfuzzy.membership import trapmf
 from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                interp10, maxmin_composition,
                                maxprod_composition, interp_membership,
-                               relation_min, relation_product,
+                               interp_universe, relation_min, relation_product,
                                fuzzy_add, fuzzy_sub, fuzzy_min, fuzzy_mult,
                                fuzzy_div, fuzzy_compare, inner_product,
                                modus_ponens, outer_product, fuzzy_similarity,
@@ -311,6 +311,23 @@ def test_interp_membership():
     yy = interp_membership(x, mfx, 2.718)
     assert_allclose(np.r_[yy], np.r_[0.641])
 
+
+def test_interp_universe():
+    x = np.r_[0:4.1:0.1]
+    mfx = trapmf(x, [0, 1, 2, 4])
+
+    xx = interp_universe(x, mfx, 0.5)
+    assert_allclose(xx, [0.5,3])
+
+    xx = interp_universe(x, mfx, 0.0)
+    assert_allclose(xx, [0,4])
+
+    xx = interp_universe(x, mfx, 1.5)
+    assert len(xx) == 0
+
+    xx = interp_universe(x, mfx, 0.3)
+    y = [interp_membership(x,mfx,value) for value in xx]
+    assert_allclose(y, 0.3)
 
 def test_modus_ponens():
     A = np.r_[0, 0.6, 1, 0.2]
