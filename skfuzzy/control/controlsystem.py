@@ -5,7 +5,6 @@ from __future__ import print_function, division
 
 import numpy as np
 import networkx as nx
-import matplotlib.pylab as plt
 
 from skfuzzy import interp_membership, interp_universe, defuzz
 from .antecedent_consequent import Antecedent, Consequent
@@ -21,9 +20,20 @@ except ImportError:
 
 class ControlSystem(object):
     """
-    Fuzzy Control System
+    Base class to contain a Fuzzy Control System.
+
+    Parameters
+    ----------
+    rules : Rule or iterable of Rules, optional
+        If provided, the system is initialized and populated with a set of
+        fuzzy Rules (see ``skfuzzy.control.Rule``). This is optional. If
+        omitted the ControlSystem can be built interactively.
     """
+
     def __init__(self, rules=None):
+        """
+        Initialization method for the fuzzy ControlSystem object.
+        """ + '\n'.join(ControlSystem.__doc__.split('\n')[1:])
         self.graph = nx.DiGraph()
         self._rule_generator = RuleOrderGenerator(self)
 
@@ -41,6 +51,9 @@ class ControlSystem(object):
 
     @property
     def rules(self):
+        """
+        Generator which yields Rules in the system in calculation order.
+        """
         # We have to expose the rules in the order from antecedents to
         #  consequences.  For example if we have:
         #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
@@ -49,9 +62,7 @@ class ControlSystem(object):
 
     @property
     def antecedents(self):
-        """
-        Generator which yields Antecedents in the system.
-        """
+        """Generator which yields Antecedents in the system."""
         for node in self.graph.nodes():
             if isinstance(node, Antecedent):
                 yield node
@@ -147,6 +158,8 @@ class _InputAcceptor(object):
         return out
 
     def _update_to_current(self):
+        # Private method, used to store the current state of the system in a
+        # cache, 'current', accessible before and after the unique_id changes.
         if self.sim.unique_id == 'current':
             return
 
@@ -194,6 +207,9 @@ class ControlSystemSimulation(object):
     """
 
     def __init__(self, control_system, clip_to_bounds=True, cache=False):
+        """
+        Initialize a new ControlSystemSimulation.
+        """ + '\n'.join(ControlSystemSimulation.__doc__.split('\n')[1:])
         assert isinstance(control_system, ControlSystem)
         self.ctrl = control_system
 
@@ -286,8 +302,12 @@ class ControlSystemSimulation(object):
 
     def compute_rule(self, rule):
         """
-        Implements rule according to the three step method of
-        Mamdani inference: Aggregation, activation, and accumulation
+        Implement rule according to Mamdani inference.
+
+        The three step method consists of::
+         * Aggregation
+         * Activation
+         * Accumulation
         """
         # Step 1: Aggregation.  This finds the net accomplishment of the
         #  antecedent by AND-ing or OR-ing together all the membership values
@@ -330,6 +350,9 @@ class ControlSystemSimulation(object):
             term.cuts[self][rule.label] = value
 
     def print_state(self):
+        """
+        Print info about the inner workings of a ControlSystemSimulation.
+        """
         if self.ctrl.consequents.next().output[self] is None:
             raise ValueError("Call compute method first.")
 
@@ -388,8 +411,21 @@ class ControlSystemSimulation(object):
 
 
 class CrispValueCalculator(object):
+    """
+    Convert a calculated FuzzyVariable back into a crisp real number.
+
+    Parameters
+    ----------
+    fuzzy_var : FuzzyVariable
+        The fuzzy variable to be defuzzified.
+    sim : ControlSystemSimulation
+        The simulation which holds all necessary data for this calculation.
+    """
 
     def __init__(self, fuzzy_var, sim):
+        """
+        Initialization method for CrispValueCalculator.
+        """ + '\n'.join(CrispValueCalculator.__doc__.split('\n')[1:])
         assert isinstance(fuzzy_var, FuzzyVariable)
         assert isinstance(sim, ControlSystemSimulation)
         self.var = fuzzy_var
@@ -429,9 +465,11 @@ class CrispValueCalculator(object):
             raise ValueError("Set term membership function(s) first")
 
         '''
-        First we have to upsample the universe of self.var in order to add the key points of the membership function
-        based on the activation level for this consequent, using the interp_universe function, which interpolates
-        the `xx` values in the universe such that its membership function value is the activation level.
+        First we have to upsample the universe of self.var in order to add the
+        key points of the membership function based on the activation level
+        for this consequent, using the interp_universe function, which
+        interpolates the `xx` values in the universe such that its membership
+        function value is the activation level.
         '''
         add_universe = set()
         for label, term in self.var.terms.items():
@@ -440,14 +478,20 @@ class CrispValueCalculator(object):
                 continue  # No membership defined for this adjective
             add_xx = interp_universe(self.var.universe, term.mf, cut)
             add_universe.update(add_xx)
+
         # We are only interested in points not in self.var.universe
-        add_universe = add_universe-set(self.var.universe)
-        #We want to sort the universe values and keep related their indices to access to their mf values
-        upsampled_universe = list(zip(self.var.universe.tolist() + list(add_universe),
-                                 list(range(len(self.var.universe)))+[None]*len(add_universe)))
+        add_universe = add_universe - set(self.var.universe)
+
+        # We want to sort the universe values and keep related their indices
+        # to access to their mf values
+        upsampled_universe = (
+            list(zip(self.var.universe.tolist() + list(add_universe),
+                     list(range(self.var.universe.size)) + [None] * len(add_universe))))
+
         upsampled_universe.sort(key=lambda element: element[0])
         upsampled_mf_indices = [element[1] for element in upsampled_universe]
-        upsampled_universe = np.array([element[0] for element in upsampled_universe])
+        upsampled_universe = np.array([
+            element[0] for element in upsampled_universe])
 
         # Initilize membership
         output_mf = np.zeros_like(upsampled_universe, dtype=np.float64)
@@ -456,11 +500,19 @@ class CrispValueCalculator(object):
         term_mfs = {}
         for label, term in self.var.terms.items():
             cut = term.membership_value[self.sim]
+
             if cut is None:
                 continue  # No membership defined for this adjective
-            upsampled_mf = [term.mf[upsampled_mf_indices[i]] if upsampled_mf_indices[i] is not None
-                            else interp_membership(self.var.universe, term.mf, upsampled_universe[i])
-                            for i in range(len(upsampled_mf_indices))]
+
+            upsampled_mf = []
+            for i in range(len(upsampled_mf_indices)):
+                if upsampled_mf_indices[i] is not None:
+                    upsampled_mf.append(term.mf[upsampled_mf_indices[i]])
+                else:
+                    upsampled_mf.append(
+                        interp_membership(self.var.universe, term.mf,
+                                          upsampled_universe[i]))
+
             term_mfs[label] = np.minimum(cut, upsampled_mf)
             np.maximum(output_mf, term_mfs[label], output_mf)
 
@@ -485,12 +537,7 @@ class RuleOrderGenerator(object):
     def __init__(self, control_system):
         """
         Generator to yield rules in the correct order for calculation.
-
-        Parameters
-        ----------
-        control_system : ControlSystem
-            Fuzzy control system object, instance of `skfuzzy.ControlSystem`.
-        """
+        """ + '\n'.join(RuleOrderGenerator.__doc__.split('\n')[1:6])
         assert isinstance(control_system, ControlSystem)
         self.control_system = control_system
         self._cache = []
