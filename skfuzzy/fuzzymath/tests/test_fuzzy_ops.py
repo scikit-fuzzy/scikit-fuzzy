@@ -317,16 +317,16 @@ def test_interp_universe():
     mfx = trapmf(x, [0, 1, 2, 4])
 
     xx = interp_universe(x, mfx, 0.5)
-    assert_allclose(xx, [0.5,3])
+    assert_allclose(xx, [0.5, 3])
 
     xx = interp_universe(x, mfx, 0.0)
-    assert_allclose(xx, [0,4])
+    assert_allclose(xx, [0, 4])
 
     xx = interp_universe(x, mfx, 1.5)
     assert len(xx) == 0
 
     xx = interp_universe(x, mfx, 0.3)
-    y = [interp_membership(x,mfx,value) for value in xx]
+    y = [interp_membership(x, mfx, value) for value in xx]
     assert_allclose(y, 0.3)
 
 def test_modus_ponens():

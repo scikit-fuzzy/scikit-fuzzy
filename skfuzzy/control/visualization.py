@@ -141,9 +141,12 @@ class FuzzyVariableVisualizer(object):
 
 
 class ControlSystemVisualizer(object):
-
+    """
+    Visualize a control system with Matplotlib and NetworkX.
+    """
     def __init__(self, control_system):
         """
+        Initialization method for the ControlSystemVisualizer.
 
         Parameters
         ----------
@@ -158,5 +161,8 @@ class ControlSystemVisualizer(object):
         self.fig, self.ax = plt.subplots()
 
     def view(self):
+        """
+        View the visualization.
+        """
         nx.draw(self.ctrl.graph, ax=self.ax)
         return self.fig

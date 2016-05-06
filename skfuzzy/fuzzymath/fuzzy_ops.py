@@ -65,7 +65,7 @@ def cartprod(x, y):
 
 def classic_relation(a, b):
     """
-    Determines the classic relation matrix, ``R``, between two fuzzy sets.
+    Determine the classic relation matrix, ``R``, between two fuzzy sets.
 
     Parameters
     ----------
@@ -170,7 +170,7 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
 def fuzzy_add(x, a, y, b):
     """
-    Adds fuzzy set ``a`` to fuzzy set ``b``.
+    Add fuzzy set ``a`` to fuzzy set ``b``.
 
     Parameters
     ----------
@@ -235,7 +235,7 @@ def fuzzy_add(x, a, y, b):
 
 def fuzzy_compare(q):
     """
-    Determines the comparison matrix, ``c``, based on the fuzzy pairwise
+    Determine the comparison matrix, ``c``, based on the fuzzy pairwise
     comparison matrix, ``q``, using Shimura's special relativity formula.
 
     Parameters
@@ -254,7 +254,7 @@ def fuzzy_compare(q):
 
 def fuzzy_div(x, a, y, b):
     """
-    Divides fuzzy set ``b`` into fuzzy set ``a``.
+    Divide fuzzy set ``b`` into fuzzy set ``a``.
 
     Parameters
     ----------
@@ -319,7 +319,7 @@ def fuzzy_div(x, a, y, b):
 
 def fuzzy_min(x, a, y, b):
     """
-    Finds minimum between fuzzy set ``a`` fuzzy set ``b``.
+    Find minimum between fuzzy set ``a`` fuzzy set ``b``.
 
     Parameters
     ----------
@@ -449,7 +449,7 @@ def fuzzy_mult(x, a, y, b):
 
 def fuzzy_sub(x, a, y, b):
     """
-    Subtracts fuzzy set ``b`` from fuzzy set ``a``.
+    Subtract fuzzy set ``b`` from fuzzy set ``a``.
 
     Parameters
     ----------
@@ -617,7 +617,7 @@ def maxprod_composition(s, r):
 
 def interp_membership(x, xmf, xx):
     """
-    Finds the degree of membership ``u(xx)`` for a given value of ``x = xx``.
+    Find the degree of membership ``u(xx)`` for a given value of ``x = xx``.
 
     Parameters
     ----------
@@ -663,7 +663,8 @@ def interp_membership(x, xmf, xx):
 
 def interp_universe(x, xmf, y):
     """
-F   Find interpolated universe value(s) for a given fuzzy membership value.
+    Find interpolated universe value(s) for a given fuzzy membership value.
+
     Parameters
     ----------
     x : 1d array
@@ -683,29 +684,31 @@ F   Find interpolated universe value(s) for a given fuzzy membership value.
 
     Notes
     -----
-    For use in Fuzzy Logic, where an interpolated discrete value ``xx`` which its
-    membership function value u(xx) equals ``y`` is given. Then, consider a
-    new value xx, which does not correspond to any discrete values of ``x``.
-    This function computes the value of ``x`` such that its
-    membership value ``u(xx)`` is ``y`` using linear interpolation.
+    For use in Fuzzy Logic, where a membership function level ``y`` is given.
+    Consider there is some value (or set of values) ``xx`` for which
+    ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete
+    values on ``x``. This function computes the value (or values) of ``xx``
+    such that ``u(xx) == y`` using linear interpolation.
     """
 
-    #If y is between xmf[i] and xmf[i+1] there is a cut point.
-    #Moreover, if y==xmf[i+1] we will interpret it as a cut point. However, in the next iteration (i+1 will be i)
-    #we will interpret it as well as a cut point! That is the reason for the `and` part.
-    indices = np.nonzero([True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y)
-                          else False for i in range(len(x)-1)])[0]
+    # If y is between xmf[i] and xmf[i+1] there is a cut point.
+    # Moreover, if y==xmf[i+1] we will interpret it as a cut point.
+
+    # However, in the next iteration, we interpret it also as a cut point!
+    # That is the reason for the `and` part.
+    indices = np.nonzero(
+        [True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y)
+         else False for i in range(len(x)-1)])[0]
 
     # We have len(indices) values in ``x``
-    xx = [0.0]*len(indices)
+    xx = [0.0] * len(indices)
 
     for i in range(len(indices)):
         index = indices[i]
         x1 = x[index]
-        x2 = x[index+1]
+        x2 = x[index + 1]
         xmf1 = xmf[index]
-        xmf2 = xmf[index+1]
-
+        xmf2 = xmf[index + 1]
 
         if x1 == x2:
             xx[i] = x1
@@ -714,8 +717,7 @@ F   Find interpolated universe value(s) for a given fuzzy membership value.
             xx[i] = x1
         else:
             slope = (xmf2 - xmf1) / float(x2 - x1)
-            xx[i] = (y-xmf1)/slope + x1
-
+            xx[i] = (y - xmf1)/slope + x1
 
     return xx
 
@@ -774,7 +776,7 @@ def outer_product(a, b):
 
 def relation_min(a, b):
     """
-    Determines fuzzy relation matrix ``R`` using Mamdani implication for the
+    Determine fuzzy relation matrix ``R`` using Mamdani implication for the
     fuzzy antecedent ``a`` and consequent ``b`` inputs.
 
     Parameters
@@ -799,7 +801,7 @@ def relation_min(a, b):
 
 def relation_product(a, b):
     """
-    Determines the fuzzy relation matrix, ``R``, using product implication for
+    Determine the fuzzy relation matrix, ``R``, using product implication for
     the fuzzy antecedent ``a`` and the fuzzy consequent ``b``.
 
     Parameters
@@ -851,7 +853,7 @@ def fuzzy_similarity(ai, b, mode='min'):
 
 def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     """
-    Calculates the *partial derivative* of a specified membership function.
+    Calculate the *partial derivative* of a specified membership function.
 
     Parameters
     ----------
@@ -879,9 +881,7 @@ def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     Partial derivatives of fuzzy membership functions are only meaningful for
     continuous functions. Triangular, trapezoidal designs have no partial
     derivatives to calculate. The following
-
     """
-
     if mf_name == 'gaussmf':
 
         sigma = mf_parameter_dict['sigma']
@@ -935,7 +935,7 @@ def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
 
 def sigmoid(x, power, split=0.5):
     """
-    Intensifies grayscale intensities in an array using a sigmoid function.
+    Intensify grayscale values in an array using a sigmoid function.
 
     Parameters
     ----------
@@ -964,6 +964,5 @@ def sigmoid(x, power, split=0.5):
     See Also
     --------
     skfuzzy.fuzzymath.contrast
-
     """
     return 1. / (1. + np.exp(- power * (x - split)))
