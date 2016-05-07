@@ -14,7 +14,6 @@
 
 import sys
 import os
-import skfuzzy
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -27,6 +26,7 @@ src_dir = os.path.abspath(os.path.join(curpath, '..', '..'))
 sys.path.insert(0, src_dir)
 
 module = 'skfuzzy'
+import skfuzzy
 
 # -- General configuration ------------------------------------------------
 
