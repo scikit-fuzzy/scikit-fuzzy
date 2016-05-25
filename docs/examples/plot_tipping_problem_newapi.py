@@ -55,12 +55,13 @@ start by defining the fuzzy variables that we use.
 """
 import numpy as np
 import skfuzzy as fuzz
+from skfuzzy import control as ctrl
 
 # New Antecedent/Consequent objects hold universe variables and membership
 # functions
-quality = fuzz.Antecedent(np.arange(0, 11, 1), 'quality')
-service = fuzz.Antecedent(np.arange(0, 11, 1), 'service')
-tip = fuzz.Consequent(np.arange(0, 26, 1), 'tip')
+quality = ctrl.Antecedent(np.arange(0, 11, 1), 'quality')
+service = ctrl.Antecedent(np.arange(0, 11, 1), 'service')
+tip = ctrl.Consequent(np.arange(0, 26, 1), 'tip')
 
 # Auto-membership function population is possible with .automf(3, 5, or 7)
 quality.automf(3)
@@ -106,9 +107,9 @@ imprecise rules into a defined, actionable tip is a challenge. This is the
 kind of task at which fuzzy logic excels.
 """
 
-rule1 = fuzz.Rule(quality['poor'] | service['poor'], tip['low'])
-rule2 = fuzz.Rule(service['average'], tip['medium'])
-rule3 = fuzz.Rule(service['good'] | quality['good'], tip['high'])
+rule1 = ctrl.Rule(quality['poor'] | service['poor'], tip['low'])
+rule2 = ctrl.Rule(service['average'], tip['medium'])
+rule3 = ctrl.Rule(service['good'] | quality['good'], tip['high'])
 
 rule1.view()
 
@@ -122,7 +123,7 @@ Now that we have our rules defined, we can simply create a control system
 via:
 """
 
-tipping_ctrl = fuzz.ControlSystem([rule1, rule2, rule3])
+tipping_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 
 """
 In order to simulate this control system, we will create a
@@ -133,7 +134,7 @@ Sharon at the local brew-pub.  We would create another
 for Travis at the cafe because the inputs would be different.
 """
 
-tipping = fuzz.ControlSystemSimulation(tipping_ctrl)
+tipping = ctrl.ControlSystemSimulation(tipping_ctrl)
 
 """
 We can now simulate our control system by simply specifying the inputs
