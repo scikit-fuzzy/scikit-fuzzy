@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # are not (re)generated. This avoids automatic generation of documentation
     # for older or newer versions if such versions are installed on the system.
 
-    source_lines = open('../skimage/__init__.py').readlines()
+    source_lines = open('../skfuzzy/__init__.py').readlines()
     version = 'vUndefined'
     for l in source_lines:
         if l.startswith('__version__'):
