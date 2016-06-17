@@ -154,7 +154,7 @@ class _InputAcceptor(object):
         """
         current_inputs = self._get_inputs()
         out = ""
-        for key, val in current_inputs.iteritems():
+        for key, val in current_inputs.items():
             out += "{0} : {1}\n".format(key, val)
         return out
 
@@ -368,7 +368,7 @@ class ControlSystemSimulation(object):
         number of runs if cache=True according to the `flush_after_run` kwarg.
         """
         def _clear_terms(fuzzy_var):
-            for term in fuzzy_var.terms.itervalues():
+            for term in fuzzy_var.terms.values():
                 term.membership_value.clear()
                 term.cuts.clear()
 

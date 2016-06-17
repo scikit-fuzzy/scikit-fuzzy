@@ -52,8 +52,8 @@ def test_tipping_problem():
     tip_sim2.compute()
 
     # Ensure both methods of defining rules yield the same results
-    for val0, val1 in zip(tip_sim.output.itervalues(),
-                          tip_sim2.output.itervalues()):
+    for val0, val1 in zip(tip_sim.output.values(),
+                          tip_sim2.output.values()):
         tst.assert_allclose(val0, val1)
 
     # Verify against manual computation
