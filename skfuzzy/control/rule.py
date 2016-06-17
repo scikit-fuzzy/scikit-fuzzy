@@ -7,45 +7,10 @@ with conqeuents in a `ControlSystem`.
 from __future__ import print_function, division
 
 import networkx as nx
-from .fuzzyvariable import (FuzzyAggregationMethod, Term,
-                            TermAggregate, TermPrimitive)
-from .visualization import ControlSystemVisualizer
+from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethod,
+                   TermPrimitive)
 from .state import StatefulProperty
-
-
-class WeightedTerm(object):
-    """
-    A `Term`, with a weight assigned.
-
-    All consequents become `WeightedTerm`s in calculation; if a weight
-    was not assigned, they default to a weight of 1.0.
-    """
-
-    activation = StatefulProperty(None)
-
-    def __init__(self, term, weight=1.0):
-        """
-        Initialize the weighted consequent.
-
-        Parameters
-        ----------
-        term : Term
-            A fuzzy variable with specified mebership function.
-        weight : float
-            Weight to assign this Term
-        """
-        assert isinstance(term, Term)
-        self.term = term
-        self.weight = weight
-
-    def __repr__(self):
-        """
-        String representation of the `WeightedTerm`.
-        """
-        if self.weight == 1.:
-            return self.term.full_label
-        else:
-            return "%s@%0.2f%%" % (self.term.full_label, self.weight)
+from .visualization import ControlSystemVisualizer
 
 
 class Rule(object):

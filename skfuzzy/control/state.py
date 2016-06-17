@@ -1,3 +1,12 @@
+"""
+state.py : Contains framework to hold variables unique to a simulation.
+
+This allows simulations to be precalculated and then referenced later for a
+dramatic efficiency gain. This gain is only realized for smaller systems,
+usually with discrete-valued inputs. However, if your controller can contain
+all possible input states in memory and repeat values are likely, enabling
+caching will result in major efficiency gains.
+"""
 from __future__ import print_function, division
 
 

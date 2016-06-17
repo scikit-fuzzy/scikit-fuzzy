@@ -5,18 +5,13 @@ import numpy as np
 import networkx as nx
 
 from .state import StatefulProperty
-from ..fuzzymath import interp_membership
 from .fuzzyvariable import FuzzyVariable
-from ..defuzzify import defuzz
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .ordereddict import OrderedDict
 
 
-
-def accu_max(*args):
+def _accu_max(*args):
+    """
+    Wrapper for fuzzy accumulation method.
+    """
     return np.max(args)
 
 
@@ -32,8 +27,8 @@ class Antecedent(FuzzyVariable):
     label : string
         Name of the universe variable.
     """
-    # Customized subclass of `FuzzyVariable`
 
+    # Customized subclass of `FuzzyVariable`
     input = StatefulProperty(None)
 
     def __init__(self, universe, label):
@@ -43,6 +38,9 @@ class Antecedent(FuzzyVariable):
 
     @property
     def graph(self):
+        """
+        NetworkX graph which connects this Antecedent with its Term(s).
+        """
         g = nx.DiGraph()
         for t in self.terms.values():
             g.add_path([self, t])
@@ -66,8 +64,8 @@ class Consequent(FuzzyVariable):
     The ``label`` string chosen must be unique among Antecedents and
     Consequents in the ``ControlSystem``.
     """
-    # Customized subclass of `FuzzyVariable`
 
+    # Customized subclass of `FuzzyVariable`
     output = StatefulProperty(None)
 
     def __init__(self, universe, label):
@@ -76,10 +74,13 @@ class Consequent(FuzzyVariable):
         self.__name__ = 'Consequent'
 
         # Default accumulation method is to take the max of any cut
-        self.accumulation_method = accu_max
+        self.accumulation_method = _accu_max
 
     @property
     def graph(self):
+        """
+        NetworkX graph which connects this Consequent with its Term(s).
+        """
         g = nx.DiGraph()
         for t in self.terms.values():
             g.add_path([t, self])

@@ -7,10 +7,11 @@ import numpy as np
 import networkx as nx
 
 from skfuzzy import interp_membership, interp_universe, defuzz
+from .fuzzyvariable import FuzzyVariable
 from .antecedent_consequent import Antecedent, Consequent
-from .fuzzyvariable import FuzzyVariable, Term, TermAggregate
+from .term import Term, WeightedTerm, TermAggregate
+from .rule import Rule
 from .visualization import ControlSystemVisualizer
-from .rule import Rule, WeightedTerm
 
 try:
     from collections import OrderedDict
