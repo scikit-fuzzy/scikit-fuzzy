@@ -3,6 +3,25 @@ import skfuzzy as fuzz
 from numpy.testing import assert_allclose, assert_raises
 
 
+def test_bisector():
+    x = np.arange(6)
+    mfx = fuzz.trimf(x, [0, 5, 5])
+    expected = 3.53553390593274
+
+    # Test both triangle code paths
+    assert_allclose(expected, fuzz.defuzz(x, mfx, 'bisector'))
+    assert_allclose(5 - expected, fuzz.defuzz(x, 1 - mfx, 'bisector'))
+
+    # Test singleton input
+    y = np.r_[2]
+    mfy = np.r_[0.33]
+    assert_allclose(y, fuzz.defuzz(y, mfy, 'bisector'))
+
+    # Test rectangle code path
+    mfx = fuzz.trapmf(x, [2, 2, 4, 4])
+    assert_allclose(3., fuzz.defuzz(x, mfx, 'bisector'))
+
+
 def test_centroid():
 
     def helper_centroid(mean=0, sigma=1):
@@ -24,6 +43,23 @@ def test_centroid():
             helper_centroid(mean, sigma)
             for differential_centroid in 42 * (np.arange(11) - 5):
                 helper_dcentroid(mean, sigma, differential_centroid)
+
+    # Test with ends @ zero, to evaluate special cases in new defuzz method
+    x = np.arange(21) - 10
+    gmf = fuzz.gaussmf(x, 0, np.pi)
+    gmf[0] = 0
+    gmf[-1] = 0
+    assert_allclose(0, fuzz.centroid(x, gmf), atol=1e-8)
+
+
+def test_centroid_singleton():
+    x = np.r_[0]
+    mfx = np.r_[0]
+    assert_allclose(np.r_[0], fuzz.centroid(x, mfx))
+
+    x = np.r_[3]
+    mfx = np.r_[0.5]
+    assert_allclose(x, fuzz.centroid(x, mfx))
 
 
 def test_defuzz():
