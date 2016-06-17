@@ -31,6 +31,9 @@ class StatefulProperty(object):
         raise AttributeError("Property is read-only. "
                              "Did you mean to access via a simultation?")
 
+    def clear(self, initial_condition=None):
+        self.__init__(self.default)
+
 
 class StatePerSimulation(object):
 
@@ -71,6 +74,7 @@ class StatePerSimulation(object):
         assert isinstance(key, ControlSystemSimulation)
 
         # Access all state data via the unique identifier string
-        key_id = key.unique_id
+        self._sim_data[key.unique_id] = value
 
-        self._sim_data[key_id] = value
+    def clear(self, initial_condition=None):
+        self.__init__(self.default)

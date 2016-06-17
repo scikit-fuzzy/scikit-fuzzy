@@ -131,6 +131,7 @@ class _MembershipValueAccessor(object):
     def __getitem__(self, key):
         from .controlsystem import ControlSystemSimulation
         assert isinstance(key, ControlSystemSimulation)
+
         # Perform aggregation to determine membership
         term1 = self.agg.term1.membership_value[key]
         if self.agg.term2 is not None:

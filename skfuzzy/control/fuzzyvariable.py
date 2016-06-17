@@ -92,7 +92,7 @@ class FuzzyVariable(object):
         if isinstance(item, Term):
             if item.label != key:
                 raise ValueError("Term's label must match new key")
-            if item.parent_variable is not None:
+            if item.parent is not None:
                 raise ValueError("Term must not already have a parent")
         else:
             # Try to create a term from item, assuming it is a membership
@@ -112,7 +112,7 @@ class FuzzyVariable(object):
                              "range. Allowed range is [0, 1].".format(key))
 
         # If above pass, add the new membership function
-        item.parent_variable = self
+        item.parent = self
         self.terms[key] = item
 
     def view(self, *args, **kwargs):

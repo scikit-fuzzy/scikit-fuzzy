@@ -39,7 +39,7 @@ class FuzzyVariableVisualizer(object):
         self.term = None
         if isinstance(fuzzy_var, Term):
             self.term = fuzzy_var.label
-            self.fuzzy_var = fuzzy_var.parent_variable
+            self.fuzzy_var = fuzzy_var.parent
         elif isinstance(fuzzy_var, FuzzyVariable):
             self.fuzzy_var = fuzzy_var
         else:
