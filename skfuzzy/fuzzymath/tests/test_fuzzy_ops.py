@@ -428,39 +428,42 @@ def test_sigmoid():
     assert_allclose(test, expected)
 
 
-def test_partial_dmf():
-
-    gaussmf = 'gaussmf'
+def test_partial_dmf_gauss():
+    name = 'gaussmf'
     mean = -1.5
     sigma = 0.75
     gaussmf_param_dict = {'mean': mean,
                           'sigma': sigma}
     test_int = randint(1, 3)
 
-    gaussmf_results = [partial_dmf(-1.5, gaussmf, gaussmf_param_dict, 'mean'),
-                       partial_dmf(-1.5, gaussmf, gaussmf_param_dict, 'sigma'),
-                       partial_dmf(-1.5, gaussmf, {'mean': mean, 'sigma': test_int * sigma}, 'mean') ==
-                       -partial_dmf(-1.5, gaussmf, {'mean': mean, 'sigma': -test_int * sigma}, 'mean')]
+    gaussmf_results = [partial_dmf(-1.5, name, gaussmf_param_dict, 'mean'),
+                       partial_dmf(-1.5, name, gaussmf_param_dict, 'sigma'),
+                       partial_dmf(-1.5, name, {'mean': mean, 'sigma': test_int * sigma}, 'mean') ==
+                       -partial_dmf(-1.5, name, {'mean': mean, 'sigma': -test_int * sigma}, 'mean')]
     gaussmf_expected = [0., 0., True]
     assert_allclose(gaussmf_results, gaussmf_expected)
 
-    gbellmf = 'gbellmf'
+
+def test_partial_dmf_gbell():
+    name = 'gbellmf'
     a = 2.
     b = 1.
     c = 0.5
     gbellmf_param_dict = {'a': a, 'b': b, 'c': c}
 
-    gbellmf_results = [partial_dmf(-1.5, gbellmf, gbellmf_param_dict, 'a'),
-                       partial_dmf(2.5, gbellmf, gbellmf_param_dict, 'a'),
-                       partial_dmf(-1.5, gbellmf, gbellmf_param_dict, 'b'),
-                       partial_dmf(2.5, gbellmf, gbellmf_param_dict, 'b'),
-                       partial_dmf(-1.5, gbellmf, gbellmf_param_dict, 'c'),
-                       partial_dmf(2.5, gbellmf, gbellmf_param_dict, 'c')
+    gbellmf_results = [partial_dmf(-1.5, name, gbellmf_param_dict, 'a'),
+                       partial_dmf(2.5, name, gbellmf_param_dict, 'a'),
+                       partial_dmf(-1.5, name, gbellmf_param_dict, 'b'),
+                       partial_dmf(2.5, name, gbellmf_param_dict, 'b'),
+                       partial_dmf(-1.5, name, gbellmf_param_dict, 'c'),
+                       partial_dmf(2.5, name, gbellmf_param_dict, 'c')
                        ]
     gbellmf_expected = [0.25, 0.25, -0.0, -0.0, -0.25, 0.25]
     assert_allclose(gbellmf_results, gbellmf_expected)
 
-    sigmf = 'sigmf'
+
+def test_partial_dmf_sigmoid():
+    name = 'sigmf'
     b_one = 1.0
     c_one = 3.0
     b_two = -1.0
@@ -468,10 +471,10 @@ def test_partial_dmf():
     sigmf_param_dict_one = {'b': b_one, 'c': c_one}
     sigmf_param_dict_two = {'b': b_two, 'c': c_two}
 
-    sigmf_results = [partial_dmf(1.0, sigmf, sigmf_param_dict_one, 'b'),
-                     partial_dmf(-1.0, sigmf, sigmf_param_dict_two, 'b'),
-                     partial_dmf(1.0, sigmf, sigmf_param_dict_one, 'c'),
-                     partial_dmf(-1.0, sigmf, sigmf_param_dict_two, 'c')
+    sigmf_results = [partial_dmf(1.0, name, sigmf_param_dict_one, 'b'),
+                     partial_dmf(-1.0, name, sigmf_param_dict_two, 'b'),
+                     partial_dmf(1.0, name, sigmf_param_dict_one, 'c'),
+                     partial_dmf(-1.0, name, sigmf_param_dict_two, 'c')
                      ]
     sigmf_expected = [-0.75, -0.125, 0., 0.]
     assert_allclose(sigmf_results, sigmf_expected)
