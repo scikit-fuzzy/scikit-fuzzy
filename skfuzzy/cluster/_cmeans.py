@@ -55,7 +55,6 @@ def _distance(data, centers):
     See Also
     --------
     scipy.spatial.distance.cdist
-
     """
     return cdist(data, centers).T
 
@@ -131,11 +130,20 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     -----
     The algorithm implemented is from Ross et al. [1]_.
 
+    Fuzzy C-Means has a known problem with high dimensionality datasets, where
+    the majority of cluster centers are pulled into the overall center of
+    gravity. If you are clustering data with very high dimensionality and
+    encounter this issue, another clustering method may be required. For more
+    information and the theory behind this, see Winkler et al. [2]_.
+
     References
     ----------
     .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
            Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.
 
+    .. [2] Winkler, R., Klawonn, F., & Kruse, R. Fuzzy c-means in high
+           dimensional spaces. 2012. Contemporary Theory and Pragmatic
+           Approaches in Fuzzy Computing Utilization, 1.
     """
     # Setup u0
     if init is None:
@@ -225,7 +233,6 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     ----------
     .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.
            Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.
-
     """
     c = cntr_trained.shape[0]
 
@@ -274,7 +281,6 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
 
     Very similar to initial clustering, except `cntr` is not updated, thus
     the new test data are forced into known (trained) clusters.
-
     """
     # Normalizing, then eliminating any potential zero values.
     u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
