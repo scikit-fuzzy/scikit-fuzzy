@@ -33,9 +33,10 @@ Scikit-Fuzzy depends on
 
   * NumPy >= 1.6
   * SciPy >= 0.9
+  * NetworkX >= 1.9
 
-and is now available on PyPi! The lastest stable release can be
-obtained and installed simply by running
+and is available on PyPi! The lastest stable release can always be obtained
+and installed simply by running
 
     $ pip install -U scikit-fuzzy
 
@@ -47,7 +48,7 @@ clone this repository then install SciKit-Fuzzy by running
 
 	$ python setup.py install
 
-or locally by running
+or develop locally by running
 
 	$ python setup.py develop
 
