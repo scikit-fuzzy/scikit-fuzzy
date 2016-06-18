@@ -50,8 +50,8 @@ We would formulate this problem as:
 Creating the Tipping Controller Using the skfuzzy control API
 -------------------------------------------------------------
 
-We can use the `skfuzzy` control API model this controller.  First, let's
-start by defining the fuzzy variables that we use.
+We can use the `skfuzzy` control system API to model this.  First, let's
+define fuzzy variables
 """
 import numpy as np
 import skfuzzy as fuzz
