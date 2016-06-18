@@ -2,165 +2,15 @@
 fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
 import numpy as np
-import matplotlib.pyplot as plt
 
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
-from .state import StatefulProperty
+from .term import Term
 
 try:
     from collections import OrderedDict
 except ImportError:
     from .ordereddict import OrderedDict
-
-
-class TermPrimitive(object):
-    """
-    Marker class for type checking when a term or term aggregate is expected.
-    """
-    pass
-
-    def membership_value(self):
-        raise NotImplementedError("Implement in concrete class")
-
-    def __and__(self, other):
-        if not isinstance(other, TermPrimitive):
-            raise ValueError("Can only construct 'AND' from the term "
-                             "of a fuzzy variable")
-
-        return TermAggregate(self, other, 'and')
-
-    def __or__(self, other):
-        if not isinstance(other, TermPrimitive):
-            raise ValueError("Can only construct 'OR' from the term "
-                             "of a fuzzy variable")
-
-        return TermAggregate(self, other, 'or')
-
-    def __invert__(self):
-        return TermAggregate(self, None, 'not')
-
-
-class Term(TermPrimitive):
-    """
-    A Term is a universe and associated specific membership function.
-
-    For example, if one were creating a FuzzyVariable with a simple three-point
-    liker scale, three `Term` would be created: poor, average, and good.
-    """
-
-    # State variables
-    membership_value = StatefulProperty(None)
-    cuts = StatefulProperty({})
-
-    def __init__(self, label, membership_function):
-        super(Term, self).__init__()
-        self.label = label
-        self.parent_variable = None
-        self.mf = membership_function
-
-    @property
-    def full_label(self):
-        """Term with parent.  Ex: velocity['fast']"""
-        if self.parent_variable is None:
-            raise ValueError("This term must be bound to a parent first")
-        return self.parent_variable.label + "[" + self.label + "]"
-
-    def view(self, *args, **kwargs):
-        """""" + FuzzyVariableVisualizer.view.__doc__
-        fig, ax = FuzzyVariableVisualizer(self).view(*args, **kwargs)
-        fig.show()
-
-    def __repr__(self):
-        return self.full_label
-
-    def __mod__(self, other):
-        from .rule import WeightedTerm
-        assert isinstance(other, float)
-        return WeightedTerm(self, other)
-
-
-class FuzzyAggregationMethod(object):
-    def __init__(self, and_func=min, or_func=max):
-        # Default and to OR = max and AND = min
-        self.and_agg_func = and_func
-        self.or_agg_func = or_func
-
-
-class _MembershipValueAccessor(object):
-
-    def __init__(self, agg):
-        assert isinstance(agg, TermAggregate)
-        self.agg = agg
-
-    def __getitem__(self, key):
-        from .controlsystem import ControlSystemSimulation
-        assert isinstance(key, ControlSystemSimulation)
-        # Perform aggregation to determine membership
-        term1 = self.agg.term1.membership_value[key]
-        if self.agg.term2 is not None:
-            term2 = self.agg.term2.membership_value[key]
-
-        if self.agg.kind == 'and':
-            return self.agg.agg_method.and_agg_func(
-                term1, term2)
-        elif self.agg.kind == 'or':
-            return self.agg.agg_method.or_agg_func(
-                term1, term2)
-        elif self.agg.kind == 'not':
-            return 1. - self.agg.term1.membership_value[key]
-        else:
-            raise NotImplementedError()
-
-
-class TermAggregate(TermPrimitive):
-    """
-    Used to track the creation of AND and OR clauses used when building
-    the antecedent of a rule.
-    """
-
-    def __init__(self, term1, term2, kind):
-        assert isinstance(term1, TermPrimitive)
-        if kind in ('and', 'or'):
-            assert isinstance(term2, TermPrimitive)
-        elif kind == 'not':
-            assert term2 is None, "NOT (~) operates on a single Term, not two."
-        else:
-            raise ValueError("Unexpected kind")
-
-        self.term1 = term1
-        self.term2 = term2
-        self.kind = kind
-        self._agg_method = FuzzyAggregationMethod()
-        self.membership_value = _MembershipValueAccessor(self)
-
-    def __repr__(self):
-        def _term_to_str(term):
-            if isinstance(term, Term):
-                return term.full_label
-            elif isinstance(term, TermAggregate):
-                return "(%s)" % term
-
-        if self.kind == 'not':
-            return "NOT-%s" % _term_to_str(self.term1)
-
-        return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
-                             _term_to_str(self.term2))
-
-    @property
-    def agg_method(self):
-        return self._agg_method
-
-    @agg_method.setter
-    def agg_method(self, value):
-        if not isinstance(value, FuzzyAggregationMethod):
-            raise ValueError("Expected FuzzyAggregationMethod")
-        self._agg_method = value
-
-        # Propegate agg method down to all agg terms below me
-        for term in (self.term1, self.term2):
-            if isinstance(term, TermAggregate):
-                term.agg_method = value
 
 
 class FuzzyVariable(object):
@@ -235,15 +85,14 @@ class FuzzyVariable(object):
 
     def __setitem__(self, key, item):
         """
-        Enables new membership functions or term to be added with the
-        syntax::
+        Enable terms to be added with the syntax::
 
           variable['new_label'] = new_mf
         """
         if isinstance(item, Term):
             if item.label != key:
                 raise ValueError("Term's label must match new key")
-            if item.parent_variable is not None:
+            if item.parent is not None:
                 raise ValueError("Term must not already have a parent")
         else:
             # Try to create a term from item, assuming it is a membership
@@ -263,7 +112,7 @@ class FuzzyVariable(object):
                              "range. Allowed range is [0, 1].".format(key))
 
         # If above pass, add the new membership function
-        item.parent_variable = self
+        item.parent = self
         self.terms[key] = item
 
     def view(self, *args, **kwargs):
@@ -274,7 +123,7 @@ class FuzzyVariable(object):
     def automf(self, number=5, variable_type='quality', names=None,
                invert=False):
         """
-        Automatically populates the universe with membership functions.
+        Automatically populate the universe with membership functions.
 
         Parameters
         ----------

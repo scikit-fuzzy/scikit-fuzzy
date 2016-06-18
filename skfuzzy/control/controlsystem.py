@@ -7,10 +7,11 @@ import numpy as np
 import networkx as nx
 
 from skfuzzy import interp_membership, interp_universe, defuzz
+from .fuzzyvariable import FuzzyVariable
 from .antecedent_consequent import Antecedent, Consequent
-from .fuzzyvariable import FuzzyVariable, Term, TermAggregate
+from .term import Term, WeightedTerm, TermAggregate
+from .rule import Rule
 from .visualization import ControlSystemVisualizer
-from .rule import Rule, WeightedTerm
 
 try:
     from collections import OrderedDict
@@ -153,7 +154,7 @@ class _InputAcceptor(object):
         """
         current_inputs = self._get_inputs()
         out = ""
-        for key, val in current_inputs.iteritems():
+        for key, val in current_inputs.items():
             out += "{0} : {1}\n".format(key, val)
         return out
 
@@ -202,11 +203,16 @@ class ControlSystemSimulation(object):
     cache : bool, optional
         Controls if results should be stored for reference in fuzzy variable
         objects, allowing fast lookup for repeated runs of `.compute()`.
-        If your system is small and accepts only integer inputs, consider
-        setting this `True`. For most other uses, leave this off (`False`).
+        Unless you are heavily memory constrained leave this `True` (default).
+    flush_after_run : int, optional
+        Clears cached results after this many repeated, unique simulations.
+        The default of 1000 is appropriate for most hardware, but for small
+        embedded systems this can be lowered as appropriate. Higher memory
+        systems may see better performance with a higher limit.
     """
 
-    def __init__(self, control_system, clip_to_bounds=True, cache=False):
+    def __init__(self, control_system, clip_to_bounds=True, cache=True,
+                 flush_after_run=1000):
         """
         Initialize a new ControlSystemSimulation.
         """ + '\n'.join(ControlSystemSimulation.__doc__.split('\n')[1:])
@@ -216,13 +222,13 @@ class ControlSystemSimulation(object):
         self.input = _InputAcceptor(self)
         self.output = OrderedDict()
         self.cache = cache
-        if self.cache is not True:
-            self.unique_id = 'current'
-        else:
-            self.unique_id = self._update_unique_id()
+        self.unique_id = self._update_unique_id()
 
         self.clip_to_bounds = clip_to_bounds
         self._calculated = []
+
+        self._run = 0
+        self._flush_after_run = flush_after_run
 
     def _update_unique_id(self):
         """
@@ -231,11 +237,6 @@ class ControlSystemSimulation(object):
         Generated at runtime from the system state. Used as key to access data
         from `StatePerSimulation` objects, enabling multiple runs.
         """
-        #
-        if self.cache is not True:
-            self.unique_id = 'current'
-            return
-
         # The string to be hashed is the concatenation of:
         #  * the control system ID, which is independent of inputs
         #  * hash of the current input OrderedDict
@@ -283,11 +284,14 @@ class ControlSystemSimulation(object):
             CrispValueCalculator(antecedent, self).fuzz(antecedent.input[self])
 
         # Calculate rules, taking inputs and accumulating outputs
+        first = True
         for rule in self.ctrl.rules:
             # Clear results of prior runs from Terms if needed.
-            if self.cache is not True:
+            if first:
                 for c in rule.consequent:
                     c.term.membership_value[self] = None
+                    c.activation[self] = None
+                first = False
             self.compute_rule(rule)
 
         # Collect the results and present them as a dict
@@ -299,6 +303,14 @@ class ControlSystemSimulation(object):
         # Make note of this run so we can easily find it again
         if self.cache is not False:
             self._calculated.append(self.unique_id)
+        else:
+            # Reset StatePerSimulations
+            self._reset_simulation()
+
+        # Increment run number
+        self._run += 1
+        if self._run % self._flush_after_run == 0:
+            self._reset_simulation()
 
     def compute_rule(self, rule):
         """
@@ -315,7 +327,6 @@ class ControlSystemSimulation(object):
         #  The process of actually aggregating everything is delegated to the
         #  TermAggregation class, but we can tell that class
         #  what aggregation style this rule mandates
-
         if isinstance(rule.antecedent, TermAggregate):
             rule.antecedent.agg_method = rule.aggregation_method
         rule.aggregate_firing[self] = rule.antecedent.membership_value[self]
@@ -343,11 +354,35 @@ class ControlSystemSimulation(object):
             else:
                 # Use the accumulation method of variable to determine
                 #  how to to handle multiple cuts
-                accu = term.parent_variable.accumulation_method
+                accu = term.parent.accumulation_method
                 term.membership_value[self] = accu(value,
                                                    term.membership_value[self])
 
-            term.cuts[self][rule.label] = value
+            term.cuts[self][rule.label] = term.membership_value[self]
+
+    def _reset_simulation(self):
+        """
+        Clear temporary data from simulation objects.
+
+        Called internally if cache=False (after every run) or after a certain
+        number of runs if cache=True according to the `flush_after_run` kwarg.
+        """
+        def _clear_terms(fuzzy_var):
+            for term in fuzzy_var.terms.values():
+                term.membership_value.clear()
+                term.cuts.clear()
+
+        for rule in self.ctrl.rules:
+            rule.aggregate_firing.clear()
+            for c in rule.consequent:
+                c.activation.clear()
+
+        for consequent in self.ctrl.consequents:
+            consequent.output.clear()
+            _clear_terms(consequent)
+
+        self._calculated = []
+        self._run = 0
 
     def print_state(self):
         """
@@ -434,10 +469,12 @@ class CrispValueCalculator(object):
     def defuzz(self):
         """Derive crisp value based on membership of adjective(s)."""
         ups_universe, output_mf, cut_mfs = self.find_memberships()
+
         if len(cut_mfs) == 0:
             raise ValueError("No terms have memberships.  Make sure you "
                              "have at least one rule connected to this "
                              "variable and have run the rules calculation.")
+
         try:
             return defuzz(ups_universe, output_mf,
                           self.var.defuzzify_method)

@@ -1,3 +1,12 @@
+"""
+state.py : Contains framework to hold variables unique to a simulation.
+
+This allows simulations to be precalculated and then referenced later for a
+dramatic efficiency gain. This gain is only realized for smaller systems,
+usually with discrete-valued inputs. However, if your controller can contain
+all possible input states in memory and repeat values are likely, enabling
+caching will result in major efficiency gains.
+"""
 from __future__ import print_function, division
 
 
@@ -21,6 +30,9 @@ class StatefulProperty(object):
     def __set__(self, instance, value):
         raise AttributeError("Property is read-only. "
                              "Did you mean to access via a simultation?")
+
+    def clear(self, initial_condition=None):
+        self.__init__(self.default)
 
 
 class StatePerSimulation(object):
@@ -62,6 +74,7 @@ class StatePerSimulation(object):
         assert isinstance(key, ControlSystemSimulation)
 
         # Access all state data via the unique identifier string
-        key_id = key.unique_id
+        self._sim_data[key.unique_id] = value
 
-        self._sim_data[key_id] = value
+    def clear(self, initial_condition=None):
+        self.__init__(self.default)

@@ -7,45 +7,10 @@ with conqeuents in a `ControlSystem`.
 from __future__ import print_function, division
 
 import networkx as nx
-from .fuzzyvariable import (FuzzyAggregationMethod, Term,
-                            TermAggregate, TermPrimitive)
-from .visualization import ControlSystemVisualizer
+from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethod,
+                   TermPrimitive)
 from .state import StatefulProperty
-
-
-class WeightedTerm(object):
-    """
-    A `Term`, with a weight assigned.
-
-    All consequents become `WeightedTerm`s in calculation; if a weight
-    was not assigned, they default to a weight of 1.0.
-    """
-
-    activation = StatefulProperty(None)
-
-    def __init__(self, term, weight=1.0):
-        """
-        Initialize the weighted consequent.
-
-        Parameters
-        ----------
-        term : Term
-            A fuzzy variable with specified mebership function.
-        weight : float
-            Weight to assign this Term
-        """
-        assert isinstance(term, Term)
-        self.term = term
-        self.weight = weight
-
-    def __repr__(self):
-        """
-        String representation of the `WeightedTerm`.
-        """
-        if self.weight == 1.:
-            return self.term.full_label
-        else:
-            return "%s@%0.2f%%" % (self.term.full_label, self.weight)
+from .visualization import ControlSystemVisualizer
 
 
 class Rule(object):
@@ -112,13 +77,11 @@ class Rule(object):
         """
         Concise, readable summary of the fuzzy rule.
         """
-        out = ""
-        if isinstance(self.label, str):
-            out += self.label + ": "
         if len(self.consequent) == 1:
             cons = self.consequent[0]
         else:
             cons = self.consequent
+
         return "IF %s THEN %s" % (self.antecedent, cons)
 
     @property
@@ -172,15 +135,16 @@ class Rule(object):
     @consequent.setter
     def consequent(self, value):
         """
-        Accepts consequents in four formats:
+        Accept consequents in four formats:
+
          a) Unweighted single output.
-            eg: output['term']
+            e.g.: output['term']
          b) Weighted single output
-            eg: (output['term']%0.5)
+            e.g.: (output['term']%0.5)
          c) Unweighted multiple output
-            eg: (output1['term1'], output2['term2'])
+            e.g.: (output1['term1'], output2['term2'])
          d) Weighted multiple output
-            eg: ( (output1['term1']%1.0), (output2['term2']%0.5) )
+            e.g.: ( (output1['term1']%1.0), (output2['term2']%0.5) )
         """
         if isinstance(value, Term):
             self._consequent = [WeightedTerm(value, 1.)]
@@ -214,13 +178,13 @@ class Rule(object):
         for t in self.antecedent_terms:
             assert isinstance(t, Term)
             graph.add_path([t, self])
-            graph = nx.compose(graph, t.parent_variable.graph)
+            graph = nx.compose(graph, t.parent.graph)
 
         # Link all consequents from me
         for c in self.consequent:
             assert isinstance(c, WeightedTerm)
             graph.add_path([self, c.term])
-            graph = nx.compose(graph, c.term.parent_variable.graph)
+            graph = nx.compose(graph, c.term.parent.graph)
         return graph
 
     def view(self):
