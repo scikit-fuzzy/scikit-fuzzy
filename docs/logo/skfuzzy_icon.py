@@ -50,9 +50,13 @@ if __name__ == '__main__':
     ico32 = resize(logo, (32, 32))
     ico64 = resize(logo, (64, 64))
     ico128 = resize(logo, (128, 128))
+    ico256 = resize(logo, (256, 256))
+    ico512 = resize(logo, (512, 512))
 
     # Save results
     skimage.io.imsave('./icon_16px.png', ico16)
     skimage.io.imsave('./icon_32px.png', ico32)
     skimage.io.imsave('./icon_64px.png', ico64)
     skimage.io.imsave('./icon_128px.png', ico128)
+    skimage.io.imsave('./icon_256px.png', ico256)
+    skimage.io.imsave('./icon_512px.png', ico512)
