@@ -14,6 +14,7 @@
 
 import sys
 import os
+import subprocess
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -24,6 +25,11 @@ sys.path.append(os.path.abspath(os.path.join(curpath, '..', 'ext')))
 
 src_dir = os.path.abspath(os.path.join(curpath, '..', '..'))
 sys.path.insert(0, src_dir)
+
+# Generate API docs
+if not os.path.exists('./api/'):
+    os.makedirs('./api/')
+    subprocess.call(["python", "../tools/build_modref_templates.py"])
 
 module = 'skfuzzy'
 import skfuzzy

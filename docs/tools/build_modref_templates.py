@@ -2,6 +2,7 @@
 """Script to auto-generate our API docs."""
 # stdlib imports
 import sys
+import os
 
 # local imports
 from apigen import ApiDocWriter
@@ -16,6 +17,7 @@ def abort(error):
 
 if __name__ == '__main__':
     package = 'skfuzzy'
+    import skfuzzy
 
     # Check that the 'image' package is available. If not, the API
     # documentation is not (re)generated and existing API documentation
@@ -35,7 +37,8 @@ if __name__ == '__main__':
     # are not (re)generated. This avoids automatic generation of documentation
     # for older or newer versions if such versions are installed on the system.
 
-    source_lines = open('../skfuzzy/__init__.py').readlines()
+    source_lines = open(os.path.join(skfuzzy.__path__[0],
+                                     '__init__.py')).readlines()
     version = 'vUndefined'
     for l in source_lines:
         if l.startswith('__version__'):
@@ -45,11 +48,11 @@ if __name__ == '__main__':
     # if source_version != installed_version:
     #     abort("Installed version does not match source version")
 
-    outdir = 'source/api'
+    outdir = 'api'
     docwriter = ApiDocWriter(package)
     # docwriter.package_skip_patterns += [r'\.fixes$',
     #                                     r'\.externals$',
     #                                     ]
     docwriter.write_api_docs(outdir)
-    docwriter.write_index(outdir, 'api', relative_to='source/api')
+    docwriter.write_index(outdir, 'api', relative_to='api')
     print('%d files written' % len(docwriter.written_modules))
