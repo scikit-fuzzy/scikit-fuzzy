@@ -69,7 +69,6 @@ def configuration(parent_package='', top_path=None):
         quiet=True)
 
     config.add_subpackage('skfuzzy')
-    config.add_data_dir('skfuzzy/data')
 
     return config
 
