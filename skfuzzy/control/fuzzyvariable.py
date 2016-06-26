@@ -3,7 +3,7 @@ fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
 import numpy as np
 
-from ..membership import trimf
+from ..membership import trimf, Polynomial
 from .visualization import FuzzyVariableVisualizer
 from .term import Term
 
@@ -88,28 +88,33 @@ class FuzzyVariable(object):
         Enable terms to be added with the syntax::
 
           variable['new_label'] = new_mf
+          or
+          variable['new_label'] = new_polynomial
         """
-        if isinstance(item, Term):
-            if item.label != key:
-                raise ValueError("Term's label must match new key")
-            if item.parent is not None:
-                raise ValueError("Term must not already have a parent")
+        if isinstance(item, Polynomial): #Case of a variable which is the consequent of a TSK rule
+            item = Term(key, item) # In this case, mf is a polynomial containing the domain and the expression.
         else:
-            # Try to create a term from item, assuming it is a membership
-            # function
-            item = Term(key, np.asarray(item))
+            if isinstance(item, Term):
+                if item.label != key:
+                    raise ValueError("Term's label must match new key")
+                if item.parent is not None:
+                    raise ValueError("Term must not already have a parent")
+            else:
+                # Try to create a term from item, assuming it is a membership
+                # function
+                item = Term(key, np.asarray(item))
 
-        mf = item.mf
+            mf = item.mf
 
-        if mf.size != self.universe.size:
-            raise ValueError("New membership function {0} must be equivalent "
-                             "in length to the universe variable.\n"
-                             "Expected {1}, got {2}.".format(
-                                 key, self.universe.size, mf.size))
+            if mf.size != self.universe.size:
+                raise ValueError("New membership function {0} must be equivalent "
+                                 "in length to the universe variable.\n"
+                                 "Expected {1}, got {2}.".format(
+                                     key, self.universe.size, mf.size))
 
-        if (mf.max() > 1. + 1e-6) or (mf.min() < 0 - 1e-6):
-            raise ValueError("Membership function {0} contains values out of "
-                             "range. Allowed range is [0, 1].".format(key))
+            if (mf.max() > 1. + 1e-6) or (mf.min() < 0 - 1e-6):
+                raise ValueError("Membership function {0} contains values out of "
+                                 "range. Allowed range is [0, 1].".format(key))
 
         # If above pass, add the new membership function
         item.parent = self

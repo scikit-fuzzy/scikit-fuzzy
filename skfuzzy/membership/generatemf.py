@@ -500,3 +500,20 @@ def zmf(x, a, b):
     y[idx] = 0
 
     return y
+
+class Polynomial:
+    def __init__(self, domain, expression):
+        assert len(domain)==2,"The domain must contain only 2 values, the minimum and the maximum."
+        self.domain = domain
+        self.expression = expression
+    def evaluate(self, inputs):
+        for name,value in inputs.items():
+            locals()[name]=value
+        output = eval(self.expression)
+        if output>self.domain[1]:
+            output = self.domain[1]
+        if output<self.domain[0]:
+            output = self.domain[0]
+        return output
+
+
