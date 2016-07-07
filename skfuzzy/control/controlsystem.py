@@ -506,7 +506,13 @@ class CrispValueCalculator(object):
                     globalOutput += output*cut
                     globalWeight += cut
             if globalWeight>0:
-                return globalOutput/globalWeight
+                [min, max] = self.var.universe
+                pred = globalOutput/globalWeight
+                if pred<min:
+                    pred = min
+                if pred>max:
+                    pred = max
+                return pred
             else:
                 raise ValueError("Crisp output cannot be calculated, likely "
                              "because the system is too sparse. Check to "
