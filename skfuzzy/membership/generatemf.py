@@ -1,6 +1,7 @@
 """
 generatemf.py: Library of standard fuzzy membership function generators.
 """
+from __future__ import division
 
 import numpy as np
 
