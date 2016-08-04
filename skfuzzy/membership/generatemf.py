@@ -1,6 +1,5 @@
 """
 generatemf.py: Library of standard fuzzy membership function generators.
-
 """
 
 import numpy as np
@@ -27,8 +26,8 @@ def _nearest(x, y0):
 
     Notes
     -----
-    This function does support extrapolation.
-
+    This function does support extrapolation, but it is linear.
+    Use with care.
     """
     # Distance map
     d = np.abs(x - y0)
@@ -60,7 +59,6 @@ def dsigmf(x, b1, c1, b2, c2):
             y = f1 - f2
             f1(x) = 1 / (1. + exp[- c1 * (x - b1)])
             f2(x) = 1 / (1. + exp[- c2 * (x - b2)])
-
     """
     return sigmf(x, b1, c=c1) - sigmf(x, b2, c=c2)
 
@@ -81,8 +79,7 @@ def gaussmf(x, mean, sigma):
     Returns
     -------
     y : 1d array
-        Gaussian membership function for x
-
+        Gaussian membership function for x.
     """
     return np.exp(-((x - mean) ** 2.) / float(sigma) ** 2.)
 
@@ -112,7 +109,6 @@ def gauss2mf(x, mean1, sigma1, mean2, sigma2):
         Membership function with left side up to `mean1` defined by the first
         Gaussian, and the right side above `mean2` defined by the second.
         In the range mean1 <= x <= mean2 the function has value = 1.
-
     """
     assert mean1 <= mean2, 'mean1 <= mean2 is required.  See docstring.'
     y = np.ones(len(x))
@@ -134,9 +130,9 @@ def gbellmf(x, a, b, c):
     a : float
         Bell function parameter controlling width. See Note for definition.
     b : float
-        Bell function parameter controlling center. See Note for definition.
-    c : float
         Bell function parameter controlling slope. See Note for definition.
+    c : float
+        Bell function parameter defining the center. See Note for definition.
 
     Returns
     -------
@@ -148,7 +144,6 @@ def gbellmf(x, a, b, c):
     Definition of Generalized Bell function is:
 
         y(x) = 1 / (1 + abs([x - c] / a) ** [2 * b])
-
     """
     return 1. / (1. + np.abs((x - c) / a) ** (2 * b))
 
@@ -176,7 +171,6 @@ def piecemf(x, abc):
                 y = 0,                    min(x) <= x <= a
                 y = b(x - a)/c(b - a),    a <= x <= b
                 y = x/c,                  b <= x <= c
-
     """
     a, b, c = abc
     if c != x.max():
@@ -225,7 +219,6 @@ def pimf(x, a, b, c, d):
     Notes
     -----
     This is equivalently a product of smf and zmf.
-
     """
     y = np.ones(len(x))
     assert a <= b and b <= c and c <= d, 'a <= b <= c <= d is required.'
@@ -290,7 +283,6 @@ def psigmf(x, b1, c1, b2, c2):
     -----
     For a smoothed rect-like function, c2 < 0 < c1. For its inverse (zero in
     middle, one at edges) c1 < 0 < c2.
-
     """
     return sigmf(x, b1, c1) * sigmf(x, b2, c2)
 
@@ -311,7 +303,6 @@ def sigmoid(wx, b):
     -------
     sigmoid : 2d array, (K, N)
         Sigmoid function result.
-
     """
     return 1. / (1. + np.exp(-(wx + np.dot(np.atleast_2d(b).T,
                                            np.ones((1, wx.shape[1]))))))
@@ -344,7 +335,6 @@ def sigmf(x, b, c):
     These are the same values, provided separately and in the opposite order
     compared to the publicly available MathWorks' Fuzzy Logic Toolbox
     documentation. Pay close attention to above docstring!
-
     """
     return 1. / (1. + np.exp(- c * (x - b)))
 
@@ -370,7 +360,6 @@ def smf(x, a, b):
     Notes
     -----
     Named such because of its S-like shape.
-
     """
     assert a <= b, 'a <= b is required.'
     y = np.ones(len(x))
@@ -401,7 +390,6 @@ def trapmf(x, abcd):
     -------
     y : 1d array
         Trapezoidal membership function.
-
     """
     assert len(abcd) == 4, 'abcd parameter must have exactly four elements.'
     a, b, c, d = np.r_[abcd]
@@ -440,7 +428,6 @@ def trimf(x, abc):
     -------
     y : 1d array
         Triangular membership function.
-
     """
     assert len(abc) == 3, 'abc parameter must have exactly three elements.'
     a, b, c = np.r_[abc]     # Zero-indexing in Python
@@ -484,7 +471,6 @@ def zmf(x, a, b):
     Notes
     -----
     Named such because of its Z-like shape.
-
     """
     assert a <= b, 'a <= b is required.'
 
