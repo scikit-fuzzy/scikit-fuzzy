@@ -381,6 +381,10 @@ class ControlSystemSimulation(object):
             consequent.output.clear()
             _clear_terms(consequent)
 
+        for antecedent in self.ctrl.antecedents:
+            antecedent.input.clear()
+            _clear_terms(antecedent)
+
         self._calculated = []
         self._run = 0
 
