@@ -47,7 +47,6 @@ class FclTreeLoader(object):
 
     def load(self):
         parseTree = self.get_parse_tree()
-        # root_string_tree = root.tree.toStringTree()
 
         for child in parseTree.children:
             # a control system for each function block??
@@ -63,8 +62,6 @@ class FclTreeLoader(object):
             return None
 
         loader_function_name = self.treeLoadersMapping[upper_child_name]
-        # function_with_self = partial(self.__getattribute__(loader_function_name), self)
-        # return function_with_self
         return self.__getattribute__(loader_function_name)
 
     def load_controlsystem_from_fcl_tree(self, fcl_tree):
