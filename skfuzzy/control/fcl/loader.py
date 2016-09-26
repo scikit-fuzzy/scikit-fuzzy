@@ -75,6 +75,9 @@ class FclTreeLoader(object):
             for i, child in enumerate(other_children):
                 child_name = child.text
                 loader_function = self.get_loader_function_for_child_name(child_name)
+                # for now will ignore if not implemented
+                if not loader_function:
+                    continue
                 loader_function(child)
             return control_system
 
