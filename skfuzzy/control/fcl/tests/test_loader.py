@@ -53,10 +53,9 @@ class TestFclTreeLoader(TestCase):
         child_1 = Mock(text="child_block name 1")
         child_2 = Mock(text="child_block name 2")
         fcl_tree = mock_fcltree_with_children([child_0, child_1, child_2])
-        fcl_loader.load_controlsystem_from_fcl_tree(fcl_tree)
+        control_system = fcl_loader.load_controlsystem_from_fcl_tree(fcl_tree)
 
         self.assertIn("function block name", fcl_loader.control_systems)
-
+        self.assertEquals(control_system, fcl_loader.control_systems["function block name"])
         loader_function.assert_any_call("child_block name 1")
         loader_function.assert_any_call("child_block name 2")
-
