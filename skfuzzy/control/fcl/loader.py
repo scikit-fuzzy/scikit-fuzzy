@@ -17,11 +17,6 @@ from ..antecedent_consequent import Antecedent, Consequent
 
 class FclTreeLoader(object):
     """docstring for FclTreeLoader"""
-    control_systems = {}
-    rules = {}
-    antecedents = {}
-    consequents = {}
-    mfs = {}
 
     treeLoadersMapping = {
         "VAR_INPUT": "load_antecedents_from_fcl_tree",
@@ -34,6 +29,11 @@ class FclTreeLoader(object):
     def __init__(self, fcl_file_path):
         super(FclTreeLoader, self).__init__()
         self.fcl_file_path = fcl_file_path
+        self.control_systems = {}
+        self.rules = {}
+        self.antecedents = {}
+        self.consequents = {}
+        self.mfs = {}
         # self.fcl_file_path = 'tipper.fcl'
 
     def get_parse_tree(self):
@@ -88,9 +88,10 @@ class FclTreeLoader(object):
 
             universe = None
             has_range_defined = len(child.children) > 1
+
             if has_range_defined:
                 range_tree = child.children[1]
-                universe_min, universe_max = [float(value) for value in range_tree.children]
+                universe_min, universe_max = [float(ranges.text) for ranges in range_tree.children]
 
                 universe = np.arange(universe_min, universe_max)
 

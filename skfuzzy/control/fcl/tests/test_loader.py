@@ -59,3 +59,37 @@ class TestFclTreeLoader(TestCase):
         self.assertEquals(control_system, fcl_loader.control_systems["function block name"])
         loader_function.assert_any_call("child_block name 1")
         loader_function.assert_any_call("child_block name 2")
+
+    def test_load_antecedents_from_fcl_tree_with_no_universe_and_real_type(self):
+        fcl_loader = FclTreeLoader("some_file")
+
+        antecedent_type = Mock(text="REAL")
+        antecedent_tree = Mock(text="antecedent name", children=[antecedent_type])
+        fcl_tree = mock_fcltree_with_children(children=[antecedent_tree])
+        fcl_loader.load_antecedents_from_fcl_tree(fcl_tree)
+
+        self.assertIn('antecedent name', fcl_loader.antecedents)
+
+        universe = fcl_loader.antecedents['antecedent name'].universe
+
+        # assert is an array from None value
+        self.assertEquals(len(universe.shape), 0)
+
+    def test_load_antecedents_from_fcl_tree_with_universe_and_real_type(self):
+        fcl_loader = FclTreeLoader("some_file")
+
+        antecedent_range_min = Mock(text="1")
+        antecedent_range_max = Mock(text="3")
+        antecedent_range = Mock(text="RANGE", children=[antecedent_range_min, antecedent_range_max])
+        antecedent_type = Mock(text="REAL")
+        antecedent_tree = Mock(text="antecedent name", children=[antecedent_type, antecedent_range])
+        fcl_tree = mock_fcltree_with_children(children=[antecedent_tree])
+        fcl_loader.load_antecedents_from_fcl_tree(fcl_tree)
+
+        self.assertIn('antecedent name', fcl_loader.antecedents)
+
+        universe = fcl_loader.antecedents['antecedent name'].universe
+
+        # assert is not a 'empty' universe
+        self.assertGreater(len(universe.shape), 0)
+        self.assertListEqual(list(universe), [1., 2.])
