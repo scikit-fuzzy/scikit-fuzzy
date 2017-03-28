@@ -328,7 +328,7 @@ class ControlSystemSimulation(object):
         #  TermAggregation class, but we can tell that class
         #  what aggregation style this rule mandates
         if isinstance(rule.antecedent, TermAggregate):
-            rule.antecedent.agg_method = rule.aggregation_method
+            rule.antecedent.agg_methods = rule._aggregation_methods
         rule.aggregate_firing[self] = rule.antecedent.membership_value[self]
 
         # Step 2: Activation.  The degree of membership of the consequence
