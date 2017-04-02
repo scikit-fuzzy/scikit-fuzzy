@@ -643,20 +643,23 @@ def interp_membership(x, xmf, xx):
 
     """
     # Nearest discrete x-values
-    x1 = x[x <= xx][-1]
-    x2 = x[x >= xx][0]
+    if (x[-1] > x[0] and x[0] < xx < x[-1]) or (x[-1] < x[0] and x[-1] < xx < x[0]):
+        x1 = x[x <= xx][-1]
+        x2 = x[x >= xx][0]
 
-    idx1 = np.nonzero(x == x1)[0][0]
-    idx2 = np.nonzero(x == x2)[0][0]
+        idx1 = np.nonzero(x == x1)[0][0]
+        idx2 = np.nonzero(x == x2)[0][0]
 
-    xmf1 = xmf[idx1]
-    xmf2 = xmf[idx2]
+        xmf1 = xmf[idx1]
+        xmf2 = xmf[idx2]
 
-    if x1 == x2:
-        xxmf = xmf[idx1]
+        if x1 == x2:
+            xxmf = xmf[idx1]
+        else:
+            slope = (xmf2 - xmf1) / float(x2 - x1)
+            xxmf = slope * (xx - x1) + xmf1
     else:
-        slope = (xmf2 - xmf1) / float(x2 - x1)
-        xxmf = slope * (xx - x1) + xmf1
+        xxmf = 0.0
 
     return xxmf
 
