@@ -643,7 +643,7 @@ def interp_membership(x, xmf, xx):
 
     """
     # Nearest discrete x-values
-    if (x[-1] > x[0] and x[0] < xx < x[-1]) or (x[-1] < x[0] and x[-1] < xx < x[0]):
+    if (x[-1] > x[0] and x[0] <= xx <= x[-1]) or (x[-1] < x[0] and x[-1] <= xx <= x[0]):
         x1 = x[x <= xx][-1]
         x2 = x[x >= xx][0]
 
