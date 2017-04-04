@@ -643,7 +643,7 @@ def interp_membership(x, xmf, xx):
 
     """
     # Nearest discrete x-values
-    if (x[-1] > x[0] and x[0] <= xx <= x[-1]) or (x[-1] < x[0] and x[-1] <= xx <= x[0]):
+    try:
         x1 = x[x <= xx][-1]
         x2 = x[x >= xx][0]
 
@@ -658,10 +658,13 @@ def interp_membership(x, xmf, xx):
         else:
             slope = (xmf2 - xmf1) / float(x2 - x1)
             xxmf = slope * (xx - x1) + xmf1
-    else:
-        xxmf = 0.0
-
-    return xxmf
+        
+        return xxmf
+      
+    except IndexError,e:
+        if 'out of bounds for axis 0 with size 0' in e.message:
+            return 0.0
+ 
 
 
 def interp_universe(x, xmf, y):
