@@ -661,8 +661,8 @@ def interp_membership(x, xmf, xx):
         
         return xxmf
       
-    except IndexError,e:
-        if 'out of bounds for axis 0 with size 0' in e.message:
+    except IndexError as e:
+        if 'out of bounds for axis 0 with size 0' in str(e):
             return 0.0
  
 
