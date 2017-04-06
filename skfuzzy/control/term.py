@@ -1,5 +1,5 @@
 """
-term.py : Contains framework to create fuzzy terms.
+term.py : Framework to create fuzzy terms.
 
 Most notably, contains the `Term` and `WeightedTerm` objects which are used to
 identify specific membership functions attached to Antecedents or
@@ -12,6 +12,25 @@ from __future__ import print_function, division
 
 from .visualization import FuzzyVariableVisualizer
 from .state import StatefulProperty
+
+
+def mult(*args):
+    """
+    Multiply an arbitrary number of input values.
+
+    This may be used as an alternate AND aggregation method for a fuzzy Rule.
+    """
+    n = len(args)
+    if n == 0:
+        raise ValueError("Input iterable must have at least one value!")
+    elif n == 1:
+        return args[0]
+
+    aggregator = float(args[0])
+    for value in args[1:]:
+        aggregator *= value
+
+    return aggregator
 
 
 class TermPrimitive(object):
@@ -115,11 +134,11 @@ class WeightedTerm(object):
             return "%s@%0.2f%%" % (self.term.full_label, self.weight)
 
 
-class FuzzyAggregationMethod(object):
+class FuzzyAggregationMethods(object):
     def __init__(self, and_func=min, or_func=max):
         # Default and to OR = max and AND = min
-        self.and_agg_func = and_func
-        self.or_agg_func = or_func
+        self.and_func = and_func
+        self.or_func = or_func
 
 
 class _MembershipValueAccessor(object):
@@ -138,11 +157,9 @@ class _MembershipValueAccessor(object):
             term2 = self.agg.term2.membership_value[key]
 
         if self.agg.kind == 'and':
-            return self.agg.agg_method.and_agg_func(
-                term1, term2)
+            return self.agg.agg_methods.and_func(term1, term2)
         elif self.agg.kind == 'or':
-            return self.agg.agg_method.or_agg_func(
-                term1, term2)
+            return self.agg.agg_methods.or_func(term1, term2)
         elif self.agg.kind == 'not':
             return 1. - self.agg.term1.membership_value[key]
         else:
@@ -167,7 +184,7 @@ class TermAggregate(TermPrimitive):
         self.term1 = term1
         self.term2 = term2
         self.kind = kind
-        self._agg_method = FuzzyAggregationMethod()
+        self._agg_methods = FuzzyAggregationMethods()
         self.membership_value = _MembershipValueAccessor(self)
 
     def __repr__(self):
@@ -184,16 +201,16 @@ class TermAggregate(TermPrimitive):
                              _term_to_str(self.term2))
 
     @property
-    def agg_method(self):
-        return self._agg_method
+    def agg_methods(self):
+        return self._agg_methods
 
-    @agg_method.setter
-    def agg_method(self, value):
-        if not isinstance(value, FuzzyAggregationMethod):
-            raise ValueError("Expected FuzzyAggregationMethod")
-        self._agg_method = value
+    @agg_methods.setter
+    def agg_methods(self, agg_methods):
+        if not isinstance(agg_methods, FuzzyAggregationMethods):
+            raise ValueError("Expected FuzzyAggregationMethods")
+        self._agg_methods = agg_methods
 
         # Propegate agg method down to all agg terms below me
         for term in (self.term1, self.term2):
             if isinstance(term, TermAggregate):
-                term.agg_method = value
+                term.agg_methods = agg_methods

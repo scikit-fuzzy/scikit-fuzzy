@@ -7,7 +7,7 @@ with conqeuents in a `ControlSystem`.
 from __future__ import print_function, division
 
 import networkx as nx
-from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethod,
+from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethods,
                    TermPrimitive)
 from .state import StatefulProperty
 from .visualization import ControlSystemVisualizer
@@ -41,7 +41,8 @@ class Rule(object):
 
     aggregate_firing = StatefulProperty(None)
 
-    def __init__(self, antecedent=None, consequent=None, label=None):
+    def __init__(self, antecedent=None, consequent=None, label=None,
+                 and_func=min, or_func=max):
         """
         Rule in a fuzzy system, connecting antecedent(s) to consequent(s).
 
@@ -58,8 +59,17 @@ class Rule(object):
         label : string, optional
             Label to reference the meaning of this rule. Optional, but
             recommended.
+        and_func : function, optional
+            Function which accepts multiple floating-point arguments and
+            returns a single value. Defalts to the Python builtin `min`. For
+            multiplication, substitute `fuzz.control.mult`.
+        or_func : function, optional
+            Function which accepts multiple floating-point arguments and
+            returns a single value. Defalts to the Python builtin `max`.
         """
-        self.aggregation_method = FuzzyAggregationMethod()
+        self._aggregation_methods = FuzzyAggregationMethods()
+        self.and_func = and_func
+        self.or_func = or_func
 
         self._antecedent = None
         self._consequent = None
@@ -82,7 +92,50 @@ class Rule(object):
         else:
             cons = self.consequent
 
-        return "IF %s THEN %s" % (self.antecedent, cons)
+        return ("IF {0} THEN {1}"
+                "\n\tAND aggregation function : {2}"
+                "\n\tOR aggregation function  : {3}").format(
+                    self.antecedent, cons,
+                    self.and_func.__name__,
+                    self.or_func.__name__)
+
+    @property
+    def and_func(self):
+        """
+        Aggregation function for AND relationships. Default is `min`.
+        """
+        return self._aggregation_methods.and_func
+
+    @and_func.setter
+    def and_func(self, newfunc):
+        """
+        Method to interactively set the AND aggregation function.
+        """
+        try:
+            newfunc(0.3, 0.96)
+        except:
+            return ValueError("The provided function does not support "
+                              "floating-point arguments.")
+        self._aggregation_methods.and_func = newfunc
+
+    @property
+    def or_func(self):
+        """
+        Aggregation function for OR relationships. Default is `max`.
+        """
+        return self._aggregation_methods.or_func
+
+    @or_func.setter
+    def or_func(self, newfunc):
+        """
+        Method to interactively set the OR aggregation function.
+        """
+        try:
+            newfunc(0.3, 0.96)
+        except:
+            return ValueError("The provided function does not support "
+                              "floating-point arguments.")
+        self._aggregation_methods.or_func = newfunc
 
     @property
     def antecedent(self):
