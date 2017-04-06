@@ -643,22 +643,28 @@ def interp_membership(x, xmf, xx):
 
     """
     # Nearest discrete x-values
-    x1 = x[x <= xx][-1]
-    x2 = x[x >= xx][0]
+    try:
+        x1 = x[x <= xx][-1]
+        x2 = x[x >= xx][0]
 
-    idx1 = np.nonzero(x == x1)[0][0]
-    idx2 = np.nonzero(x == x2)[0][0]
+        idx1 = np.nonzero(x == x1)[0][0]
+        idx2 = np.nonzero(x == x2)[0][0]
 
-    xmf1 = xmf[idx1]
-    xmf2 = xmf[idx2]
+        xmf1 = xmf[idx1]
+        xmf2 = xmf[idx2]
 
-    if x1 == x2:
-        xxmf = xmf[idx1]
-    else:
-        slope = (xmf2 - xmf1) / float(x2 - x1)
-        xxmf = slope * (xx - x1) + xmf1
-
-    return xxmf
+        if x1 == x2:
+            xxmf = xmf[idx1]
+        else:
+            slope = (xmf2 - xmf1) / float(x2 - x1)
+            xxmf = slope * (xx - x1) + xmf1
+        
+        return xxmf
+      
+    except IndexError as e:
+        if 'out of bounds for axis 0 with size 0' in str(e):
+            return 0.0
+ 
 
 
 def interp_universe(x, xmf, y):
