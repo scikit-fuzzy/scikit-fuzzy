@@ -311,6 +311,16 @@ def test_interp_membership():
     yy = interp_membership(x, mfx, 2.718)
     assert_allclose(np.r_[yy], np.r_[0.641])
 
+    assert_allclose(interp_membership(x, mfx, [0.2, 2.73, 3.14]),
+                    np.asarray([interp_membership(x, mfx, i)
+                                for i in [0.2, 2.73, 3.14]]))
+
+    mfx[-1] = 0.7
+    mfx[0] = 0.2
+    assert_allclose([0, 0], interp_membership(x, mfx, [-11, 5]))
+    assert_allclose([0.2, 0.7], interp_membership(x, mfx, [-11, 5],
+                                                  False))
+
 
 def test_interp_universe():
     x = np.r_[0:4.1:0.1]
