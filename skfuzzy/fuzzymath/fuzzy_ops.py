@@ -615,7 +615,7 @@ def maxprod_composition(s, r):
     return t
 
 
-def interp_membership(x, xmf, xx):
+def interp_membership(x, xmf, xx, zero_outside_x=True):
     """
     Find the degree of membership ``u(xx)`` for a given value of ``x = xx``.
 
@@ -625,13 +625,22 @@ def interp_membership(x, xmf, xx):
         Independent discrete variable vector.
     xmf : 1d array
         Fuzzy membership function for ``x``.  Same length as ``x``.
-    xx : float
-        Discrete singleton value on universe ``x``.
+    xx : float or array of floats
+        Value(s) on universe ``x`` where the interpolated membership is
+        desired.
+    zero_outside_x : bool, optional
+        Defines the behavior if ``xx`` contains value(s) which are outside the
+        universe range as defined by ``x``.  If `True` (default), all
+        extrapolated values will be zero.  If `False`, the first or last value
+        in ``x`` will be what is returned to the left or right of the range,
+        respectively.
 
     Returns
     -------
-    xxmf : float
-        Membership function value at ``xx``, ``u(xx)``.
+    xxmf : float or array of floats
+        Membership function value at ``xx``, ``u(xx)``.  If ``xx`` is a single
+        value, this will be a single value; if it is an array or iterable the
+        result will be returned as a NumPy array of like shape.
 
     Notes
     -----
@@ -642,29 +651,12 @@ def interp_membership(x, xmf, xx):
     corresponding to the value ``xx`` using linear interpolation.
 
     """
-    # Nearest discrete x-values
-    try:
-        x1 = x[x <= xx][-1]
-        x2 = x[x >= xx][0]
-
-        idx1 = np.nonzero(x == x1)[0][0]
-        idx2 = np.nonzero(x == x2)[0][0]
-
-        xmf1 = xmf[idx1]
-        xmf2 = xmf[idx2]
-
-        if x1 == x2:
-            xxmf = xmf[idx1]
-        else:
-            slope = (xmf2 - xmf1) / float(x2 - x1)
-            xxmf = slope * (xx - x1) + xmf1
-        
-        return xxmf
-      
-    except IndexError as e:
-        if 'out of bounds for axis 0 with size 0' in str(e):
-            return 0.0
- 
+    # Not much beats NumPy's built-in interpolation
+    if not zero_outside_x:
+        kwargs = (None, None)
+    else:
+        kwargs = (0.0, 0.0)
+    return np.interp(xx, x, xmf, left=kwargs[0], right=kwargs[1])
 
 
 def interp_universe(x, xmf, y):
