@@ -165,4 +165,4 @@ class ControlSystemVisualizer(object):
         View the visualization.
         """
         nx.draw(self.ctrl.graph, ax=self.ax)
-        return self.fig
+        return self.fig, self.ax
