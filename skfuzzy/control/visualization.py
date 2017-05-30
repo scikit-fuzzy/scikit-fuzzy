@@ -54,6 +54,19 @@ class FuzzyVariableVisualizer(object):
         Visualize this variable and its membership functions with Matplotlib.
 
         The current output membership function will be shown in bold.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+            The hosting Figure object.
+        ax : matplotlib Axis
+            The Axis upon which the plot is drawn.
+
+        Notes
+        -----
+        Matplotlib is used, but ``plt.show()`` is not called. Instead, the
+        Figure and Axis are returned, allowing further user customization if
+        desired.  In a Jupyter notebook, ``.view()`` will be displayed inline.
         """
         from .controlsystem import (CrispValueCalculator, ControlSystem,
                                     ControlSystemSimulation)
@@ -163,6 +176,20 @@ class ControlSystemVisualizer(object):
     def view(self):
         """
         View the visualization.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+            The hosting Figure object.
+        ax : matplotlib Axis
+            The Axis upon which the plot is drawn.
+
+        Notes
+        -----
+        This method uses the NetworkX ``draw`` command.  If further
+        customization is desired, the matplotlib Figure/Axis objects
+        are returned.  In a Jupyter notebook, these will be displayed
+        inline.
         """
         nx.draw(self.ctrl.graph, ax=self.ax)
         return self.fig, self.ax
