@@ -14,7 +14,7 @@ Recommended Use
 """
 __all__ = []
 
-__version__ = '0.3'
+__version__ = '0.4dev'
 
 ######################
 # Subpackage imports #
