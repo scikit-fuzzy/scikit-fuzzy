@@ -7,6 +7,8 @@ The goals of scikit-fuzzy are:
 * To provide the community with a robust toolkit of independently developed and implemented fuzzy logic algorithms
 * To increase the attractiveness of scientific Python as a valid alternative to closed-source options.
 
+Please cite [![DOI](https://zenodo.org/badge/8872608.svg)](https://zenodo.org/badge/latestdoi/8872608) if you find scikit-fuzzy useful.  A formal paper describing this package is in preparation.
+
 Source
 ------
 
