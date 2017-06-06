@@ -688,36 +688,18 @@ def interp_universe(x, xmf, y):
     values on ``x``. This function computes the value (or values) of ``xx``
     such that ``u(xx) == y`` using linear interpolation.
     """
+    # Special case required or zero-level cut does not work with faster method
+    if y == 0.:
+        idx = np.where(np.diff(xmf > y))[0]
+    else:
+        idx = np.where(np.diff(xmf >= y))[0]
+    xx = x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
 
-    # If y is between xmf[i] and xmf[i+1] there is a cut point.
-    # Moreover, if y==xmf[i+1] we will interpret it as a cut point.
-
-    # However, in the next iteration, we interpret it also as a cut point!
-    # That is the reason for the `and` part.
-    indices = np.nonzero(
-        [True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y)
-         else False for i in range(len(x)-1)])[0]
-
-    # We have len(indices) values in ``x``
-    xx = [0.0] * len(indices)
-
-    for i in range(len(indices)):
-        index = indices[i]
-        x1 = x[index]
-        x2 = x[index + 1]
-        xmf1 = xmf[index]
-        xmf2 = xmf[index + 1]
-
-        if x1 == x2:
-            xx[i] = x1
-        elif xmf1 == xmf2:
-            # In this case xx[i] can be any point in the range [x1,x2]. We return the first one.
-            xx[i] = x1
-        else:
-            slope = (xmf2 - xmf1) / float(x2 - x1)
-            xx[i] = (y - xmf1)/slope + x1
-
-    return xx
+    # The above method is fast, but duplicates point values where
+    # y == peak of a membership function.  Ducking briefly into a set
+    # elimniates this.  Benchmarked multiple ways; this is by far the fastest.
+    # Speed penalty approximately 10%, worth it.
+    return [n for n in set(xx.tolist())]
 
 
 def modus_ponens(a, b, ap, c=None):
