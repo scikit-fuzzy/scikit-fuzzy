@@ -1,7 +1,6 @@
 """
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
-
 """
 from __future__ import division, print_function
 import numpy as np
@@ -700,6 +699,48 @@ def interp_universe(x, xmf, y):
     # elimniates this.  Benchmarked multiple ways; this is by far the fastest.
     # Speed penalty approximately 10%, worth it.
     return [n for n in set(xx.tolist())]
+
+
+def _interp_universe_fast(x, xmf, y):
+    """
+    Find interpolated universe value(s) for a given fuzzy membership value.
+
+    Fast version, with possible duplication.
+
+    Parameters
+    ----------
+    x : 1d array
+        Independent discrete variable vector.
+    xmf : 1d array
+        Fuzzy membership function for ``x``.  Same length as ``x``.
+    y : float
+        Specific fuzzy membership value.
+
+    Returns
+    -------
+    xx : list
+        List of discrete singleton values on universe ``x`` whose
+        membership function value is y, ``u(xx[i])==y``.
+        If there are not points xx[i] such that ``u(xx[i])==y``
+        it returns an empty list.
+
+    Notes
+    -----
+    For use in Fuzzy Logic, where a membership function level ``y`` is given.
+    Consider there is some value (or set of values) ``xx`` for which
+    ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete
+    values on ``x``. This function computes the value (or values) of ``xx``
+    such that ``u(xx) == y`` using linear interpolation.
+    """
+    # Special case required or zero-level cut does not work with faster method
+    if y == 0.:
+        idx = np.where(np.diff(xmf > y))[0]
+    else:
+        idx = np.where(np.diff(xmf >= y))[0]
+
+    # This method is fast, but duplicates point values where
+    # y == peak of a membership function.
+    return x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
 
 
 def modus_ponens(a, b, ap, c=None):

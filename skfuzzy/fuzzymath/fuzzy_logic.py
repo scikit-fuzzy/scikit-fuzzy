@@ -1,7 +1,6 @@
 """
 fuzzy_logic.py : General logical operations on fuzzy membership functions,
                  a.k.a. fuzzy sets.
-
 """
 
 import numpy as np
