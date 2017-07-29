@@ -8,7 +8,7 @@ import networkx as nx
 from warnings import warn
 
 from ..fuzzymath.fuzzy_ops import _interp_universe_fast
-from skfuzzy import interp_membership, interp_universe, defuzz
+from skfuzzy import interp_membership, defuzz
 from .fuzzyvariable import FuzzyVariable
 from .antecedent_consequent import Antecedent, Consequent
 from .term import Term, WeightedTerm, TermAggregate
@@ -21,28 +21,28 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
-def _interp_universes(x, xmf, y):
-    """
-    Helper function which wraps `interp_universe` but allows `y` to be either
-    a singleton OR an array of values.  In the latter case, an object array
-    is returned with the shape of `y`, but with each index a set object of
-    cut point(s).
+# def _interp_universes(x, xmf, y):
+#     """
+#     Helper function which wraps `interp_universe` but allows `y` to be either
+#     a singleton OR an array of values.  In the latter case, an object array
+#     is returned with the shape of `y`, but with each index a set object of
+#     cut point(s).
 
-    This cannot be done in a truly vectorized fashion, because the number of
-    cuts at each level in `y` is variable.
-    """
-    if not isinstance(y, np.ndarray):
-        return _interp_universe_fast(x, xmf, y)
-    else:
-        # This will be filled with sets
-        cuts = np.zeros_like(y, dtype=object)
+#     This cannot be done in a truly vectorized fashion, because the number of
+#     cuts at each level in `y` is variable.
+#     """
+#     if not isinstance(y, np.ndarray):
+#         return _interp_universe_fast(x, xmf, y).tolist()
+#     else:
+#         # This will be filled with arrays
+#         cuts = np.zeros_like(y, dtype=object)
 
-        # N-D iteration
-        itr = np.nditer(y, ['multi_index'])
-        for value in itr:
-            cuts[itr.multi_index] = _interp_universe_fast(x, xmf, value)
+#         # N-D iteration
+#         itr = np.nditer(y, ['multi_index'])
+#         for value in itr:
+#             cuts[itr.multi_index] = _interp_universe_fast(x, xmf, value).tolist()
 
-        return cuts
+#         return cuts
 
 
 class ControlSystem(object):
@@ -175,6 +175,13 @@ class _InputAcceptor(object):
                          "problems, unless you are replacing all "
                          "inputs.".format(value.shape, self.sim._array_shape))
             self.sim._array_shape = value.shape
+        else:
+            # Input isn't an array, but we saw arrays before... reset!
+            if self.sim._array_inputs is not False:
+                warn("This system previously accepted array inputs.  It will "
+                     "be reset to operate on the singleton input just passed.")
+                self.sim.reset()
+                self.sim._array_shape = False
 
         try:
             maxval = value.max()
@@ -421,6 +428,12 @@ class ControlSystemSimulation(object):
 
             term.cuts[self][rule.label] = term.membership_value[self]
 
+    def reset(self):
+        """
+        Reset the simulation, removing all inputs and other values.
+        """
+        self._reset_simulation()
+
     def _reset_simulation(self):
         """
         Clear temporary data from simulation objects.
@@ -554,22 +567,34 @@ class CrispValueCalculator(object):
 
     def defuzz(self):
         """Derive crisp value based on membership of adjective(s)."""
-        ups_universe, output_mf, cut_mfs = self.find_memberships()
+        if not self.sim._array_inputs:
+            ups_universe, output_mf, cut_mfs = self.find_memberships()
 
-        if len(cut_mfs) == 0:
-            raise ValueError("No terms have memberships.  Make sure you "
-                             "have at least one rule connected to this "
-                             "variable and have run the rules calculation.")
+            if len(cut_mfs) == 0:
+                raise ValueError("No terms have memberships.  Make sure you "
+                                 "have at least one rule connected to this "
+                                 "variable and have run the rules calculation.")
 
-        try:
-            return defuzz(ups_universe, output_mf,
-                          self.var.defuzzify_method)
-        except AssertionError:
-            raise ValueError("Crisp output cannot be calculated, likely "
-                             "because the system is too sparse. Check to "
-                             "make sure this set of input values will "
-                             "activate at least one connected Term in each "
-                             "Antecedent via the current set of Rules.")
+            try:
+                return defuzz(ups_universe, output_mf,
+                              self.var.defuzzify_method)
+            except AssertionError:
+                raise ValueError("Crisp output cannot be calculated, likely "
+                                 "because the system is too sparse. Check to "
+                                 "make sure this set of input values will "
+                                 "activate at least one connected Term in each "
+                                 "Antecedent via the current set of Rules.")
+        else:
+            # Calculate using array-aware version, one cut at a time.
+            output = np.zeros(self.sim._array_shape, dtype=np.float64)
+
+            it = np.nditer(output, ['multi_index'], [['writeonly', 'allocate']])
+
+            for out in it:
+                universe, mf = self.find_memberships_nd(it.multi_index)
+                out[...] = defuzz(universe, mf, self.var.defuzzify_method)
+
+            return output
 
     def fuzz(self, value):
         """
@@ -600,7 +625,7 @@ class CrispValueCalculator(object):
 
             # Faster to aggregate as list w/duplication
             new_values.extend(
-                _interp_universes(self.var.universe, term.mf, term._cut))
+                _interp_universe_fast(self.var.universe, term.mf, term._cut).tolist())
 
         new_universe = np.union1d(self.var.universe, new_values)
 
@@ -620,6 +645,45 @@ class CrispValueCalculator(object):
             np.maximum(output_mf, term_mfs[label], output_mf)
 
         return new_universe, output_mf, term_mfs
+
+    def find_memberships_nd(self, idx):
+        '''
+        First we have to upsample the universe of self.var in order to add the
+        key points of the membership function based on the activation level
+        for this consequent, using the interp_universe function, which
+        interpolates the `xx` values in the universe such that its membership
+        function value is the activation level.
+        '''
+        # Find potentially new values
+        new_values = []
+
+        for label, term in self.var.terms.items():
+            term._cut = term.membership_value[self.sim][idx]
+            if term._cut is None:
+                continue  # No membership defined for this adjective
+
+            # Faster to aggregate as list w/duplication
+            new_values.extend(
+                _interp_universe_fast(self.var.universe, term.mf, term._cut).tolist())
+
+        new_universe = np.union1d(self.var.universe, new_values)
+
+        # Initilize membership
+        output_mf = np.zeros_like(new_universe, dtype=np.float64)
+
+        # Build output membership function
+        term_mfs = {}
+        for label, term in self.var.terms.items():
+            if term._cut is None:
+                continue  # No membership defined for this adjective
+
+            upsampled_mf = interp_membership(
+                self.var.universe, term.mf, new_universe)
+
+            term_mfs[label] = np.minimum(term._cut, upsampled_mf)
+            np.maximum(output_mf, term_mfs[label], output_mf)
+
+        return new_universe, output_mf
 
 
 class RuleOrderGenerator(object):
