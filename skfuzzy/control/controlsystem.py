@@ -21,30 +21,6 @@ except ImportError:
     from .ordereddict import OrderedDict
 
 
-# def _interp_universes(x, xmf, y):
-#     """
-#     Helper function which wraps `interp_universe` but allows `y` to be either
-#     a singleton OR an array of values.  In the latter case, an object array
-#     is returned with the shape of `y`, but with each index a set object of
-#     cut point(s).
-
-#     This cannot be done in a truly vectorized fashion, because the number of
-#     cuts at each level in `y` is variable.
-#     """
-#     if not isinstance(y, np.ndarray):
-#         return _interp_universe_fast(x, xmf, y).tolist()
-#     else:
-#         # This will be filled with arrays
-#         cuts = np.zeros_like(y, dtype=object)
-
-#         # N-D iteration
-#         itr = np.nditer(y, ['multi_index'])
-#         for value in itr:
-#             cuts[itr.multi_index] = _interp_universe_fast(x, xmf, value).tolist()
-
-#         return cuts
-
-
 class ControlSystem(object):
     """
     Base class to contain a Fuzzy Control System.
@@ -148,6 +124,10 @@ def _is_ndarray(object):
 class _InputAcceptor(object):
     """
     Set a single input value to an Antecedent in this ControlSystemSimulation.
+
+    Inputs can be singletons or arrays, but all Antecedent inputs must match.
+    If they are arrays, all must have the exact same shape.  If they are
+    arrays, the output(s) will carry the same shape as the inputs.
     """
 
     def __init__(self, simulation):
@@ -430,7 +410,9 @@ class ControlSystemSimulation(object):
 
     def reset(self):
         """
-        Reset the simulation, removing all inputs and other values.
+        Reset the simulation.
+
+        Cear memory by removing all inputs, outputs, and intermediate values.
         """
         self._reset_simulation()
 
@@ -625,7 +607,8 @@ class CrispValueCalculator(object):
 
             # Faster to aggregate as list w/duplication
             new_values.extend(
-                _interp_universe_fast(self.var.universe, term.mf, term._cut).tolist())
+                _interp_universe_fast(
+                    self.var.universe, term.mf, term._cut).tolist())
 
         new_universe = np.union1d(self.var.universe, new_values)
 
@@ -648,11 +631,9 @@ class CrispValueCalculator(object):
 
     def find_memberships_nd(self, idx):
         '''
-        First we have to upsample the universe of self.var in order to add the
-        key points of the membership function based on the activation level
-        for this consequent, using the interp_universe function, which
-        interpolates the `xx` values in the universe such that its membership
-        function value is the activation level.
+        Index-aware version of find_memberships(), expecting to select a
+        particular set of membership values from an array input, given input
+        ``idx``.
         '''
         # Find potentially new values
         new_values = []
@@ -664,7 +645,8 @@ class CrispValueCalculator(object):
 
             # Faster to aggregate as list w/duplication
             new_values.extend(
-                _interp_universe_fast(self.var.universe, term.mf, term._cut).tolist())
+                _interp_universe_fast(
+                    self.var.universe, term.mf, term._cut).tolist())
 
         new_universe = np.union1d(self.var.universe, new_values)
 
