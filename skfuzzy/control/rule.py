@@ -6,7 +6,9 @@ with conqeuents in a `ControlSystem`.
 """
 from __future__ import print_function, division
 
+import numpy as np
 import networkx as nx
+
 from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethods,
                    TermPrimitive)
 from .state import StatefulProperty
@@ -42,7 +44,7 @@ class Rule(object):
     aggregate_firing = StatefulProperty(None)
 
     def __init__(self, antecedent=None, consequent=None, label=None,
-                 and_func=min, or_func=max):
+                 and_func=np.fmin, or_func=np.fmax):
         """
         Rule in a fuzzy system, connecting antecedent(s) to consequent(s).
 
@@ -61,11 +63,13 @@ class Rule(object):
             recommended.
         and_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to the Python builtin `min`. For
-            multiplication, substitute `fuzz.control.mult`.
+            returns a single value. Defalts to NumPy function `fmin`, to
+            support both single values and arrays. For multiplication,
+            substitute `fuzz.control.mult` or `np.multiply`.
         or_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to the Python builtin `max`.
+            returns a single value. Defalts to NumPy function `fmax`, to
+            support both single values and arrays.
         """
         self._aggregation_methods = FuzzyAggregationMethods()
         self.and_func = and_func

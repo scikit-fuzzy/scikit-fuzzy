@@ -10,27 +10,10 @@ combination of several during Rule creation.
 """
 from __future__ import print_function, division
 
+import numpy as np
+
 from .visualization import FuzzyVariableVisualizer
 from .state import StatefulProperty
-
-
-def mult(*args):
-    """
-    Multiply an arbitrary number of input values.
-
-    This may be used as an alternate AND aggregation method for a fuzzy Rule.
-    """
-    n = len(args)
-    if n == 0:
-        raise ValueError("Input iterable must have at least one value!")
-    elif n == 1:
-        return args[0]
-
-    aggregator = float(args[0])
-    for value in args[1:]:
-        aggregator *= value
-
-    return aggregator
 
 
 class TermPrimitive(object):
@@ -135,7 +118,7 @@ class WeightedTerm(object):
 
 
 class FuzzyAggregationMethods(object):
-    def __init__(self, and_func=min, or_func=max):
+    def __init__(self, and_func=np.fmin, or_func=np.fmax):
         # Default and to OR = max and AND = min
         self.and_func = and_func
         self.or_func = or_func
