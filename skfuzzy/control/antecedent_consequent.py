@@ -69,6 +69,8 @@ class Consequent(FuzzyVariable):
         array.
     label : string
         Name of the universe variable.
+    defuzzify_method : string
+        name of method used for defuzzification, defaults to 'centroid'
 
     Notes
     -----
@@ -79,9 +81,9 @@ class Consequent(FuzzyVariable):
     # Customized subclass of `FuzzyVariable`
     output = StatefulProperty(None)
 
-    def __init__(self, universe, label):
+    def __init__(self, universe, label, defuzzify_method='centroid'):
         """""" + Consequent.__doc__
-        super(Consequent, self).__init__(universe, label)
+        super(Consequent, self).__init__(universe, label, defuzzify_method)
         self.__name__ = 'Consequent'
 
         # Default accumulation method is to take the max of any cut
