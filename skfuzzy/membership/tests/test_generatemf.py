@@ -6,7 +6,7 @@ from skfuzzy.membership import (gaussmf, gauss2mf, gbellmf, piecemf, pimf,
 
 def test_gaussmf():
     x = np.arange(-4, 5.1, 0.1)
-    expected = np.exp(- (x - 1.33) ** 2. / 0.45 ** 2.)
+    expected = np.exp(- (x - 1.33)**2 / (2 * 0.45**2))
     test = gaussmf(x, 1.33, 0.45)
     assert_allclose(test, expected)
 
@@ -14,8 +14,8 @@ def test_gaussmf():
 def test_gauss2mf():
     x = np.arange(-4, 5.1, 0.1)
     expected = np.ones_like(x)
-    expected[x < 1.2] = np.exp(- (x[x < 1.2] - 1.2) ** 2. / 0.45 ** 2.)
-    expected[x > 3.1] = np.exp(- (x[x > 3.1] - 3.1) ** 2. / 0.9 ** 2.)
+    expected[x < 1.2] = np.exp(- (x[x < 1.2] - 1.2)**2 / (2 * 0.45**2))
+    expected[x > 3.1] = np.exp(- (x[x > 3.1] - 3.1)**2 / (2 * 0.9**2))
     test = gauss2mf(x, 1.2, 0.45, 3.1, 0.9)
     assert_allclose(test, expected)
 
