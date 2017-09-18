@@ -248,4 +248,4 @@ class Rule(object):
         """
         Show a visual representation of this Rule.
         """
-        ControlSystemVisualizer(self).view().show()
+        return ControlSystemVisualizer(self).view()

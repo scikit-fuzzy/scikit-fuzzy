@@ -75,6 +75,10 @@ tip['high'] = fuzz.trimf(tip.universe, [13, 25, 25])
 
 """
 To help understand what the membership looks like, use the ``view`` methods.
+
+These return the matplotlib `Figure` and `Axis` objects. They are persistent
+as written in Jupyter notebooks; other environments may require a `plt.show()`
+command after each `.view()`.
 """
 
 # You can see how these look with .view()

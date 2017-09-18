@@ -469,7 +469,7 @@ class ControlSystemSimulation(object):
         """
         Print info about the inner workings of a ControlSystemSimulation.
         """
-        if self.ctrl.consequents.next().output[self] is None:
+        if next(self.ctrl.consequents).output[self] is None:
             raise ValueError("Call compute method first.")
 
         print("=============")
