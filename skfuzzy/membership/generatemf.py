@@ -82,7 +82,7 @@ def gaussmf(x, mean, sigma):
     y : 1d array
         Gaussian membership function for x.
     """
-    return np.exp(-((x - mean) ** 2.) / float(sigma) ** 2.)
+    return np.exp(-((x - mean)**2.) / (2 * sigma**2.))
 
 
 def gauss2mf(x, mean1, sigma1, mean2, sigma2):
