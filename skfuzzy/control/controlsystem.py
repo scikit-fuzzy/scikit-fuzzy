@@ -763,13 +763,28 @@ class RuleOrderGenerator(object):
         # Check that we've exposed all inputs to this rule by ensuring
         # the predecessor-degree of each predecessor node is the same
         # in both the calculation graph and overall graph
-        for p in self.all_graph.predecessors_iter(rule):
+
+        # NetworkX compatibility
+        try:
+            # Best practice under 1.x, fails in 2.0
+            predecessors = self.all_graph.predecessors_iter(rule)
+        except AttributeError:
+            predecessors = self.all_graph.predecessors(rule)
+
+        for p in predecessors:
             assert isinstance(p, Term)
             if p not in self.calced_graph:
                 return False
 
-            all_degree = len(self.all_graph.predecessors(p))
-            calced_degree = len(self.calced_graph.predecessors(p))
+            # NetworkX compatibility
+            try:
+                all_degree = len(self.all_graph.predecessors(p))
+                calced_degree = len(self.calced_graph.predecessors(p))
+            except TypeError:
+                # New iterator doesn't work with len()
+                all_degree = self.all_graph.predecessors(p).__sizeof__()
+                calced_degree = self.calced_graph.predecessors(p).__sizeof__()
+
             if all_degree != calced_degree:
                 return False
         return True
