@@ -71,6 +71,7 @@ def setup_rule_order():
         v.automf(3)
 
 
+@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
@@ -82,9 +83,9 @@ def test_rule_order():
     r3 = ctrl.Rule(c['good'] | a['good'], d['good'], label='r3')
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
-    resolved = list(ctrl_sys.rules)
+    resolved = [r for r in ctrl_sys.rules]
     assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
-      resolved, [r1, r2, r3])
+      resolved, [r1.label, r2.label, r3.label])
 
 
 # The assert_raises decorator does not work in Python 2.6
@@ -106,7 +107,6 @@ def test_unresolvable_rule_order():
         list(ctrl_sys.rules)
 
 
-@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_bad_rules():
     not_rules = ['me', 192238, 42, dict()]
