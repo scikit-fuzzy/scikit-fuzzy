@@ -83,7 +83,7 @@ def test_rule_order():
     r3 = ctrl.Rule(c['good'] | a['good'], d['good'], label='r3')
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
-    resolved = [l.label for l in ctrl_sys.rules]
+    resolved = [r for r in ctrl_sys.rules]
     assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
       resolved, [r1.label, r2.label, r3.label])
 
