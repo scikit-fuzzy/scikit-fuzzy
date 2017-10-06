@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import numpy.testing as tst
+import networkx
 import nose
 
 import skfuzzy as fuzz
@@ -82,11 +83,13 @@ def test_rule_order():
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
     resolved = list(ctrl_sys.rules)
-    assert resolved == [r1, r2, r3], "Order given was: %s" % resolved
+    assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
+      resolved, [r1, r2, r3])
 
 
 # The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(sys.version_info < (2, 7))
+@tst.decorators.skipif(
+    (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
@@ -103,6 +106,7 @@ def test_unresolvable_rule_order():
         list(ctrl_sys.rules)
 
 
+@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_bad_rules():
     not_rules = ['me', 192238, 42, dict()]
