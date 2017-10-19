@@ -124,6 +124,7 @@ def test_fuzzy_cmeans_predict():
     # Assert data points are correctly labeled (must harden U for comparison)
     np.testing.assert_array_equal(cluster, U.argmax(axis=0))
 
+
 @nose.with_setup(setup)
 def test_fuzzy_cmeans_predict_numerically():
     """

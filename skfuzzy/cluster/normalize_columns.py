@@ -4,6 +4,7 @@ _normalize_columns.py : Normalize columns.
 
 import numpy as np
 
+
 def normalize_columns(columns):
     """
     Normalize columns of matrix.
@@ -23,6 +24,7 @@ def normalize_columns(columns):
     normalized_columns = columns/np.sum(columns, axis=0, keepdims=1)
     
     return normalized_columns
+
 
 def normalize_power_columns(x, exponent):
     """
