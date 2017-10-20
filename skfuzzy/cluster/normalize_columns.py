@@ -46,6 +46,8 @@ def normalize_power_columns(x, exponent):
     """
 
     assert np.all(x >= 0.0)
+
+    x = x.astype(np.float64)
     
     # values in range [0, 1]
     x = x/np.max(x, axis=0, keepdims=True)
