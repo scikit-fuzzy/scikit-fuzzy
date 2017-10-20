@@ -45,28 +45,26 @@ def normalize_power_columns(x, exponent):
     
     """
 
-    # works better for positive exponents
-    if exponent < 0:
-        exponent = -exponent
-        x = 1.0/x
+    assert np.all(x >= 0.0)
+    
+    # values in range [0, 1]
+    x = x/np.max(x, axis=0, keepdims=True)
 
-    # y = a**n/(a**n + b**n)
-    # 
-    # is equivalent to:
-    #
-    # p = exp(n*log(a) - n*log(m))
-    # q = exp(n*log(b) - n*log(m))
-    # y = p/(p + q)
-    # 
-    # where m is a positive number
-    #
-    # see:
-    # http://www.wolframalpha.com/input/?i=p%2F(p+%2B+q)+where+p+%3D+exp(n*log(a)+-+n*log(m))+and+q+%3D+exp(n*log(b)+-+n*log(m))
-    
-    columns = np.exp(exponent*np.log(x) -
-        exponent*np.log(np.max(x, axis=0, keepdims=1)))
-    
-    # calculate sum of each column, then normalize column by its sum
-    result = normalize_columns(columns)
+    # values in range [eps, 1]
+    x = np.fmax(x, np.finfo(x.dtype).eps)
+
+    if exponent < 0:
+        # values in range [1, 1/eps]
+        x /= np.min(x, axis=0, keepdims=True)
+        
+        # values in range [1, (1/eps)**exponent] where exponent < 0
+        # this line might trigger an underflow warning
+        # if (1/eps)**exponent becomes zero, but that's ok
+        x = x**exponent
+    else:
+        # values in range [eps**exponent, 1] where exponent >= 0
+        x = x**exponent
+
+    result = normalize_columns(x)
 
     return result

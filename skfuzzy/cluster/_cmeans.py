@@ -6,7 +6,7 @@ from scipy.spatial.distance import cdist
 from .normalize_columns import normalize_columns, normalize_power_columns
 
 
-def _cmeans0(data, u_old, c, m, safe):
+def _cmeans0(data, u_old, c, m):
     """
     Single step in generic fuzzy c-means clustering algorithm.
 
@@ -31,10 +31,7 @@ def _cmeans0(data, u_old, c, m, safe):
 
     jm = (um * d ** 2).sum()
 
-    if safe:
-        u = normalize_power_columns(d, - 2. / (m - 1))
-    else:
-        u = normalize_columns(d**(- 2. / (m - 1)))
+    u = normalize_power_columns(d, - 2. / (m - 1))
 
     return cntr, u, jm, d
 
@@ -84,7 +81,7 @@ def _fp_coeff(u):
     return np.trace(u.dot(u.T)) / float(n)
 
 
-def cmeans(data, c, m, error, maxiter, init=None, seed=None, safe=False):
+def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     """
     Fuzzy c-means clustering algorithm [1].
 
@@ -108,9 +105,6 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None, safe=False):
     seed : int
         If provided, sets random seed of init. No effect if init is
         provided. Mainly for debug/testing purposes.
-    safe : bool
-        Will try to do calculations in a numerically safe way. About
-        two to three times slower.
 
     Returns
     -------
@@ -169,7 +163,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None, safe=False):
     # Main cmeans loop
     while p < maxiter - 1:
         u2 = u.copy()
-        [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m, safe)
+        [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m)
         jm = np.hstack((jm, Jjm))
         p += 1
 
@@ -226,9 +220,6 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
         Number of iterations run.
     fpc : float
         Final fuzzy partition coefficient.
-    safe : bool
-        Will try to do calculations in a numerically safe way. About
-        two to three times slower.
 
     Notes
     -----
@@ -262,7 +253,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     # Main cmeans loop
     while p < maxiter - 1:
         u2 = u.copy()
-        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m, safe)
+        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m)
         jm = np.hstack((jm, Jjm))
         p += 1
 
@@ -277,7 +268,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     return u, u0, d, jm, p, fpc
 
 
-def _cmeans_predict0(test_data, cntr, u_old, c, m, safe):
+def _cmeans_predict0(test_data, cntr, u_old, c, m):
     """
     Single step in fuzzy c-means prediction algorithm. Clustering algorithm
     modified from Ross, Fuzzy Logic w/Engineering Applications (2010)
@@ -304,9 +295,6 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m, safe):
 
     jm = (um * d ** 2).sum()
 
-    if safe:
-        u = normalize_power_columns(d, - 2. / (m - 1))
-    else:
-        u = normalize_columns(d**(- 2. / (m - 1)))
+    u = normalize_power_columns(d, - 2. / (m - 1))
 
     return u, jm, d
