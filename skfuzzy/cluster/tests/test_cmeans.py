@@ -152,15 +152,15 @@ def test_fuzzy_cmeans_predict_numerically():
 
     # Cluster the data to obtain centers
     cntr, _, _, _, _, _, _ = fuzz.cluster.cmeans(
-        features, 3, m, error=0.005, maxiter=1000, init=None, safe=True)
+        features, 3, m, error=0.005, maxiter=1000, init=None)
 
     # Predict fuzzy memberships, U, for all points in test_data, twice with
     # set seed
     U, _, _, _, _, fpc = fuzz.cluster.cmeans_predict(
-        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234, safe=True)
+        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234)
 
     U2, _, _, _, _, fpc2 = fuzz.cluster.cmeans_predict(
-        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234, safe=True)
+        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234)
 
     # Verify results are identical
     assert fpc == fpc2
