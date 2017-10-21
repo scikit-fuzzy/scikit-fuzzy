@@ -3,6 +3,7 @@ cmeans.py : Fuzzy C-means clustering algorithm.
 """
 import numpy as np
 from scipy.spatial.distance import cdist
+from .normalize_columns import normalize_columns, normalize_power_columns
 
 
 def _cmeans0(data, u_old, c, m):
@@ -15,7 +16,7 @@ def _cmeans0(data, u_old, c, m):
     Parameters inherited from cmeans()
     """
     # Normalizing, then eliminating any potential zero values.
-    u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
+    u_old = normalize_columns(u_old)
     u_old = np.fmax(u_old, np.finfo(np.float64).eps)
 
     um = u_old ** m
@@ -30,8 +31,7 @@ def _cmeans0(data, u_old, c, m):
 
     jm = (um * d ** 2).sum()
 
-    u = d ** (- 2. / (m - 1))
-    u /= np.ones((c, 1)).dot(np.atleast_2d(u.sum(axis=0)))
+    u = normalize_power_columns(d, - 2. / (m - 1))
 
     return cntr, u, jm, d
 
@@ -151,8 +151,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
             np.random.seed(seed=seed)
         n = data.shape[1]
         u0 = np.random.rand(c, n)
-        u0 /= np.ones(
-            (c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
+        u0 = normalize_columns(u0)
         init = u0.copy()
     u0 = init
     u = np.fmax(u0, np.finfo(np.float64).eps)
@@ -242,8 +241,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
             np.random.seed(seed=seed)
         n = test_data.shape[1]
         u0 = np.random.rand(c, n)
-        u0 /= np.ones(
-            (c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
+        u0 = normalize_columns(u0)
         init = u0.copy()
     u0 = init
     u = np.fmax(u0, np.finfo(np.float64).eps)
@@ -283,7 +281,7 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
     the new test data are forced into known (trained) clusters.
     """
     # Normalizing, then eliminating any potential zero values.
-    u_old /= np.ones((c, 1)).dot(np.atleast_2d(u_old.sum(axis=0)))
+    u_old = normalize_columns(u_old)
     u_old = np.fmax(u_old, np.finfo(np.float64).eps)
 
     um = u_old ** m
@@ -297,7 +295,6 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
 
     jm = (um * d ** 2).sum()
 
-    u = d ** (- 2. / (m - 1))
-    u /= np.ones((c, 1)).dot(np.atleast_2d(u.sum(axis=0)))
+    u = normalize_power_columns(d, - 2. / (m - 1))
 
     return u, jm, d
