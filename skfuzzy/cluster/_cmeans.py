@@ -179,7 +179,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
 
 
 def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
-                   seed=None, safe=False):
+                   seed=None):
     """
     Prediction of new data in given a trained fuzzy c-means framework [1].
 
