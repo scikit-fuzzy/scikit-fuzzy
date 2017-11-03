@@ -23,8 +23,7 @@ def _cmeans0(data, u_old, c, m):
 
     # Calculate cluster centers
     data = data.T
-    cntr = um.dot(data) / (np.ones((data.shape[1],
-                                    1)).dot(np.atleast_2d(um.sum(axis=1))).T)
+    cntr = um.dot(data) / np.atleast_2d(um.sum(axis=1)).T
 
     d = _distance(data, cntr)
     d = np.fmax(d, np.finfo(np.float64).eps)
