@@ -176,7 +176,7 @@ Finally, to get a real world answer, we return to *crisp* logic from the
 world of fuzzy membership functions. For the purposes of this example
 the centroid method will be used.
 
-The result is a tip of **20.2%**.
+The result is a tip of **19.84%**.
 ---------------------------------
 """
 
