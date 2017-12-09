@@ -162,7 +162,7 @@ tip.view(sim=tipping)
 """
 .. image:: PLOT2RST.current_figure
 
-The resulting suggested tip is **20.24%**.
+The resulting suggested tip is **19.84%**.
 
 Final thoughts
 --------------
