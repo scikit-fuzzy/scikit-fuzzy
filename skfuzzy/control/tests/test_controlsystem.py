@@ -71,6 +71,63 @@ def setup_rule_order():
         v.automf(3)
 
 
+def test_bad_inputs():
+    # Start with the tipping problem
+    food = ctrl.Antecedent(np.linspace(0, 10, 11), 'quality')
+    service = ctrl.Antecedent(np.linspace(0, 10, 11), 'service')
+    tip = ctrl.Consequent(np.linspace(0, 25, 26), 'tip')
+
+    food.automf(3)
+    service.automf(3)
+
+    # Manual membership function definition
+    tip['bad'] = fuzz.trimf(tip.universe, [0, 0, 13])
+    tip['middling'] = fuzz.trimf(tip.universe, [0, 13, 25])
+    tip['lots'] = fuzz.trimf(tip.universe, [13, 25, 25])
+
+    # Define fuzzy rules
+    rule1 = ctrl.Rule(food['poor'] | service['poor'], tip['bad'])
+    rule2 = ctrl.Rule(service['average'], tip['middling'])
+    rule3 = ctrl.Rule(service['good'] | food['good'], tip['lots'])
+
+    # The control system - defined both possible ways
+    tipping = ctrl.ControlSystem([rule1, rule2, rule3])
+
+    tipping2 = ctrl.ControlSystem(rule1)
+    tipping2.addrule(rule2)
+    tipping2.addrule(rule3)
+
+    tip_sim = ctrl.ControlSystemSimulation(tipping, clip_to_bounds=False)
+    tip_sim2 = ctrl.ControlSystemSimulation(tipping2, clip_to_bounds=True)
+
+    # With clipping to bounds, these should work
+    tip_sim2.input['quality'] = -np.pi  # below minimum, clipped to 0
+    tip_sim2.input['service'] = 15  # above maximum, clipped to 10
+
+    # Ensure the input checking is working properly when bounds aren't clipped
+    negative_pass = False
+    try:
+        tip_sim.input['quality'] = -np.pi  # below minimum in universe
+    except IndexError:
+        negative_pass = True  # It should raise this
+    else:
+        if not negative_pass:
+            raise ValueError('Input checking is not working correctly!  '
+                             'Minimum universe valuse is 0, but -3.14 did not '
+                             'raise an IndexError.')
+
+    positive_pass = False
+    try:
+        tip_sim.input['quality'] = 15  # above maximum in universe
+    except IndexError:
+        positive_pass = True  # It should raise this
+    else:
+        if not positive_pass:
+            raise ValueError('Input checking is not working correctly!  '
+                             'Maximum universe valuse is 10, but 15 did not '
+                             'raise an IndexError.')
+
+
 @tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
@@ -85,7 +142,7 @@ def test_rule_order():
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
     resolved = [r for r in ctrl_sys.rules]
     assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
-      resolved, [r1.label, r2.label, r3.label])
+        resolved, [r1.label, r2.label, r3.label])
 
 
 # The assert_raises decorator does not work in Python 2.6
