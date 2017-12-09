@@ -178,7 +178,7 @@ class _InputAcceptor(object):
                                  str(max(var.universe)))
         if minval < var.universe.min():
             if self.sim.clip_to_bounds:
-                value = np.fmax(value, np.var.universe.min())
+                value = np.fmax(value, var.universe.min())
             else:
                 raise ValueError("Input value is out of bounds.  Min is %s" %
                                  str(min(var.universe)))
