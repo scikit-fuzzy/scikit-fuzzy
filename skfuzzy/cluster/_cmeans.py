@@ -87,7 +87,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     Parameters
     ----------
     data : 2d array, size (S, N)
-        Data to be clustered.  N is the number of data sets; S is the number
+        Data to be clustered.  N is the number of data samples; S is the number
         of features within each sample vector.
     c : int
         Desired number of clusters or classes.
@@ -107,15 +107,15 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
 
     Returns
     -------
-    cntr : 2d array, size (S, c)
+    cntr : 2d array, size (c, S)
         Cluster centers.  Data for each center along each feature provided
         for every cluster (of the `c` requested clusters).
-    u : 2d array, (S, N)
+    u : 2d array, (c, N)
         Final fuzzy c-partitioned matrix.
-    u0 : 2d array, (S, N)
+    u0 : 2d array, (c, N)
         Initial guess at fuzzy c-partitioned matrix (either provided init or
         random guess used if init was not provided).
-    d : 2d array, (S, N)
+    d : 2d array, (c, N)
         Final Euclidian distance matrix.
     jm : 1d array, length P
         Objective function history.
