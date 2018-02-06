@@ -105,12 +105,38 @@ class ControlSystem(object):
 
         # Combine the two graphs, which may not be disjoint
         self.graph = nx.compose(self.graph, rule.graph)
+        try:
+            self.add_rule_n(rule)
+        except:
+            pass
+
+    def add_rule_n(self, rule):
+        graph, color = rule.graph_n
+        U = nx.Graph()
+        if 'graph_n' in dir(self):
+            U.add_edges_from(self.graph_n[0].edges())
+            U.add_nodes_from(self.graph_n[0].nodes())
+        U.add_edges_from(graph.edges())
+        U.add_nodes_from(graph.nodes())
+        if not 'colors' in dir(self):
+            self.colors = []
+            self.colors.extend(color)
+        else:
+            self.colors.extend(color)
+        self.graph_n = U, self.colors
 
     def view(self):
         """
         View a representation of the system NetworkX graph.
         """
         fig, ax = ControlSystemVisualizer(self).view()
+        fig.show()
+
+    def view_n(self):
+        """
+        View a representation of the system NetworkX graph.
+        """
+        fig, ax = ControlSystemVisualizer(self).view_n()
         fig.show()
 
 
