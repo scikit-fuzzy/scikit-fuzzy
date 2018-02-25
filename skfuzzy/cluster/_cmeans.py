@@ -6,7 +6,7 @@ from scipy.spatial.distance import cdist
 from .normalize_columns import normalize_columns, normalize_power_columns
 
 
-def _cmeans0(data, u_old, c, m):
+def _cmeans0(data, u_old, c, m, metrics):
     """
     Single step in generic fuzzy c-means clustering algorithm.
 
@@ -25,7 +25,7 @@ def _cmeans0(data, u_old, c, m):
     data = data.T
     cntr = um.dot(data) / np.atleast_2d(um.sum(axis=1)).T
 
-    d = _distance(data, cntr)
+    d = _distance(data, cntr, metrics)
     d = np.fmax(d, np.finfo(np.float64).eps)
 
     jm = (um * d ** 2).sum()
@@ -35,7 +35,7 @@ def _cmeans0(data, u_old, c, m):
     return cntr, u, jm, d
 
 
-def _distance(data, centers):
+def _distance(data, centers, metrics='euclidean'):
     """
     Euclidean distance from each point to each cluster center.
 
@@ -45,7 +45,8 @@ def _distance(data, centers):
         Data to be analyzed. There are N data points.
     centers : 2d array (C x Q)
         Cluster centers. There are C clusters, with Q features.
-
+    metrics: string
+        By default is set to euclidean. Accept any cdist.
     Returns
     -------
     dist : 2d array (C x N)
@@ -55,7 +56,7 @@ def _distance(data, centers):
     --------
     scipy.spatial.distance.cdist
     """
-    return cdist(data, centers).T
+    return cdist(data, centers, metric=metrics).T
 
 
 def _fp_coeff(u):
@@ -80,7 +81,7 @@ def _fp_coeff(u):
     return np.trace(u.dot(u.T)) / float(n)
 
 
-def cmeans(data, c, m, error, maxiter, init=None, seed=None):
+def cmeans(data, c, m, error, maxiter, metrics='euclidean', init=None, seed=None):
     """
     Fuzzy c-means clustering algorithm [1].
 
@@ -98,6 +99,8 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
         Stopping criterion; stop early if the norm of (u[p] - u[p-1]) < error.
     maxiter : int
         Maximum number of iterations allowed.
+    metrics: string
+        By default is set to euclidean. Accept any cdist.
     init : 2d array, size (S, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
@@ -162,7 +165,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     # Main cmeans loop
     while p < maxiter - 1:
         u2 = u.copy()
-        [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m)
+        [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m, metrics)
         jm = np.hstack((jm, Jjm))
         p += 1
 
@@ -177,7 +180,7 @@ def cmeans(data, c, m, error, maxiter, init=None, seed=None):
     return cntr, u, u0, d, jm, p, fpc
 
 
-def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
+def cmeans_predict(test_data, cntr_trained, m, error, maxiter, metrics='euclidean', init=None,
                    seed=None):
     """
     Prediction of new data in given a trained fuzzy c-means framework [1].
@@ -197,6 +200,8 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
         Stopping criterion; stop early if the norm of (u[p] - u[p-1]) < error.
     maxiter : int
         Maximum number of iterations allowed.
+    metrics: string
+        By default is set to euclidean. Accept any cdist.
     init : 2d array, size (S, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
@@ -252,7 +257,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     # Main cmeans loop
     while p < maxiter - 1:
         u2 = u.copy()
-        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m)
+        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m, metrics)
         jm = np.hstack((jm, Jjm))
         p += 1
 
@@ -267,7 +272,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, init=None,
     return u, u0, d, jm, p, fpc
 
 
-def _cmeans_predict0(test_data, cntr, u_old, c, m):
+def _cmeans_predict0(test_data, cntr, u_old, c, m, metrics):
     """
     Single step in fuzzy c-means prediction algorithm. Clustering algorithm
     modified from Ross, Fuzzy Logic w/Engineering Applications (2010)
@@ -289,7 +294,7 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m):
     # For prediction, we do not recalculate cluster centers. The test_data is
     # forced to conform to the prior clustering.
 
-    d = _distance(test_data, cntr)
+    d = _distance(test_data, cntr, metrics)
     d = np.fmax(d, np.finfo(np.float64).eps)
 
     jm = (um * d ** 2).sum()
