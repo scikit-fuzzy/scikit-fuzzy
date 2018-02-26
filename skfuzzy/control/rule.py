@@ -225,6 +225,56 @@ class Rule(object):
                     raise ValueError("Unexpected consequent type")
 
     @property
+    def graph_n(self):
+        graph = nx.DiGraph()
+        # Link all antecedents to me by decomposing
+        #  TermAggregate down to just Terms
+        nodes = []
+        structure = []
+        colors = []
+        antecedent_attr = [getattr(self.antecedent, attr) for attr in
+                           dir(self.antecedent) if
+                           not attr.startswith("__")]
+        for method in antecedent_attr:
+            if type(method) == Term:
+                active_label = method.label
+                nodes.append(method.parent.label)
+                colors.append([method.parent.label, 'green'])
+                for key in method.parent.terms.keys():
+                    nodes.append(str(key))
+                    structure.append([key, method.parent.label])
+                    if str(key) == active_label:
+                        colors.append([str(key), 'green'])
+                    else:
+                        colors.append([str(key), 'red'])
+                for j in range(len(self.consequent)):
+                    structure.append([method.parent.label,
+                                      self.consequent[j].term.parent.label])
+                    nodes.append(self.consequent[j].term.parent.label)
+                    colors.append(
+                        [self.consequent[j].term.parent.label, 'green'])
+        if len(nodes) == 0:
+            active_label = self.antecedent.label
+            nodes.append(self.antecedent.parent.label)
+            colors.append([self.antecedent.parent.label, 'green'])
+            for key in self.antecedent.parent.terms.keys():
+                nodes.append(str(key))
+                structure.append([key, self.antecedent.parent.label])
+                if str(key) == active_label:
+                    colors.append([str(key), 'green'])
+                else:
+                    colors.append([str(key), 'red'])
+            for j in range(len(self.consequent)):
+                structure.append([self.antecedent.parent.label,
+                                  self.consequent[j].term.parent.label])
+                nodes.append(self.consequent[j].term.parent.label)
+                colors.append(
+                    [self.consequent[j].term.parent.label, 'green'])
+        graph.add_nodes_from(nodes)
+        graph.add_edges_from(structure)
+        return graph, colors
+
+    @property
     def graph(self):
         """
         NetworkX directed graph representing this Rule's connectivity.
@@ -249,3 +299,10 @@ class Rule(object):
         Show a visual representation of this Rule.
         """
         return ControlSystemVisualizer(self).view()
+
+    def view_n(self):
+        """
+        Show a visual network representation of this Rule.
+        To run this all names of the Membership functions needs to unique.
+        """
+        return ControlSystemVisualizer(self).view_n()
