@@ -25,7 +25,7 @@ def cartadd(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-    b, a = np.meshgrid(y, x)
+    b, a = np.meshgrid(y, x, sparse=True)
     return a + b
 
 
@@ -48,7 +48,7 @@ def cartprod(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-    b, a = np.meshgrid(y, x)
+    b, a = np.meshgrid(y, x, sparse=True)
     return np.fmin(a, b)
 
 
@@ -194,8 +194,8 @@ def fuzzy_op(x, a, y, b, op):
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
 
-    yy, xx = np.meshgrid(y, x)       # consider broadcasting rules
-    bb, aa = np.meshgrid(b, a)
+    yy, xx = np.meshgrid(y, x, sparse=True)       # consider broadcasting rules
+    bb, aa = np.meshgrid(b, a, sparse=True)
 
     # Do the addition
     zz = op(xx, yy).ravel()
@@ -351,7 +351,8 @@ def interp10(x):
         Linearly interpolated output.
 
     """
-    return np.interp(np.r_[0:len(x) - 0.9:0.1], range(len(x)), x)
+    L = len(x)
+    return np.interp(np.r_[0:L - 0.9:0.1], range(L), x)
 
 
 def maxmin_composition(s, r):
@@ -617,7 +618,7 @@ def relation_min(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    bb, aa = np.meshgrid(b, a)
+    bb, aa = np.meshgrid(b, a, sparse=True)
     return np.fmin(aa, bb)
 
 
@@ -639,7 +640,7 @@ def relation_product(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    bb, aa = np.meshgrid(b, a)
+    bb, aa = np.meshgrid(b, a, sparse=True)
     return aa * bb
 
 
