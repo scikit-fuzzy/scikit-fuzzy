@@ -25,12 +25,7 @@ def cartadd(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-
-    m, n = len(x), len(y)
-
-    a = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    b = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
+    b, a = np.meshgrid(y, x)
     return a + b
 
 
@@ -53,12 +48,7 @@ def cartprod(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-
-    m, n = len(x), len(y)
-
-    a = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    b = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
+    b, a = np.meshgrid(y, x)
     return np.fmin(a, b)
 
 
@@ -88,7 +78,7 @@ def classic_relation(a, b):
 
     """
     a = np.asarray(a)
-    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones(len(b))))
+    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones_like(b)))
 
 
 def contrast(arr, amount=0.2, split=0.5, normalize=True):
@@ -167,9 +157,10 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     return focused * ma
 
 
-def fuzzy_add(x, a, y, b):
+
+def fuzzy_op(x, a, y, b, op):
     """
-    Add fuzzy set ``a`` to fuzzy set ``b``.
+    op fuzzy set ``a`` fuzzy set ``b``.
 
     Parameters
     ----------
@@ -181,18 +172,19 @@ def fuzzy_add(x, a, y, b):
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
+    op: pointwise operator on two matrices
 
     Returns
     -------
     z : 1d array
         Output variable.
     mfz : 1d array
-        Fuzzy membership set for variable ``z``.
+        Fuzzy membership set for variable z.
 
     Notes
     -----
-    Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
-    Engineering Applications (2010), pp. 414, Eq. 12.17.
+    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
+    Applications, (2010), pp.414, Eq. 12.17.
 
     If these results are unexpected and your membership functions are convex,
     consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
@@ -201,15 +193,12 @@ def fuzzy_add(x, a, y, b):
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    xx = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    yy = np.dot(np.ones((m, 1)), np.atleast_2d(y))
+
+    yy, xx = np.meshgrid(y, x)       # consider broadcasting rules
+    bb, aa = np.meshgrid(b, a)
 
     # Do the addition
-    zz = (xx + yy).ravel()
+    zz = op(xx, yy).ravel()
     zz_index = np.argsort(zz)
     zz = np.sort(zz)
 
@@ -221,15 +210,22 @@ def fuzzy_add(x, a, y, b):
     z, mfz = np.zeros(0), np.zeros(0)
     idx = 0
 
-    for i in range(len(c)):
+    for _ in range(len(c)):
         index = np.nonzero(zz == zz[idx])[0]
         z = np.hstack((z, zz[idx]))
         mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
+        idx = index[-1] + 1
+        if idx >= len(zz):
             break
-        idx = index.max() + 1
 
     return z, mfz
+
+def fuzzy_add(x, a, y, b):
+    """
+    Add fuzzy set ``a`` to fuzzy set ``b``.
+
+    """
+    return fuzzy_op(x, a, y, b, op=np.add)
 
 
 def fuzzy_compare(q):
@@ -285,230 +281,38 @@ def fuzzy_div(x, a, y, b):
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Divide, adding eps to avoid potential div0
-    zz = (x / (y + np.finfo(float).eps)).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    if np.all(np.asarray(y) == 0):
+        Warning('The 0 value(s) will never be used in the calculation!')
+    index = np.where(y == 0)[0]
+    np.delete(y, index)
+    np.delete(b, index)
+    return fuzzy_op(x, a, y, b, op=np.divide)
 
 
 def fuzzy_min(x, a, y, b):
     """
     Find minimum between fuzzy set ``a`` fuzzy set ``b``.
-
-    Parameters
-    ----------
-    x : 1d array, length N
-        Universe variable for fuzzy set ``a``.
-    a : 1d array, length N
-        Fuzzy set for universe ``x``.
-    y : 1d array, length M
-        Universe variable for fuzzy set ``b``.
-    b : 1d array, length M
-        Fuzzy set for universe ``y``.
-
-    Returns
-    -------
-    z : 1d array
-        Output variable.
-    mfz : 1d array
-        Fuzzy membership set for variable z.
-
-    Notes
-    -----
-    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
-    Applications, (2010), pp.414, Eq. 12.17.
-
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
-
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
-    # Take the element-wise minimum
-    zz = np.fmin(x, y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.fmin)
 
 
 def fuzzy_mult(x, a, y, b):
     """
     Multiplies fuzzy set ``a`` and fuzzy set ``b``.
 
-    Parameters
-    ----------
-    x : 1d array, length N
-        Universe variable for fuzzy set ``a``.
-    A : 1d array, length N
-        Fuzzy set for universe ``x``.
-    y : 1d array, length M
-        Universe variable for fuzzy set ``b``.
-    b : 1d array, length M
-        Fuzzy set for universe ``y``.
-
-    Returns
-    -------
-    z : 1d array
-        Output variable.
-    mfz : 1d array
-        Fuzzy membership set for variable z.
-
-    Notes
-    -----
-    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
-    Applications, (2010), pp.414, Eq. 12.17.
-
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
-
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
-    # Multiply universes
-    zz = (x * y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.multiply)
 
 
 def fuzzy_sub(x, a, y, b):
     """
     Subtract fuzzy set ``b`` from fuzzy set ``a``.
 
-    Parameters
-    ----------
-    x : 1d array, length N
-        Universe variable for fuzzy set ``a``.
-    A : 1d array, length N
-        Fuzzy set for universe ``x``.
-    y : 1d array, length M
-        Universe variable for fuzzy set ``b``.
-    b : 1d array, length M
-        Fuzzy set for universe ``y``.
-
-    Returns
-    -------
-    z : 1d array
-        Output variable.
-    mfz : 1d array
-        Fuzzy membership set for variable z.
-
-    Notes
-    -----
-    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
-    Applications, (2010), pp.414, Eq. 12.17.
-
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
-
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
 
-    # Subtract universes
-    zz = (x - y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.subtract)
 
 
 def inner_product(a, b):
@@ -769,7 +573,7 @@ def modus_ponens(a, b, ap, c=None):
 
     """
     if c is None:
-        c = np.ones(len(b))
+        c = np.ones_like(b)
     r = np.fmax(cartprod(a, b), cartprod(1 - a, c))
     bp = maxmin_composition(ap, r)
     return r, bp.squeeze()
@@ -813,11 +617,8 @@ def relation_min(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    m = len(a)
-    n = len(b)
-    a = np.atleast_2d(a)
-    b = np.atleast_2d(b)
-    return np.fmin(np.dot(a.T, np.ones((1, m))), np.dot(np.ones((n, 1)), b))
+    bb, aa = np.meshgrid(b, a)
+    return np.fmin(aa, bb)
 
 
 def relation_product(a, b):
@@ -838,11 +639,8 @@ def relation_product(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    m = len(a)
-    n = len(b)
-    a = np.atleast_2d(a)
-    b = np.atleast_2d(b)
-    return np.dot(a.T, np.ones((1, n))) * np.dot(np.ones((m, 1)), b)
+    bb, aa = np.meshgrid(b, a)
+    return aa * bb
 
 
 def fuzzy_similarity(ai, b, mode='min'):
