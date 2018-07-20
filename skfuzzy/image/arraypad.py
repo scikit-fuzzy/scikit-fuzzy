@@ -1249,6 +1249,7 @@ def pad(array, pad_width, mode=None, **kwargs):
 
     Examples
     --------
+    >>> import skfuzzy as fuzz
     >>> a = [1, 2, 3, 4, 5]
     >>> fuzz.pad(a, (2,3), 'constant', constant_values=(4, 6))
     array([4, 4, 1, 2, 3, 4, 5, 6, 6, 6])
