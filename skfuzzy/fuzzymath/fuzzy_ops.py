@@ -22,6 +22,7 @@ def cartadd(x, y):
     z : 2D array
         Cartesian addition of ``x`` and ``y``, of shape (M, N).
     """
+
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
     b, a = np.meshgrid(y, x, sparse=True)
@@ -44,6 +45,7 @@ def cartprod(x, y):
     z : 2D array
         Cartesian product of ``x`` and ``y``, of shape (M, N).
     """
+
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
     b, a = np.meshgrid(y, x, sparse=True)
@@ -123,6 +125,7 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     --------
     skfuzzy.fuzzymath.sigmoid
     """
+
     # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
     im = arr.astype(float)
@@ -189,6 +192,7 @@ def fuzzy_op(x, a, y, b, op):
     consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
     """
+
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
 
@@ -222,7 +226,34 @@ def fuzzy_add(x, a, y, b):
     """
     Add fuzzy set ``a`` to fuzzy set ``b``.
 
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable for fuzzy set ``a``.
+    a : 1d array, length N
+        Fuzzy set for universe ``x``.
+    y : 1d array, length M
+        Universe variable for fuzzy set ``b``.
+    b : 1d array, length M
+        Fuzzy set for universe ``y``.
+
+    Returns
+    -------
+    z : 1d array
+        Output variable.
+    mfz : 1d array
+        Fuzzy membership set for variable ``z``.
+
+    Notes
+    -----
+    Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
+    Engineering Applications (2010), pp. 414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
     """
+
     return fuzzy_op(x, a, y, b, op=np.add)
 
 
@@ -290,14 +321,68 @@ def fuzzy_div(x, a, y, b):
 def fuzzy_min(x, a, y, b):
     """
     Find minimum between fuzzy set ``a`` fuzzy set ``b``.
+
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable for fuzzy set ``a``.
+    a : 1d array, length N
+        Fuzzy set for universe ``x``.
+    y : 1d array, length M
+        Universe variable for fuzzy set ``b``.
+    b : 1d array, length M
+        Fuzzy set for universe ``y``.
+
+    Returns
+    -------
+    z : 1d array
+        Output variable.
+    mfz : 1d array
+        Fuzzy membership set for variable z.
+
+    Notes
+    -----
+    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
+    Applications, (2010), pp.414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
     """
 
     return fuzzy_op(x, a, y, b, op=np.fmin)
 
 
 def fuzzy_mult(x, a, y, b):
-    """
+        """
     Multiplies fuzzy set ``a`` and fuzzy set ``b``.
+
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable for fuzzy set ``a``.
+    A : 1d array, length N
+        Fuzzy set for universe ``x``.
+    y : 1d array, length M
+        Universe variable for fuzzy set ``b``.
+    b : 1d array, length M
+        Fuzzy set for universe ``y``.
+
+    Returns
+    -------
+    z : 1d array
+        Output variable.
+    mfz : 1d array
+        Fuzzy membership set for variable z.
+
+    Notes
+    -----
+    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
+    Applications, (2010), pp.414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
     """
 
     return fuzzy_op(x, a, y, b, op=np.multiply)
@@ -306,6 +391,34 @@ def fuzzy_mult(x, a, y, b):
 def fuzzy_sub(x, a, y, b):
     """
     Subtract fuzzy set ``b`` from fuzzy set ``a``.
+
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable for fuzzy set ``a``.
+    A : 1d array, length N
+        Fuzzy set for universe ``x``.
+    y : 1d array, length M
+        Universe variable for fuzzy set ``b``.
+    b : 1d array, length M
+        Fuzzy set for universe ``y``.
+
+    Returns
+    -------
+    z : 1d array
+        Output variable.
+    mfz : 1d array
+        Fuzzy membership set for variable z.
+
+    Notes
+    -----
+    Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
+    Applications, (2010), pp.414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
     """
 
     return fuzzy_op(x, a, y, b, op=np.subtract)
