@@ -21,7 +21,6 @@ def cartadd(x, y):
     -------
     z : 2D array
         Cartesian addition of ``x`` and ``y``, of shape (M, N).
-
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
@@ -44,7 +43,6 @@ def cartprod(x, y):
     -------
     z : 2D array
         Cartesian product of ``x`` and ``y``, of shape (M, N).
-
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
@@ -75,8 +73,8 @@ def classic_relation(a, b):
       r = [a x b] U [(1 - a) x ones(1, N)],
 
     where ``x`` represents a cartesian product and ``N`` is len(``b``).
-
     """
+
     a = np.asarray(a)
     return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones_like(b)))
 
@@ -124,7 +122,6 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     See Also
     --------
     skfuzzy.fuzzymath.sigmoid
-
     """
     # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
@@ -159,8 +156,10 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
 
 def fuzzy_op(x, a, y, b, op):
-    """
-    op fuzzy set ``a`` fuzzy set ``b``.
+    """Operation of two fuzzy sets.
+    
+    Operate fuzzy set ``a`` with fuzzy set ``b``,
+    using +, * or any other binary operator.
 
     Parameters
     ----------
@@ -173,6 +172,7 @@ def fuzzy_op(x, a, y, b, op):
     b : 1d array, length M
         Fuzzy set for universe ``y``.
     op: pointwise operator on two matrices
+        (pointwise version of) +, -, *, /, min, max etc.
 
     Returns
     -------
@@ -189,7 +189,6 @@ def fuzzy_op(x, a, y, b, op):
     If these results are unexpected and your membership functions are convex,
     consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
-
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
@@ -242,8 +241,8 @@ def fuzzy_compare(q):
     -------
     c : 2d array, (N, N)
         Comparison matrix.
-
     """
+
     return q.T / np.fmax(q, q.T).astype(np.float)
 
 
@@ -257,7 +256,7 @@ def fuzzy_div(x, a, y, b):
         Universe variable for fuzzy set ``a``.
     a : 1d array, length N
         Fuzzy set for universe ``x``.
-    y : 1d array, length M
+    y : 1d array, length M (excluding zero array)
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
@@ -277,8 +276,8 @@ def fuzzy_div(x, a, y, b):
     If these results are unexpected and your membership functions are convex,
     consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
-
     """
+
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
     if np.all(np.asarray(y) == 0):
@@ -300,7 +299,6 @@ def fuzzy_min(x, a, y, b):
 def fuzzy_mult(x, a, y, b):
     """
     Multiplies fuzzy set ``a`` and fuzzy set ``b``.
-
     """
 
     return fuzzy_op(x, a, y, b, op=np.multiply)
@@ -309,7 +307,6 @@ def fuzzy_mult(x, a, y, b):
 def fuzzy_sub(x, a, y, b):
     """
     Subtract fuzzy set ``b`` from fuzzy set ``a``.
-
     """
 
     return fuzzy_op(x, a, y, b, op=np.subtract)
@@ -330,8 +327,8 @@ def inner_product(a, b):
     -------
     y : float
         Fuzzy inner product value, on range [0, 1]
-
     """
+
     return np.max(np.fmin(np.r_[a], np.r_[b]))
 
 
@@ -349,8 +346,8 @@ def interp10(x):
     -------
     y : 1d array, length 10 * N + 1
         Linearly interpolated output.
-
     """
+
     L = len(x)
     return np.interp(np.r_[0:L - 0.9:0.1], range(L), x)
 
@@ -370,8 +367,8 @@ def maxmin_composition(s, r):
     -------
     T ; 2d array, (M, P)
         Max-min composition, defined by ``T = s o r``.
-
     """
+
     if s.ndim < 2:
         s = np.atleast_2d(s)
     if r.ndim < 2:
@@ -402,8 +399,8 @@ def maxprod_composition(s, r):
     -------
     t : 2d array, (M, P)
         Max-product composition matrix.
-
     """
+
     if s.ndim < 2:
         s = np.atleast_2d(s)
     if r.ndim < 2:
@@ -453,7 +450,6 @@ def interp_membership(x, xmf, xx, zero_outside_x=True):
     consider a new value x = xx, which does not correspond to any discrete
     values of ``x``. This function computes the membership value ``u(xx)``
     corresponding to the value ``xx`` using linear interpolation.
-
     """
     # Not much beats NumPy's built-in interpolation
     if not zero_outside_x:
@@ -537,6 +533,7 @@ def _interp_universe_fast(x, xmf, y):
     values on ``x``. This function computes the value (or values) of ``xx``
     such that ``u(xx) == y`` using linear interpolation.
     """
+
     # Special case required or zero-level cut does not work with faster method
     if y == 0.:
         idx = np.where(np.diff(xmf > y))[0]
@@ -571,8 +568,8 @@ def modus_ponens(a, b, ap, c=None):
         Full fuzzy relation.
     bp : 1d array
         Fuzzy conclusion b' (b prime)
-
     """
+
     if c is None:
         c = np.ones_like(b)
     r = np.fmax(cartprod(a, b), cartprod(1 - a, c))
@@ -595,8 +592,8 @@ def outer_product(a, b):
     -------
     y : float
         Fuzzy outer product value, on range [0, 1]
-
     """
+
     return np.min(np.fmax(np.r_[a], np.r_[b]))
 
 
@@ -616,8 +613,8 @@ def relation_min(a, b):
     -------
     R : 2d array
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
-
     """
+
     bb, aa = np.meshgrid(b, a, sparse=True)
     return np.fmin(aa, bb)
 
@@ -638,8 +635,8 @@ def relation_product(a, b):
     -------
     R : 2d array
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
-
     """
+
     bb, aa = np.meshgrid(b, a, sparse=True)
     return aa * bb
 
@@ -663,8 +660,8 @@ def fuzzy_similarity(ai, b, mode='min'):
     -------
     s : float
         Fuzzy similarity.
-
     """
+
     if 'min' in mode.lower():
         return min(inner_product(ai, b), 1 - outer_product(ai, b))
     else:
@@ -702,6 +699,7 @@ def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     continuous functions. Triangular, trapezoidal designs have no partial
     derivatives to calculate. The following
     """
+
     if mf_name == 'gaussmf':
 
         sigma = mf_parameter_dict['sigma']
@@ -785,4 +783,5 @@ def sigmoid(x, power, split=0.5):
     --------
     skfuzzy.fuzzymath.contrast
     """
+ 
     return 1. / (1. + np.exp(- power * (x - split)))
