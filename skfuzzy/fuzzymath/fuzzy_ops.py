@@ -154,7 +154,6 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     return focused * ma
 
 
-
 def fuzzy_op(x, a, y, b, op):
     """Operation of two fuzzy sets.
     
