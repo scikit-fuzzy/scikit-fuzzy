@@ -2,6 +2,7 @@
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
 """
+
 from __future__ import division, print_function
 import numpy as np
 
