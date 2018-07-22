@@ -355,7 +355,7 @@ def fuzzy_min(x, a, y, b):
 
 
 def fuzzy_mult(x, a, y, b):
-        """
+    """
     Multiplies fuzzy set ``a`` and fuzzy set ``b``.
 
     Parameters
