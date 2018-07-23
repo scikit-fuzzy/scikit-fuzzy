@@ -507,7 +507,7 @@ class Polynomial:
 
     def evaluate(self, inputs):
         #First the independent term
-        output = 0 if '' in self.expression else self.expression['']
+        output = 0 if '' not in self.expression else self.expression['']
         for name,value in inputs.items():
             # It is possible to use a subset of the input variables
             if name in self.expression:
