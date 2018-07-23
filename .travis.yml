@@ -9,42 +9,35 @@ language: python
 
 #  The Travis python is set to 3.2 for all builds, since we use the default python for the 3.2 build and the anaconda python otherwise
 python:
-    - 3.2
+    - 3.6
 
 env:
-    - ENV="python=2.6 numpy=1.6"
     - ENV="python=2.7 numpy"
     - ENV="python=3.4 numpy"
     - ENV="python=3.5 numpy"
-
-virtualenv:
-    system_site_packages: true
+    - ENV="python=3.6 numpy"
 
 before_install:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     - sudo apt-get update
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+    - bash miniconda.sh -b -p $HOME/miniconda;
+    - export PATH="$HOME/miniconda/bin:$PATH";
+    - hash -r;
+    - conda config --set always_yes yes;
+    - conda update conda;
+    - conda info -a;
+    - travis_retry conda create -n test $ENV six scipy pip flake8 nose networkx matplotlib;
+    - source activate test;
 
-    # Python 3.2 is not supported by Miniconda, so we use the package manager for that run.
-    # NumPy has a bug in python 3 that is only fixed in the latest version,
-    #  hence the below wget of numpy/_import_tools.py from github.
-    - if [[ $ENV == python=3.3* ]]; then
-        sudo apt-get install python3-numpy;
-        wget https://raw.githubusercontent.com/numpy/numpy/master/numpy/_import_tools.py -O /home/travis/virtualenv/python3.2_with_system_site_packages/lib/python3.2/site-packages/numpy/_import_tools.py;
-        sudo apt-get install python3-scipy;
-        travis_retry pip install cython flake8 six nose networkx matplotlib;
+    - if [[ $ENV == python=2.6* ]]; then
+        travis_retry conda install pillow=2.7;
+        travis_retry conda install pyqt;
       else
-        wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-        bash miniconda.sh -b -p $HOME/miniconda;
-        export PATH="$HOME/miniconda/bin:$PATH";
-        hash -r;
-        conda config --set always_yes yes;
-        conda update conda;
-        conda info -a;
-        travis_retry conda create -n test $ENV six scipy pip flake8 nose networkx matplotlib;
-        source activate test;
+        travis_retry conda install pillow;
       fi
-    - travis_retry pip install coveralls pillow
+    - travis_retry pip install coveralls
 
 install:
     - tools/header.py "Dependency versions"

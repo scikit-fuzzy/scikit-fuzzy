@@ -1,7 +1,6 @@
 """
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
-
 """
 from __future__ import division, print_function
 import numpy as np
@@ -615,7 +614,7 @@ def maxprod_composition(s, r):
     return t
 
 
-def interp_membership(x, xmf, xx):
+def interp_membership(x, xmf, xx, zero_outside_x=True):
     """
     Find the degree of membership ``u(xx)`` for a given value of ``x = xx``.
 
@@ -625,13 +624,22 @@ def interp_membership(x, xmf, xx):
         Independent discrete variable vector.
     xmf : 1d array
         Fuzzy membership function for ``x``.  Same length as ``x``.
-    xx : float
-        Discrete singleton value on universe ``x``.
+    xx : float or array of floats
+        Value(s) on universe ``x`` where the interpolated membership is
+        desired.
+    zero_outside_x : bool, optional
+        Defines the behavior if ``xx`` contains value(s) which are outside the
+        universe range as defined by ``x``.  If `True` (default), all
+        extrapolated values will be zero.  If `False`, the first or last value
+        in ``x`` will be what is returned to the left or right of the range,
+        respectively.
 
     Returns
     -------
-    xxmf : float
-        Membership function value at ``xx``, ``u(xx)``.
+    xxmf : float or array of floats
+        Membership function value at ``xx``, ``u(xx)``.  If ``xx`` is a single
+        value, this will be a single value; if it is an array or iterable the
+        result will be returned as a NumPy array of like shape.
 
     Notes
     -----
@@ -642,23 +650,12 @@ def interp_membership(x, xmf, xx):
     corresponding to the value ``xx`` using linear interpolation.
 
     """
-    # Nearest discrete x-values
-    x1 = x[x <= xx][-1]
-    x2 = x[x >= xx][0]
-
-    idx1 = np.nonzero(x == x1)[0][0]
-    idx2 = np.nonzero(x == x2)[0][0]
-
-    xmf1 = xmf[idx1]
-    xmf2 = xmf[idx2]
-
-    if x1 == x2:
-        xxmf = xmf[idx1]
+    # Not much beats NumPy's built-in interpolation
+    if not zero_outside_x:
+        kwargs = (None, None)
     else:
-        slope = (xmf2 - xmf1) / float(x2 - x1)
-        xxmf = slope * (xx - x1) + xmf1
-
-    return xxmf
+        kwargs = (0.0, 0.0)
+    return np.interp(xx, x, xmf, left=kwargs[0], right=kwargs[1])
 
 
 def interp_universe(x, xmf, y):
@@ -690,36 +687,60 @@ def interp_universe(x, xmf, y):
     values on ``x``. This function computes the value (or values) of ``xx``
     such that ``u(xx) == y`` using linear interpolation.
     """
+    # Special case required or zero-level cut does not work with faster method
+    if y == 0.:
+        idx = np.where(np.diff(xmf > y))[0]
+    else:
+        idx = np.where(np.diff(xmf >= y))[0]
+    xx = x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
 
-    # If y is between xmf[i] and xmf[i+1] there is a cut point.
-    # Moreover, if y==xmf[i+1] we will interpret it as a cut point.
+    # The above method is fast, but duplicates point values where
+    # y == peak of a membership function.  Ducking briefly into a set
+    # elimniates this.  Benchmarked multiple ways; this is by far the fastest.
+    # Speed penalty approximately 10%, worth it.
+    return [n for n in set(xx.tolist())]
 
-    # However, in the next iteration, we interpret it also as a cut point!
-    # That is the reason for the `and` part.
-    indices = np.nonzero(
-        [True if (xmf[i]<=y<=xmf[i+1] or xmf[i]>=y>=xmf[i+1]) and (i==0 or xmf[i]!=y)
-         else False for i in range(len(x)-1)])[0]
 
-    # We have len(indices) values in ``x``
-    xx = [0.0] * len(indices)
+def _interp_universe_fast(x, xmf, y):
+    """
+    Find interpolated universe value(s) for a given fuzzy membership value.
 
-    for i in range(len(indices)):
-        index = indices[i]
-        x1 = x[index]
-        x2 = x[index + 1]
-        xmf1 = xmf[index]
-        xmf2 = xmf[index + 1]
+    Fast version, with possible duplication.
 
-        if x1 == x2:
-            xx[i] = x1
-        elif xmf1 == xmf2:
-            # In this case xx[i] can be any point in the range [x1,x2]. We return the first one.
-            xx[i] = x1
-        else:
-            slope = (xmf2 - xmf1) / float(x2 - x1)
-            xx[i] = (y - xmf1)/slope + x1
+    Parameters
+    ----------
+    x : 1d array
+        Independent discrete variable vector.
+    xmf : 1d array
+        Fuzzy membership function for ``x``.  Same length as ``x``.
+    y : float
+        Specific fuzzy membership value.
 
-    return xx
+    Returns
+    -------
+    xx : list
+        List of discrete singleton values on universe ``x`` whose
+        membership function value is y, ``u(xx[i])==y``.
+        If there are not points xx[i] such that ``u(xx[i])==y``
+        it returns an empty list.
+
+    Notes
+    -----
+    For use in Fuzzy Logic, where a membership function level ``y`` is given.
+    Consider there is some value (or set of values) ``xx`` for which
+    ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete
+    values on ``x``. This function computes the value (or values) of ``xx``
+    such that ``u(xx) == y`` using linear interpolation.
+    """
+    # Special case required or zero-level cut does not work with faster method
+    if y == 0.:
+        idx = np.where(np.diff(xmf > y))[0]
+    else:
+        idx = np.where(np.diff(xmf >= y))[0]
+
+    # This method is fast, but duplicates point values where
+    # y == peak of a membership function.
+    return x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
 
 
 def modus_ponens(a, b, ap, c=None):

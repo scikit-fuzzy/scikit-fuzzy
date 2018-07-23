@@ -125,5 +125,53 @@ def test_fuzzy_cmeans_predict():
     np.testing.assert_array_equal(cluster, U.argmax(axis=0))
 
 
+@nose.with_setup(setup)
+def test_fuzzy_cmeans_predict_numerically():
+    """
+    Test ability to classify new data in a numerically safe manner.
+
+    """
+    global features
+    global x_corr
+    global y_corr
+
+    m = 1.0001
+
+    # Generate slightly smaller new dataset, clustered tighter around seeds
+    xtest = np.zeros(0)
+    ytest = np.zeros(0)
+    cluster = np.zeros(0)
+
+    # Given this initialization, the clustering will be [1, 2, 0]
+    for x, y, label in zip(x_corr, y_corr, [1, 2, 0]):
+        xtest = np.concatenate((xtest, np.r_[np.random.normal(x, 0.05, 100)]))
+        ytest = np.concatenate((ytest, np.r_[np.random.normal(y, 0.05, 100)]))
+        cluster = np.concatenate((cluster, np.r_[[label] * 100]))
+
+    test_data = np.c_[xtest, ytest].T
+
+    # Cluster the data to obtain centers
+    cntr, _, _, _, _, _, _ = fuzz.cluster.cmeans(
+        features, 3, m, error=0.005, maxiter=1000, init=None)
+
+    # Predict fuzzy memberships, U, for all points in test_data, twice with
+    # set seed
+    U, _, _, _, _, fpc = fuzz.cluster.cmeans_predict(
+        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234)
+
+    U2, _, _, _, _, fpc2 = fuzz.cluster.cmeans_predict(
+        test_data, cntr, m, error=0.005, maxiter=1000, seed=1234)
+
+    # Verify results are identical
+    assert fpc == fpc2
+    np.testing.assert_array_equal(U, U2)
+
+    # For this perfect dataset, fpc should be very high
+    assert fpc > 0.99
+
+    # Assert data points are correctly labeled (must harden U for comparison)
+    np.testing.assert_array_equal(cluster, U.argmax(axis=0))
+
+
 if __name__ == '__main__':
     np.testing.run_module_suite()

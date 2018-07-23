@@ -14,7 +14,7 @@ Recommended Use
 """
 __all__ = []
 
-__version__ = '0.3dev'
+__version__ = '0.3.1'
 
 ######################
 # Subpackage imports #
@@ -83,6 +83,7 @@ else:
     def _test(doctest=False, verbose=False):
         """Run all unit tests."""
         import nose
+        import warnings
         args = ['', pkg_dir, '--exe', '--ignore-files=^_test']
         if verbose:
             args.extend(['-v', '-s'])
@@ -92,9 +93,9 @@ else:
             # Make sure warnings do not break the doc tests
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                success = nose.run('skimage', argv=args)
+                success = nose.run('skfuzzy', argv=args)
         else:
-            success = nose.run('skimage', argv=args)
+            success = nose.run('skfuzzy', argv=args)
         # Return sys.exit code
         if success:
             return 0

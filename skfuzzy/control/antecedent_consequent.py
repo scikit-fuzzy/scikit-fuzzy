@@ -8,11 +8,22 @@ from .state import StatefulProperty
 from .fuzzyvariable import FuzzyVariable
 
 
-def _accu_max(*args):
+def accumulation_max(*args):
     """
-    Wrapper for fuzzy accumulation method.
+    Take the maximum of input values/arrays.
+
+    This is the default OR aggregation method for a fuzzy Rule.
     """
-    return np.max(args)
+    return np.fmax(*args)
+
+
+def accumulation_mult(*args):
+    """
+    Multiply input values/arrays.
+
+    This may be used as an alternate AND aggregation method for a fuzzy Rule.
+    """
+    return np.multiply(*args)
 
 
 class Antecedent(FuzzyVariable):
@@ -58,6 +69,8 @@ class Consequent(FuzzyVariable):
         array.
     label : string
         Name of the universe variable.
+    defuzzify_method : string
+        name of method used for defuzzification, defaults to 'centroid'
 
     Notes
     -----
@@ -68,13 +81,13 @@ class Consequent(FuzzyVariable):
     # Customized subclass of `FuzzyVariable`
     output = StatefulProperty(None)
 
-    def __init__(self, universe, label):
+    def __init__(self, universe, label, defuzzify_method='centroid'):
         """""" + Consequent.__doc__
-        super(Consequent, self).__init__(universe, label)
+        super(Consequent, self).__init__(universe, label, defuzzify_method)
         self.__name__ = 'Consequent'
 
         # Default accumulation method is to take the max of any cut
-        self.accumulation_method = _accu_max
+        self.accumulation_method = accumulation_max
 
     @property
     def graph(self):

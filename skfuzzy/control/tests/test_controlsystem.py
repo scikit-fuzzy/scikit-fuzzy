@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import numpy.testing as tst
+import networkx
 import nose
 
 import skfuzzy as fuzz
@@ -32,10 +33,9 @@ def test_tipping_problem():
     # The control system - defined both possible ways
     tipping = ctrl.ControlSystem([rule1, rule2, rule3])
 
-    tipping2 = ctrl.ControlSystem()
+    tipping2 = ctrl.ControlSystem(rule1)
     tipping2.addrule(rule2)
     tipping2.addrule(rule3)
-    tipping2.addrule(rule1)
 
     tip_sim = ctrl.ControlSystemSimulation(tipping)
     tip_sim2 = ctrl.ControlSystemSimulation(tipping2)
@@ -60,11 +60,6 @@ def test_tipping_problem():
     tst.assert_allclose(tip_sim.output['tip'], 19.8578, atol=1e-2, rtol=1e-2)
 
 
-def test_bad_rules():
-    not_rules = ['me', 192238, 42, dict()]
-    tst.assert_raises(ValueError, ctrl.ControlSystem, not_rules)
-
-
 def setup_rule_order():
     global a, b, c, d
     a = ctrl.Antecedent(np.linspace(0, 10, 11), 'a')
@@ -76,6 +71,64 @@ def setup_rule_order():
         v.automf(3)
 
 
+def test_bad_inputs():
+    # Start with the tipping problem
+    food = ctrl.Antecedent(np.linspace(0, 10, 11), 'quality')
+    service = ctrl.Antecedent(np.linspace(0, 10, 11), 'service')
+    tip = ctrl.Consequent(np.linspace(0, 25, 26), 'tip')
+
+    food.automf(3)
+    service.automf(3)
+
+    # Manual membership function definition
+    tip['bad'] = fuzz.trimf(tip.universe, [0, 0, 13])
+    tip['middling'] = fuzz.trimf(tip.universe, [0, 13, 25])
+    tip['lots'] = fuzz.trimf(tip.universe, [13, 25, 25])
+
+    # Define fuzzy rules
+    rule1 = ctrl.Rule(food['poor'] | service['poor'], tip['bad'])
+    rule2 = ctrl.Rule(service['average'], tip['middling'])
+    rule3 = ctrl.Rule(service['good'] | food['good'], tip['lots'])
+
+    # The control system - defined both possible ways
+    tipping = ctrl.ControlSystem([rule1, rule2, rule3])
+
+    tipping2 = ctrl.ControlSystem(rule1)
+    tipping2.addrule(rule2)
+    tipping2.addrule(rule3)
+
+    tip_sim = ctrl.ControlSystemSimulation(tipping, clip_to_bounds=False)
+    tip_sim2 = ctrl.ControlSystemSimulation(tipping2, clip_to_bounds=True)
+
+    # With clipping to bounds, these should work
+    tip_sim2.input['quality'] = -np.pi  # below minimum, clipped to 0
+    tip_sim2.input['service'] = 15  # above maximum, clipped to 10
+
+    # Ensure the input checking is working properly when bounds aren't clipped
+    negative_pass = False
+    try:
+        tip_sim.input['quality'] = -np.pi  # below minimum in universe
+    except IndexError:
+        negative_pass = True  # It should raise this
+    else:
+        if not negative_pass:
+            raise ValueError('Input checking is not working correctly!  '
+                             'Minimum universe valuse is 0, but -3.14 did not '
+                             'raise an IndexError.')
+
+    positive_pass = False
+    try:
+        tip_sim.input['quality'] = 15  # above maximum in universe
+    except IndexError:
+        positive_pass = True  # It should raise this
+    else:
+        if not positive_pass:
+            raise ValueError('Input checking is not working correctly!  '
+                             'Maximum universe valuse is 10, but 15 did not '
+                             'raise an IndexError.')
+
+
+@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
@@ -87,12 +140,14 @@ def test_rule_order():
     r3 = ctrl.Rule(c['good'] | a['good'], d['good'], label='r3')
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
-    resolved = list(ctrl_sys.rules)
-    assert resolved == [r1, r2, r3], "Order given was: %s" % resolved
+    resolved = [r for r in ctrl_sys.rules]
+    assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
+        resolved, [r1.label, r2.label, r3.label])
 
 
 # The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(sys.version_info < (2, 7))
+@tst.decorators.skipif(
+    (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
@@ -107,6 +162,15 @@ def test_unresolvable_rule_order():
     with tst.assert_raises(RuntimeError, expected_regexp=ex_msg):
         ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
         list(ctrl_sys.rules)
+
+
+@nose.with_setup(setup_rule_order)
+def test_bad_rules():
+    not_rules = ['me', 192238, 42, dict()]
+    tst.assert_raises(ValueError, ctrl.ControlSystem, not_rules)
+
+    testsystem = ctrl.ControlSystem()
+    tst.assert_raises(ValueError, testsystem.addrule, a)
 
 
 def test_multiple_rules_same_consequent_term():
@@ -177,6 +241,240 @@ def test_multiple_rules_same_consequent_term():
 
         tst.assert_allclose(sim0.output['y'], sim1.output['y'])
         tst.assert_allclose(expected, sim0.output['y'], atol=1e-4, rtol=1e-4)
+
+
+def test_complex_system():
+    # A much more complex system, run multiple times & with array inputs
+    universe = np.linspace(-2, 2, 5)
+    error = ctrl.Antecedent(universe, 'error')
+    delta = ctrl.Antecedent(universe, 'delta')
+    output = ctrl.Consequent(universe, 'output')
+
+    names = ['nb', 'ns', 'ze', 'ps', 'pb']
+    error.automf(names=names)
+    delta.automf(names=names)
+    output.automf(names=names)
+
+    # The rulebase:
+    # rule 1:  IF e = ZE AND delta = ZE THEN output = ZE
+    # rule 2:  IF e = ZE AND delta = SP THEN output = SN
+    # rule 3:  IF e = SN AND delta = SN THEN output = LP
+    # rule 4:  IF e = LP OR  delta = LP THEN output = LN
+
+    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) | # This combination, or...
+                                  (error['ns'] & delta['nb']) |
+                                  (error['nb'] & delta['ns'])),
+                      consequent=output['nb'], label='rule nb')
+
+    rule1 = ctrl.Rule(antecedent=((error['nb'] & delta['ze']) |
+                                  (error['nb'] & delta['ps']) |
+                                  (error['ns'] & delta['ns']) |
+                                  (error['ns'] & delta['ze']) |
+                                  (error['ze'] & delta['ns']) |
+                                  (error['ze'] & delta['nb']) |
+                                  (error['ps'] & delta['nb'])),
+                      consequent=output['ns'], label='rule ns')
+
+    rule2 = ctrl.Rule(antecedent=((error['nb'] & delta['pb']) |
+                                  (error['ns'] & delta['ps']) |
+                                  (error['ze'] & delta['ze']) |
+                                  (error['ps'] & delta['ns']) |
+                                  (error['pb'] & delta['nb'])),
+                      consequent=output['ze'], label='rule ze')
+
+    rule3 = ctrl.Rule(antecedent=((error['ns'] & delta['pb']) |
+                                  (error['ze'] & delta['pb']) |
+                                  (error['ze'] & delta['ps']) |
+                                  (error['ps'] & delta['ps']) |
+                                  (error['ps'] & delta['ze']) |
+                                  (error['pb'] & delta['ze']) |
+                                  (error['pb'] & delta['ns'])),
+                      consequent=output['ps'], label='rule ps')
+
+    rule4 = ctrl.Rule(antecedent=((error['ps'] & delta['pb']) |
+                                  (error['pb'] & delta['pb']) |
+                                  (error['pb'] & delta['ps'])),
+                      consequent=output['pb'], label='rule pb')
+
+    system = ctrl.ControlSystem(rules=[rule0, rule1, rule2, rule3, rule4])
+
+    sim = ctrl.ControlSystemSimulation(system, cache=False)
+
+    x, y = np.meshgrid(np.linspace(-2, 2, 21), np.linspace(-2, 2, 21))
+    z0 = np.zeros_like(x)
+    z1 = np.zeros_like(x)
+
+    # The original, slow way - one set of values at a time
+    for i in range(21):
+        for j in range(21):
+            sim.input['error'] = x[i, j]
+            sim.input['delta'] = y[i, j]
+            sim.compute()
+            z0[i, j] = sim.output['output']
+
+    sim.reset()
+
+    # The new way - array inputs
+    sim.input['error'] = x
+    sim.input['delta'] = y
+    sim.compute()
+    z1 = sim.output['output']
+
+    # Ensure results align
+    np.testing.assert_allclose(z0, z1)
+
+    # Big expected array
+    expected = \
+        np.array([[ -1.66666667e+00,  -1.65555556e+00,  -1.62857143e+00,
+                    -1.62857143e+00,  -1.65555556e+00,  -1.66666667e+00,
+                    -1.34414414e+00,  -1.18294574e+00,  -1.10000000e+00,
+                    -1.05641026e+00,  -1.00000000e+00,  -1.00000000e+00,
+                    -1.00000000e+00,  -1.00000000e+00,  -1.00000000e+00,
+                    -1.00000000e+00,  -7.37704918e-01,  -5.72916667e-01,
+                    -4.27083333e-01,  -2.62295082e-01,  -2.77555756e-17],
+                  [ -1.65555556e+00,  -1.34414414e+00,  -1.29494949e+00,
+                    -1.29494949e+00,  -1.34414414e+00,  -1.34414414e+00,
+                    -1.34414414e+00,  -1.18294574e+00,  -1.10000000e+00,
+                    -1.05641026e+00,  -1.00000000e+00,  -7.37704918e-01,
+                    -7.13580247e-01,  -7.13580247e-01,  -7.37704918e-01,
+                    -7.37704918e-01,  -4.36619718e-01,  -2.91555556e-01,
+                    -1.56140351e-01,   1.96914557e-16,   2.62295082e-01],
+                  [ -1.62857143e+00,  -1.29494949e+00,  -1.18294574e+00,
+                    -1.18294574e+00,  -1.18294574e+00,  -1.18294574e+00,
+                    -1.18294574e+00,  -1.18294574e+00,  -1.10000000e+00,
+                    -1.05333333e+00,  -1.00000000e+00,  -7.13580247e-01,
+                    -5.72916667e-01,  -5.72916667e-01,  -5.72916667e-01,
+                    -5.72916667e-01,  -2.91555556e-01,  -1.26984127e-01,
+                     6.45478503e-17,   1.56140351e-01,   4.27083333e-01],
+                  [ -1.62857143e+00,  -1.29494949e+00,  -1.18294574e+00,
+                    -1.10000000e+00,  -1.10000000e+00,  -1.10000000e+00,
+                    -1.10000000e+00,  -1.10000000e+00,  -1.10000000e+00,
+                    -1.05333333e+00,  -1.00000000e+00,  -7.13580247e-01,
+                    -5.72916667e-01,  -4.27083333e-01,  -4.27083333e-01,
+                    -4.27083333e-01,  -1.56140351e-01,   2.42054439e-16,
+                     1.26984127e-01,   2.91555556e-01,   5.72916667e-01],
+                  [ -1.65555556e+00,  -1.34414414e+00,  -1.18294574e+00,
+                    -1.10000000e+00,  -1.05641026e+00,  -1.05641026e+00,
+                    -1.05641026e+00,  -1.05333333e+00,  -1.05333333e+00,
+                    -1.05641026e+00,  -1.00000000e+00,  -7.37704918e-01,
+                    -5.72916667e-01,  -4.27083333e-01,  -2.62295082e-01,
+                    -2.62295082e-01,   2.29733650e-16,   1.56140351e-01,
+                     2.91555556e-01,   4.36619718e-01,   7.37704918e-01],
+                  [ -1.66666667e+00,  -1.34414414e+00,  -1.18294574e+00,
+                    -1.10000000e+00,  -1.05641026e+00,  -1.00000000e+00,
+                    -1.00000000e+00,  -1.00000000e+00,  -1.00000000e+00,
+                    -1.00000000e+00,  -1.00000000e+00,  -7.37704918e-01,
+                    -5.72916667e-01,  -4.27083333e-01,  -2.62295082e-01,
+                    -2.77555756e-17,   2.62295082e-01,   4.27083333e-01,
+                     5.72916667e-01,   7.37704918e-01,   1.00000000e+00],
+                  [ -1.34414414e+00,  -1.34414414e+00,  -1.18294574e+00,
+                    -1.10000000e+00,  -1.05641026e+00,  -1.00000000e+00,
+                    -7.37704918e-01,  -7.13580247e-01,  -7.13580247e-01,
+                    -7.37704918e-01,  -7.37704918e-01,  -4.36619718e-01,
+                    -2.91555556e-01,  -1.56140351e-01,   4.17271323e-16,
+                     2.62295082e-01,   2.62295082e-01,   4.27083333e-01,
+                     5.72916667e-01,   7.37704918e-01,   1.00000000e+00],
+                  [ -1.18294574e+00,  -1.18294574e+00,  -1.18294574e+00,
+                    -1.10000000e+00,  -1.05333333e+00,  -1.00000000e+00,
+                    -7.13580247e-01,  -5.72916667e-01,  -5.72916667e-01,
+                    -5.72916667e-01,  -5.72916667e-01,  -2.91555556e-01,
+                    -1.26984127e-01,   2.09780513e-16,   1.56140351e-01,
+                     4.27083333e-01,   4.27083333e-01,   4.27083333e-01,
+                     5.72916667e-01,   7.13580247e-01,   1.00000000e+00],
+                  [ -1.10000000e+00,  -1.10000000e+00,  -1.10000000e+00,
+                    -1.10000000e+00,  -1.05333333e+00,  -1.00000000e+00,
+                    -7.13580247e-01,  -5.72916667e-01,  -4.27083333e-01,
+                    -4.27083333e-01,  -4.27083333e-01,  -1.56140351e-01,
+                     2.42054439e-16,   1.26984127e-01,   2.91555556e-01,
+                     5.72916667e-01,   5.72916667e-01,   5.72916667e-01,
+                     5.72916667e-01,   7.13580247e-01,   1.00000000e+00],
+                  [ -1.05641026e+00,  -1.05641026e+00,  -1.05333333e+00,
+                    -1.05333333e+00,  -1.05641026e+00,  -1.00000000e+00,
+                    -7.37704918e-01,  -5.72916667e-01,  -4.27083333e-01,
+                    -2.62295082e-01,  -2.62295082e-01,   2.29733650e-16,
+                     1.56140351e-01,   2.91555556e-01,   4.36619718e-01,
+                     7.37704918e-01,   7.37704918e-01,   7.13580247e-01,
+                     7.13580247e-01,   7.37704918e-01,   1.00000000e+00],
+                  [ -1.00000000e+00,  -1.00000000e+00,  -1.00000000e+00,
+                    -1.00000000e+00,  -1.00000000e+00,  -1.00000000e+00,
+                    -7.37704918e-01,  -5.72916667e-01,  -4.27083333e-01,
+                    -2.62295082e-01,  -2.77555756e-17,   2.62295082e-01,
+                     4.27083333e-01,   5.72916667e-01,   7.37704918e-01,
+                     1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+                     1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
+                  [ -1.00000000e+00,  -7.37704918e-01,  -7.13580247e-01,
+                    -7.13580247e-01,  -7.37704918e-01,  -7.37704918e-01,
+                    -4.36619718e-01,  -2.91555556e-01,  -1.56140351e-01,
+                     2.29733650e-16,   2.62295082e-01,   2.62295082e-01,
+                     4.27083333e-01,   5.72916667e-01,   7.37704918e-01,
+                     1.00000000e+00,   1.05641026e+00,   1.05333333e+00,
+                     1.05333333e+00,   1.05641026e+00,   1.05641026e+00],
+                  [ -1.00000000e+00,  -7.13580247e-01,  -5.72916667e-01,
+                    -5.72916667e-01,  -5.72916667e-01,  -5.72916667e-01,
+                    -2.91555556e-01,  -1.26984127e-01,   2.42054439e-16,
+                     1.56140351e-01,   4.27083333e-01,   4.27083333e-01,
+                     4.27083333e-01,   5.72916667e-01,   7.13580247e-01,
+                     1.00000000e+00,   1.05333333e+00,   1.10000000e+00,
+                     1.10000000e+00,   1.10000000e+00,   1.10000000e+00],
+                  [ -1.00000000e+00,  -7.13580247e-01,  -5.72916667e-01,
+                    -4.27083333e-01,  -4.27083333e-01,  -4.27083333e-01,
+                    -1.56140351e-01,   2.09780513e-16,   1.26984127e-01,
+                     2.91555556e-01,   5.72916667e-01,   5.72916667e-01,
+                     5.72916667e-01,   5.72916667e-01,   7.13580247e-01,
+                     1.00000000e+00,   1.05333333e+00,   1.10000000e+00,
+                     1.18294574e+00,   1.18294574e+00,   1.18294574e+00],
+                  [ -1.00000000e+00,  -7.37704918e-01,  -5.72916667e-01,
+                    -4.27083333e-01,  -2.62295082e-01,  -2.62295082e-01,
+                     4.17271323e-16,   1.56140351e-01,   2.91555556e-01,
+                     4.36619718e-01,   7.37704918e-01,   7.37704918e-01,
+                     7.13580247e-01,   7.13580247e-01,   7.37704918e-01,
+                     1.00000000e+00,   1.05641026e+00,   1.10000000e+00,
+                     1.18294574e+00,   1.34414414e+00,   1.34414414e+00],
+                  [ -1.00000000e+00,  -7.37704918e-01,  -5.72916667e-01,
+                    -4.27083333e-01,  -2.62295082e-01,  -2.77555756e-17,
+                     2.62295082e-01,   4.27083333e-01,   5.72916667e-01,
+                     7.37704918e-01,   1.00000000e+00,   1.00000000e+00,
+                     1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+                     1.00000000e+00,   1.05641026e+00,   1.10000000e+00,
+                     1.18294574e+00,   1.34414414e+00,   1.66666667e+00],
+                  [ -7.37704918e-01,  -4.36619718e-01,  -2.91555556e-01,
+                    -1.56140351e-01,   2.29733650e-16,   2.62295082e-01,
+                     2.62295082e-01,   4.27083333e-01,   5.72916667e-01,
+                     7.37704918e-01,   1.00000000e+00,   1.05641026e+00,
+                     1.05333333e+00,   1.05333333e+00,   1.05641026e+00,
+                     1.05641026e+00,   1.05641026e+00,   1.10000000e+00,
+                     1.18294574e+00,   1.34414414e+00,   1.65555556e+00],
+                  [ -5.72916667e-01,  -2.91555556e-01,  -1.26984127e-01,
+                     2.42054439e-16,   1.56140351e-01,   4.27083333e-01,
+                     4.27083333e-01,   4.27083333e-01,   5.72916667e-01,
+                     7.13580247e-01,   1.00000000e+00,   1.05333333e+00,
+                     1.10000000e+00,   1.10000000e+00,   1.10000000e+00,
+                     1.10000000e+00,   1.10000000e+00,   1.10000000e+00,
+                     1.18294574e+00,   1.29494949e+00,   1.62857143e+00],
+                  [ -4.27083333e-01,  -1.56140351e-01,   6.45478503e-17,
+                     1.26984127e-01,   2.91555556e-01,   5.72916667e-01,
+                     5.72916667e-01,   5.72916667e-01,   5.72916667e-01,
+                     7.13580247e-01,   1.00000000e+00,   1.05333333e+00,
+                     1.10000000e+00,   1.18294574e+00,   1.18294574e+00,
+                     1.18294574e+00,   1.18294574e+00,   1.18294574e+00,
+                     1.18294574e+00,   1.29494949e+00,   1.62857143e+00],
+                  [ -2.62295082e-01,   1.96914557e-16,   1.56140351e-01,
+                     2.91555556e-01,   4.36619718e-01,   7.37704918e-01,
+                     7.37704918e-01,   7.13580247e-01,   7.13580247e-01,
+                     7.37704918e-01,   1.00000000e+00,   1.05641026e+00,
+                     1.10000000e+00,   1.18294574e+00,   1.34414414e+00,
+                     1.34414414e+00,   1.34414414e+00,   1.29494949e+00,
+                     1.29494949e+00,   1.34414414e+00,   1.65555556e+00],
+                  [ -2.77555756e-17,   2.62295082e-01,   4.27083333e-01,
+                     5.72916667e-01,   7.37704918e-01,   1.00000000e+00,
+                     1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+                     1.00000000e+00,   1.00000000e+00,   1.05641026e+00,
+                     1.10000000e+00,   1.18294574e+00,   1.34414414e+00,
+                     1.66666667e+00,   1.65555556e+00,   1.62857143e+00,
+                     1.62857143e+00,   1.65555556e+00,   1.66666667e+00]])
+
+    # Ensure results are within expected limits
+    np.testing.assert_allclose(z1, expected)
 
 
 if __name__ == '__main__':

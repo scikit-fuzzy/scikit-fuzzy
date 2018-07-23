@@ -24,7 +24,8 @@ class FuzzyVariable(object):
         array. Required.
     label : string
         Name of the universe variable. Optional.
-
+    defuzzify_method : string
+        name of method used for defuzzification, defaults to 'centroid'
     Methods
     -------
 

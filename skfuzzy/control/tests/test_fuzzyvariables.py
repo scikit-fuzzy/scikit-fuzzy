@@ -69,6 +69,23 @@ def test_instantiate_consequent():
     assert con.__repr__() == 'Consequent: {0}'.format(label)
 
 
+def test_instantiate_consequent_different_defuzzify_method():
+    # Correctly create a minimal Consequent
+    universe = np.linspace(0, 5, 7)
+    label = 'test-Consequent Labeling ??$%&dwlkj234!"'
+    defuzzify_method = 'bisector'
+    con = Consequent(universe, label, defuzzify_method)
+
+    # Assure expected behavior
+    tst.assert_equal(universe, con.universe)
+    assert con.label == label
+    assert con._id == id(con)
+    assert_empty_ordereddict(con.terms)
+    assert con.__name__ == 'Consequent'
+    assert con.__repr__() == 'Consequent: {0}'.format(label)
+    assert con.defuzzify_method == defuzzify_method
+
+
 @nose.with_setup(setup)
 def test_automf3():
     global ant  # universe: [0, 1, 2, 3, 4, 5]

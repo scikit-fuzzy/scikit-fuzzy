@@ -54,6 +54,19 @@ class FuzzyVariableVisualizer(object):
         Visualize this variable and its membership functions with Matplotlib.
 
         The current output membership function will be shown in bold.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+            The hosting Figure object.
+        ax : matplotlib Axis
+            The Axis upon which the plot is drawn.
+
+        Notes
+        -----
+        Matplotlib is used, but ``plt.show()`` is not called. Instead, the
+        Figure and Axis are returned, allowing further user customization if
+        desired.  In a Jupyter notebook, ``.view()`` will be displayed inline.
         """
         from .controlsystem import (CrispValueCalculator, ControlSystem,
                                     ControlSystemSimulation)
@@ -163,6 +176,64 @@ class ControlSystemVisualizer(object):
     def view(self):
         """
         View the visualization.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+            The hosting Figure object.
+        ax : matplotlib Axis
+            The Axis upon which the plot is drawn.
+
+        Notes
+        -----
+        This method uses the NetworkX ``draw`` command.  If further
+        customization is desired, the matplotlib Figure/Axis objects
+        are returned.  In a Jupyter notebook, these will be displayed
+        inline.
         """
         nx.draw(self.ctrl.graph, ax=self.ax)
-        return self.fig
+        return self.fig, self.ax
+
+    def view_n(self):
+        """
+        View the network visualization.
+
+        Returns
+        -------
+        fig : matplotlib Figure
+            The hosting Figure object.
+        ax : matplotlib Axis
+            The Axis upon which the plot is drawn.
+
+        Notes
+        -----
+        This method uses the NetworkX ``draw_networkx`` command, to check that 
+        all Mebership Functions, MF, are used (green) among the rules. The plot 
+        also writes the name of the MF. If further customization is desired, the 
+        matplotlib Figure/Axis objects are returned.  In a Jupyter notebook, 
+        these will be displayed inline.
+        If the network model fails, it will return the ordenary view.
+        """
+        try:
+            structure = []
+            graph, color_list = self.ctrl.graph_n
+            colors = []
+            c_nodes = []
+            c_colors = []
+            for c_node, c_color in color_list:
+                if c_node in c_nodes:
+                    prev_color = c_colors[c_nodes.index(c_node)]
+                    if prev_color == 'green':
+                        continue
+                    elif prev_color == 'red':
+                        if c_color == 'green':
+                            c_colors[c_nodes.index(c_node)] = 'green'
+                else:
+                    c_nodes.append(c_node)
+                    c_colors.append(c_color)
+            for node in graph:
+                colors.append(c_colors[c_nodes.index(node)])
+            nx.draw_networkx(graph, node_color=colors)
+        except ValueError:
+            nx.draw(self.ctrl.graph, ax=self.ax)
+        return self.fig, self.ax

@@ -6,8 +6,10 @@ with conqeuents in a `ControlSystem`.
 """
 from __future__ import print_function, division
 
+import numpy as np
 import networkx as nx
-from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethod,
+
+from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethods,
                    TermPrimitive)
 from .state import StatefulProperty
 from .visualization import ControlSystemVisualizer
@@ -41,7 +43,8 @@ class Rule(object):
 
     aggregate_firing = StatefulProperty(None)
 
-    def __init__(self, antecedent=None, consequent=None, label=None):
+    def __init__(self, antecedent=None, consequent=None, label=None,
+                 and_func=np.fmin, or_func=np.fmax):
         """
         Rule in a fuzzy system, connecting antecedent(s) to consequent(s).
 
@@ -58,8 +61,19 @@ class Rule(object):
         label : string, optional
             Label to reference the meaning of this rule. Optional, but
             recommended.
+        and_func : function, optional
+            Function which accepts multiple floating-point arguments and
+            returns a single value. Defalts to NumPy function `fmin`, to
+            support both single values and arrays. For multiplication,
+            substitute `fuzz.control.mult` or `np.multiply`.
+        or_func : function, optional
+            Function which accepts multiple floating-point arguments and
+            returns a single value. Defalts to NumPy function `fmax`, to
+            support both single values and arrays.
         """
-        self.aggregation_method = FuzzyAggregationMethod()
+        self._aggregation_methods = FuzzyAggregationMethods()
+        self.and_func = and_func
+        self.or_func = or_func
 
         self._antecedent = None
         self._consequent = None
@@ -82,7 +96,50 @@ class Rule(object):
         else:
             cons = self.consequent
 
-        return "IF %s THEN %s" % (self.antecedent, cons)
+        return ("IF {0} THEN {1}"
+                "\n\tAND aggregation function : {2}"
+                "\n\tOR aggregation function  : {3}").format(
+                    self.antecedent, cons,
+                    self.and_func.__name__,
+                    self.or_func.__name__)
+
+    @property
+    def and_func(self):
+        """
+        Aggregation function for AND relationships. Default is `min`.
+        """
+        return self._aggregation_methods.and_func
+
+    @and_func.setter
+    def and_func(self, newfunc):
+        """
+        Method to interactively set the AND aggregation function.
+        """
+        try:
+            newfunc(0.3, 0.96)
+        except:
+            return ValueError("The provided function does not support "
+                              "floating-point arguments.")
+        self._aggregation_methods.and_func = newfunc
+
+    @property
+    def or_func(self):
+        """
+        Aggregation function for OR relationships. Default is `max`.
+        """
+        return self._aggregation_methods.or_func
+
+    @or_func.setter
+    def or_func(self, newfunc):
+        """
+        Method to interactively set the OR aggregation function.
+        """
+        try:
+            newfunc(0.3, 0.96)
+        except:
+            return ValueError("The provided function does not support "
+                              "floating-point arguments.")
+        self._aggregation_methods.or_func = newfunc
 
     @property
     def antecedent(self):
@@ -168,6 +225,56 @@ class Rule(object):
                     raise ValueError("Unexpected consequent type")
 
     @property
+    def graph_n(self):
+        graph = nx.DiGraph()
+        # Link all antecedents to me by decomposing
+        #  TermAggregate down to just Terms
+        nodes = []
+        structure = []
+        colors = []
+        antecedent_attr = [getattr(self.antecedent, attr) for attr in
+                           dir(self.antecedent) if
+                           not attr.startswith("__")]
+        for method in antecedent_attr:
+            if type(method) == Term:
+                active_label = method.label
+                nodes.append(method.parent.label)
+                colors.append([method.parent.label, 'green'])
+                for key in method.parent.terms.keys():
+                    nodes.append(str(key))
+                    structure.append([key, method.parent.label])
+                    if str(key) == active_label:
+                        colors.append([str(key), 'green'])
+                    else:
+                        colors.append([str(key), 'red'])
+                for j in range(len(self.consequent)):
+                    structure.append([method.parent.label,
+                                      self.consequent[j].term.parent.label])
+                    nodes.append(self.consequent[j].term.parent.label)
+                    colors.append(
+                        [self.consequent[j].term.parent.label, 'green'])
+        if len(nodes) == 0:
+            active_label = self.antecedent.label
+            nodes.append(self.antecedent.parent.label)
+            colors.append([self.antecedent.parent.label, 'green'])
+            for key in self.antecedent.parent.terms.keys():
+                nodes.append(str(key))
+                structure.append([key, self.antecedent.parent.label])
+                if str(key) == active_label:
+                    colors.append([str(key), 'green'])
+                else:
+                    colors.append([str(key), 'red'])
+            for j in range(len(self.consequent)):
+                structure.append([self.antecedent.parent.label,
+                                  self.consequent[j].term.parent.label])
+                nodes.append(self.consequent[j].term.parent.label)
+                colors.append(
+                    [self.consequent[j].term.parent.label, 'green'])
+        graph.add_nodes_from(nodes)
+        graph.add_edges_from(structure)
+        return graph, colors
+
+    @property
     def graph(self):
         """
         NetworkX directed graph representing this Rule's connectivity.
@@ -191,4 +298,11 @@ class Rule(object):
         """
         Show a visual representation of this Rule.
         """
-        ControlSystemVisualizer(self).view().show()
+        return ControlSystemVisualizer(self).view()
+
+    def view_n(self):
+        """
+        Show a visual network representation of this Rule.
+        To run this all names of the Membership functions needs to unique.
+        """
+        return ControlSystemVisualizer(self).view_n()
