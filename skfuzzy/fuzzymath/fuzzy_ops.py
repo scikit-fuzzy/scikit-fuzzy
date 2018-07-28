@@ -22,8 +22,8 @@ def cartadd(x, y):
     -------
     z : 2D array
         Cartesian addition of ``x`` and ``y``, of shape (M, N).
-    """
 
+    """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
     b, a = np.meshgrid(y, x, sparse=True)
@@ -45,8 +45,8 @@ def cartprod(x, y):
     -------
     z : 2D array
         Cartesian product of ``x`` and ``y``, of shape (M, N).
-    """
 
+    """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
     b, a = np.meshgrid(y, x, sparse=True)
@@ -76,8 +76,8 @@ def classic_relation(a, b):
       r = [a x b] U [(1 - a) x ones(1, N)],
 
     where ``x`` represents a cartesian product and ``N`` is len(``b``).
-    """
 
+    """
     a = np.asarray(a)
     return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones_like(b)))
 
@@ -125,8 +125,8 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     See Also
     --------
     skfuzzy.fuzzymath.sigmoid
-    """
 
+    """
     # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
     im = arr.astype(float)
@@ -182,7 +182,7 @@ def fuzzy_op(x, a, y, b, op):
     z : 1d array
         Output variable.
     mfz : 1d array
-        Fuzzy membership set for variable z.
+        Fuzzy membership set for variable ``z``.
 
     Notes
     -----
@@ -192,6 +192,7 @@ def fuzzy_op(x, a, y, b, op):
     If these results are unexpected and your membership functions are convex,
     consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
@@ -510,8 +511,8 @@ def maxprod_composition(s, r):
     -------
     t : 2d array, (M, P)
         Max-product composition matrix.
-    """
 
+    """
     if s.ndim < 2:
         s = np.atleast_2d(s)
     if r.ndim < 2:
