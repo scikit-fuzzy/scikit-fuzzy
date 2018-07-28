@@ -11,8 +11,8 @@ def _resampleuniverse(x, mfx, y, mfy):
     Resamples fuzzy universes `x` and `y` to include the full range of either
     universe, with resolution of the lowest difference between any two
     reported points.
-    """
 
+    """
     minstep = np.asarray([np.diff(x).min(), np.diff(y).min()]).min()
 
     mi = min(x.min(), y.min())
@@ -53,8 +53,8 @@ def fuzzy_and(x, mfx, y, mfy):
         Universe variable for union of the two provided fuzzy sets.
     mfz : 1d array
         Fuzzy AND (intersection) of `mfx` and `mfy`.
-    """
 
+    """
     # Check if universes are the same
     sameuniverse = False
     if x.shape == y.shape:
@@ -91,8 +91,8 @@ def fuzzy_or(x, mfx, y, mfy):
         Universe variable for intersection of the two provided fuzzy sets.
     mfz : 1d array
         Fuzzy OR (union) of `mfx` and `mfy`.
-    """
 
+    """
     # Check if universes are the same
     sameuniverse = False
     if x.shape == y.shape:
@@ -127,6 +127,6 @@ def fuzzy_not(mfx):
     This operation does not require a universe variable, because the
     complement is defined for a single set. The output remains defined on the
     same universe.
-    """
 
+    """
     return 1. - mfx
