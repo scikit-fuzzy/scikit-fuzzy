@@ -174,7 +174,7 @@ def fuzzy_op(x, a, y, b, op):
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
-    op: pointwise operator on two matrices
+    op: Function, pointwise binary operator on two matrices
         (pointwise version of) +, -, *, /, min, max etc.
 
     Returns
