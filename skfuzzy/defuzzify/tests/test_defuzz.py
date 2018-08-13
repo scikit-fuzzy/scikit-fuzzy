@@ -79,6 +79,12 @@ def test_defuzz():
     assert_allclose(5, fuzz.defuzz(x, trapmf, 'mom'))
     assert_allclose(7, fuzz.defuzz(x, trapmf, 'lom'))
 
+
+    # Make sure som/lom work for all-negative universes:
+    x_neg = x-20
+    assert_allclose(-17, fuzz.defuzz(x_neg, trapmf, 'som'))
+    assert_allclose(-13, fuzz.defuzz(x_neg, trapmf, 'lom'))
+    
     # Bad string argument
     assert_raises(ValueError, fuzz.defuzz, x, trapmf, 'bad string')
 
