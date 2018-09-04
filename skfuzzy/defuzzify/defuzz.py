@@ -257,12 +257,10 @@ def defuzz(x, mfx, mode):
         return np.mean(x[mfx == mfx.max()])
 
     elif 'som' in mode:
-        tmp = x[mfx == mfx.max()]
-        return tmp[tmp == np.abs(tmp).min()][0]
+        return np.min(x[mfx == mfx.max()])
 
     elif 'lom' in mode:
-        tmp = x[mfx == mfx.max()]
-        return tmp[tmp == np.abs(tmp).max()][0]
+        return np.max(x[mfx == mfx.max()])
 
     else:
         raise ValueError('The input for `mode`, %s, was incorrect.' % (mode))
