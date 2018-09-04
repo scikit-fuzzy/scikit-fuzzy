@@ -18,7 +18,10 @@ import _mapping_tests as mapping_tests
 import sys
 version = sys.version_info[:2]
 
-from numpy.testing.decorators import skipif
+try:
+    from numpy.testing.decorators import skipif
+except AttributeError:
+    from numpy.testing.dec import skipif
 from _skipclass import skipclassif
 
 

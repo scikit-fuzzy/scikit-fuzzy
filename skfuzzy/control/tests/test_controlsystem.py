@@ -4,6 +4,12 @@ import sys
 
 import numpy as np
 import numpy.testing as tst
+
+try:
+    from numpy.testing.decorators import skipif
+except AttributeError:
+    from numpy.testing.dec import skipif
+
 import networkx
 import nose
 
