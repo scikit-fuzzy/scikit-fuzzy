@@ -11,13 +11,12 @@ The basic use-case is to parse a FCL file and then use the fuzzy rules
 in your `scikit-fuzzy` code.  For example:
 
 ```python
-from skfuzzy.fcl.fcl_parser import FCLParser
+from fcl_parser import FCLParser
 
 p = FCLParser()    # Create the parser
-p.read_fcl_file('Examples/jFuzzyLogic/tipper.fcl')  # Parse a file
+p.read_fcl_file('tipper.fcl')  # Parse a file
 
 # ... and so on, as usual for skfuzzy:
-import skfuzzy.control as ctrl
 cs = ctrl.ControlSystem(p.rules)
 
 ```
@@ -39,7 +38,6 @@ tipping example in the usual way by specifying the variables and
 defining some membership functions for the inputs:
 
 ```python
-import numpy as np
 # First we set up the variables in the usual way:
 food = ctrl.Antecedent(np.linspace(0, 10, 11), 'quality')
 service = ctrl.Antecedent(np.linspace(0, 10, 11), 'service')
@@ -87,12 +85,14 @@ Dependencies
 ------------
 
 The scanner is written using
-[PLY](http://www.dabeaz.com/ply/ply.html) (Python Lex-Yacc).
+[PLY](http://www.dabeaz.com/ply/ply.html) (Python Lex-Yacc),
+so you need to install PLY before the code here will work.
+
+     $ pip install ply
+
+You don't need to import this anywhere, my scanner code just needs it.
 The parser is hand-written so we don't actually use the
 parser-generation features of PLY.
-
-Since I'm only using a small part of PLY (the scanner generator) 
-I've included a local copy of the relevant file.
 
 
 What's implemented
@@ -162,7 +162,6 @@ Most notably _not_ implemented (yet) are options for:
 The parser accepts these, I just haven't figured out how to get them
 into the `scikit-fuzzy` code, so they are ignored for the moment.
 
-
 Compliance
 ----------
 
@@ -194,8 +193,6 @@ to better support `scikit-fuzzy`:
 This is due to the way `scikit-fuzzy` calculates its membership
 functions: these get worked out to point-lists when they are defined,
 so I need to know the granularity to get this right.
-Getting the granularity wrong can lead to serious divergences 
-in the test results.
 
 This working-out is also the reason we can't really generate FCL from
 a `scikit-fuzzy` program, since the information on the original
@@ -233,11 +230,11 @@ etc.) is also kept here.
 
 The other files are simple auxiliary definitions: some extra
 membership functions (that are not in `scikit-fuzzy`) are defined in
-[extramf.py](./support/extramf.py)
+[extramf.py](./extramf.py)
 and the t-norms and their duals are defined in
-[norms.py](./support/norms.py).
+[norms.py](./norms.py).
 The set of hedge functions as defined in the IEEE standard is implemented in
-[hedges.py](./support/hedges.py).
+[hedges.py](./hedges.py).
 
 
 

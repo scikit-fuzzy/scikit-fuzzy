@@ -1,0 +1,56 @@
+/*
+	Example: A tip calculation FIS (fuzzy inference system)
+	Calculates tip based on 'servie' and 'food'
+
+	If you want to about this example (and fuzzy logic), please 
+	read Matlab's tutorial on fuzzy logic toolbox 
+	http://www.mathworks.com/access/helpdesk/help/pdf_doc/fuzzy/fuzzy.pdf
+
+									Pablo Cingolani 
+									pcingola@users.sourceforge.net
+*/
+
+FUNCTION_BLOCK tipper	// Block definition (there may be more than one block per file)
+
+VAR_INPUT				// Define input variables
+	service : REAL;
+	food : REAL;
+END_VAR
+
+VAR_OUTPUT				// Define output variable
+	tip : REAL;
+END_VAR
+
+FUZZIFY service			// Fuzzify input variable 'service': {'poor', 'good' , 'excellent'}
+	TERM poor := (0, 1) (4, 0) ; 
+	TERM good := (1, 0) (4,1) (6,1) (9,0);
+	TERM excellent := (6, 0) (9, 1);
+  RANGE := (0.0 .. 9.0); // Added range for service
+END_FUZZIFY
+
+FUZZIFY food			// Fuzzify input variable 'food': { 'rancid', 'delicious' }
+	TERM rancid := (0, 1) (1, 1) (3,0) ;
+	TERM delicious := (7,0) (9,1);
+  RANGE := (0.0 .. 9.0); // Added range for food
+END_FUZZIFY
+
+DEFUZZIFY tip			// Defzzzify output variable 'tip' : {'cheap', 'average', 'generous' }
+	TERM cheap := (0,0) (5,1) (10,0);
+	TERM average := (10,0) (15,1) (20,0);
+	TERM generous := (20,0) (25,1) (30,0);
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+  RANGE := (0.0 .. 30.0); // Added range for tip
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;			// Use 'min' for 'and' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+	ACT : MIN;			// Use 'min' activation method
+	ACCU : MAX;			// Use 'max' accumulation method
+
+	RULE 1 : IF service IS poor OR food IS rancid THEN tip IS cheap WITH 0.8;
+	RULE 2 : IF service IS good THEN tip IS average WITH 0.5; 
+	RULE 3 : IF service IS excellent AND food IS delicious THEN tip IS generous WITH 0.9;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

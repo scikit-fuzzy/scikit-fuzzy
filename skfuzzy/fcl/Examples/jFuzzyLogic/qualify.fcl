@@ -1,0 +1,124 @@
+FUNCTION_BLOCK qualify
+
+VAR_INPUT
+	scoring : REAL;				// Account owner's scoring
+	sel : REAL;					// Social economic level
+	occupation_type: REAL;		// enum_occupation_type.rid 
+	city: REAL;					// City (actually Zip code)
+	scoring_partner : REAL;		// Partner's scoring
+END_VAR
+
+VAR_OUTPUT
+	qualify : REAL;				// Qualify
+	credLimMul : REAL;			// Credit limit multiplier
+END_VAR
+
+// Scoring : [0,1000]
+
+FUZZIFY scoring
+	TERM veryHigh := TRAPE 850 900 1000 1000;
+	TERM high := TRAPE 650 700 900 1000;
+	TERM midHigh := TRAPE 500 550 700 900;
+	TERM midLow := TRAPE 380 420 550 700;
+	TERM low := TRAPE 0 0 420 550;
+  RANGE := (0.0 .. 1000.0); // Added range for scoring
+END_FUZZIFY
+
+// Social economic level: {A,B,C1,C2,C3,D1,D2,E}
+
+FUZZIFY sel
+	TERM a := SIGM 0.01 4500; // Use sigm
+	TERM b := TRAPE 2000 3000 5000 10000;
+	TERM c1 := TRAPE 1300 2000 3000 5000;
+	TERM c2 := TRAPE 900 1300 2000 3000;
+	TERM c3 := TRAPE 600 900 1300 2000;
+	TERM d1 := TRAPE 400 600 900 1300;
+	TERM low := TRAPE -100 0 600 900;
+  RANGE := (-100.0 .. 10000.0); // Added range for sel
+END_FUZZIFY
+
+// City (zip code < 1900 => BsAs)
+
+FUZZIFY city
+	TERM bsas := TRAPE 0 0 1899 1900;
+	TERM other := TRAPE 1900 1900 10000 10000;
+  RANGE := (0.0 .. 10000.0); // Added range for city
+END_FUZZIFY
+
+// Occupation type rid
+// Good ones:   { Hired State Employee, Hired Private company Employee, Contractor State Employee}
+// Rids:		{ 9, 10 ,11 }
+
+FUZZIFY occupation_type
+	TERM good := TRAPE 8.5 9 11 11.5;
+	TERM other_1 := TRAPE 0 0 8 8.5;
+	TERM other_2 := TRAPE 11.5 12 20 20;
+  RANGE := (0.0 .. 20.0); // Added range for occupation_type
+END_FUZZIFY
+
+// Partner's Scoring : [0,1000]
+
+FUZZIFY scoring_partner
+	TERM midLow := TRAPE 0 420 550 700;
+	TERM low := TRIAN 0 0 420;
+	TERM noPartner := TRAPE -100 -50 -1 0; // No partner
+	TERM fakeRange := (0,0) (1000,0);	// Fake term: it's always 0. Used to simulate 'range' (0..1000)
+  RANGE := (-100.0 .. 1000.0); // Added range for scoring_partner
+END_FUZZIFY
+
+// Qualify : {accept,manual_accept,manual_reject,reject}
+
+DEFUZZIFY qualify
+	METHOD : COG;
+	DEFAULT := 0;
+	TERM accept := TRIAN 3 4 5;					// Center in 4
+	TERM manual_accept := TRIAN 2 3 4;			// Center in 3
+	TERM manual_reject := TRIAN 1 2 3;			// Center in 2
+	TERM reject := TRIAN 0 1 2;					// Center in 1
+  RANGE := (0.0 .. 5.0) WITH 0.1; // Added range for qualify
+END_DEFUZZIFY
+
+// Credit limit multiplier
+
+DEFUZZIFY credLimMul
+	METHOD : COG;
+	DEFAULT := 0;
+	TERM veryHigh := TRIAN 3 3.5 4;
+	TERM high := TRIAN 2 3 3.5;
+	TERM midHigh := TRIAN 1 2 3;
+	TERM midLow := TRIAN 0 0.5 1;
+	TERM low := TRIAN -2 -1 0;
+  RANGE := (-2.0 .. 4.0) WITH 0.01; // Added range for credLimMul
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	ACCU : MAX;
+	AND : MIN;
+	ACT : MIN;
+	
+	// Scoring rules
+	RULE 1 : IF scoring IS veryHigh THEN qualify IS accept , credLimMul IS veryHigh;
+	RULE 2 : IF scoring IS high THEN qualify IS accept , credLimMul IS high;
+	RULE 3 : IF scoring IS midHigh THEN qualify IS manual_accept , credLimMul IS midHigh;
+	RULE 4 : IF scoring IS midLow THEN qualify IS manual_reject , credLimMul IS midLow;
+	RULE 5 : IF scoring IS low THEN qualify IS reject , credLimMul IS low;
+	
+	// Social economic level
+	RULE  6 : IF sel IS a OR sel IS b THEN qualify IS accept , credLimMul IS veryHigh;
+	RULE  7 : IF sel IS c1 THEN qualify IS accept , credLimMul IS high;
+	RULE  8 : IF sel IS c2 THEN qualify IS manual_accept , credLimMul IS midHigh;
+	RULE  9 : IF sel IS c3 THEN qualify IS manual_reject , credLimMul IS midLow;
+	RULE 10 : IF sel IS d1 OR sel IS low THEN qualify IS reject , credLimMul IS low;
+	
+	// Ocupation type
+	RULE 11 : IF NOT occupation_type IS good THEN qualify IS reject , credLimMul IS low;
+	
+	// City
+	RULE 12 : IF city IS other AND (scoring IS midLow OR scoring IS low) THEN qualify IS reject , credLimMul IS low;
+	
+	// Partner's scoring
+	RULE 13 : IF scoring_partner IS midLow THEN qualify IS manual_reject , credLimMul IS midLow;
+	RULE 14 : IF scoring_partner IS low THEN qualify IS reject , credLimMul IS low;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
