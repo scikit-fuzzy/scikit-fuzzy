@@ -8,7 +8,7 @@
 import numpy as np
 import numpy.testing as tst
 
-import tnorms
+import skfuzzy.fcl.support.tnorms as tnorms
 
 
 def _check_classic(fam):
