@@ -13,7 +13,7 @@ try:
     from numpy.testing.decorators import skipif
 except AttributeError:
     from numpy.testing.dec import skipif
-from skfuzzy.control.tests._skipclass import skipclassif
+from _skipclass import skipclassif
 
 from skfuzzy.image import pad
 
