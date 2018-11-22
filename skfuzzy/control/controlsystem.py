@@ -155,7 +155,6 @@ class _InputAcceptor(object):
     If they are arrays, all must have the exact same shape.  If they are
     arrays, the output(s) will carry the same shape as the inputs.
     """
-
     def __init__(self, simulation):
         assert isinstance(simulation, ControlSystemSimulation)
         self.sim = simulation
@@ -772,7 +771,7 @@ class RuleOrderGenerator(object):
 
         if len(skipped_rules) == 0:
             # All done!
-            raise StopIteration()
+            return
         else:
             if len(skipped_rules) == len_rules:
                 # Avoid being caught in an infinite loop
