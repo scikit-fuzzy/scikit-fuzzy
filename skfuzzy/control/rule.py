@@ -25,10 +25,18 @@ class Rule(object):
         Antecedent terms serving as inputs to this rule. Multiple terms may
         be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
         parentheticals to group terms.
-    consequent : Consequent term(s) or logical combination thereof, optional
+    consequent : Consequent term(s), optional
         Consequent terms serving as outputs from this rule. Multiple terms may
-        be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
-        parentheticals to group terms.
+        be accepted in four formats:
+
+        Unweighted single output.
+            output['term']
+        Weighted single output
+            (output['term']%0.5)
+        Unweighted multiple output
+            (output1['term1'], output2['term2'])
+        Weighted multiple output
+            ((output1['term1']%1.0), (output2['term2']%0.5))
     label : string, optional
         Label to reference the meaning of this rule. Optional, but recommended.
         If provided, the label must be unique among rules in any particular
