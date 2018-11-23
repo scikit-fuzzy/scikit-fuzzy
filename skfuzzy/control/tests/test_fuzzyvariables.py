@@ -243,10 +243,10 @@ def test_automf_bad():
     global ant
     global con
 
-    tst.assert_raises(ValueError, ant.automf, 4)
-    tst.assert_raises(ValueError, ant.automf, 13)
-    tst.assert_raises(ValueError, con.automf, 4)
-    tst.assert_raises(ValueError, con.automf, 13)
+    tst.assert_raises(ValueError, ant.automf, 4.1)
+    tst.assert_raises(ValueError, ant.automf, np.pi)
+    tst.assert_raises(ValueError, con.automf, 4.1)
+    tst.assert_raises(ValueError, con.automf, np.pi)
 
 
 
