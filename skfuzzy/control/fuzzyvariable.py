@@ -176,24 +176,11 @@ class FuzzyVariable(object):
         if names is not None:
             # set number based on names passed
             number = len(names)
-            if number % 2 != 1:
-                raise ValueError("Must provide an odd number of names")
         else:
             if number not in [3, 5, 7]:
-                try:
-                    if len(names) != number:
-                        raise ValueError("If number is not 3, 5, or 7, "
-                                         "you must pass a list of names "
-                                         "equal in length to number.")
-                    else:
-                        # The user set a non-3/5/7 number but correctly
-                        # provided a list of names.
-                        pass
-                except TypeError:
-                    # Number was set but names left default (None)
-                    raise ValueError("If number is not 3, 5, or 7, "
-                                     "you must pass a list of names "
-                                     "equal in length to number.")
+                raise ValueError("If number is not 3, 5, or 7, "
+                                 "you must pass a list of names "
+                                 "equal in length to number.")
 
             if variable_type.lower() == 'quality':
                 names = ['dismal',
