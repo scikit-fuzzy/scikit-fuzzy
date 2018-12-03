@@ -50,7 +50,7 @@ api:
 random_gallery:
 	@cd source && $(PYTHON) random_gallery.py
 
-html: api random_gallery gitwash
+html: api logo random_gallery gitwash
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(DEST)/html
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
