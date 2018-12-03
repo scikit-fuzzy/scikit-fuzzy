@@ -43,7 +43,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'plot2rst',
     'sphinx.ext.autosummary',
-    'sphinx.ext.pngmath',
+    # 'sphinx.ext.pngmath',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
