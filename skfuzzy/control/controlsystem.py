@@ -772,7 +772,7 @@ class RuleOrderGenerator(object):
         if len(skipped_rules) == 0:
             # All done!
             try:
-                skipped_rules
+                return
             except StopIteration:
                 return
         else:
