@@ -23,7 +23,7 @@ Online Discussion & Mailing List
 --------------------------------
 
 Please join the discussion in our public chat room on Gitter.im
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/scikit-fuzzy/scikit-fuzzy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/JoinChat.svg)](https://gitter.im/scikit-fuzzy/scikit-fuzzy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 or view/post on the Google Groups mailing list
 http://groups.google.com/group/scikit-fuzzy
