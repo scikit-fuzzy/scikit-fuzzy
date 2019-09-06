@@ -16,7 +16,7 @@ def _resampleuniverse(x, mfx, y, mfy):
     minstep = np.asarray([np.diff(x).min(), np.diff(y).min()]).min()
 
     mi = min(x.min(), y.min())
-    ma = max(x.max(), y.max())
+    ma = max(x.max(), y.max()) + minstep
     z = np.r_[mi:ma:minstep]
 
     xidx = np.argsort(x)
