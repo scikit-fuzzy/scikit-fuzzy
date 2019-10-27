@@ -745,7 +745,8 @@ class RuleOrderGenerator(object):
         # have fuzzy values
         self.calced_graph = nx.DiGraph()
         for a in self.control_system.antecedents:
-            self.calced_graph.add_star([a, ] + list(a.terms.values()))
+            for t in a.terms.values():
+                self.calced_graph.add_edge(a, t)
 
         self.all_graph = self.control_system.graph
 

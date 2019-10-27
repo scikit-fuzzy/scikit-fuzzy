@@ -54,7 +54,7 @@ class Antecedent(FuzzyVariable):
         """
         g = nx.DiGraph()
         for t in self.terms.values():
-            g.add_path([self, t])
+            g.add_edge(self, t)
         return g
 
 
@@ -96,5 +96,5 @@ class Consequent(FuzzyVariable):
         """
         g = nx.DiGraph()
         for t in self.terms.values():
-            g.add_path([t, self])
+            g.add_edge(t, self)
         return g

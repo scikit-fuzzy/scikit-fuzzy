@@ -292,13 +292,13 @@ class Rule(object):
         #  TermAggregate down to just Terms
         for t in self.antecedent_terms:
             assert isinstance(t, Term)
-            graph.add_path([t, self])
+            graph.add_edge(t, self)
             graph = nx.compose(graph, t.parent.graph)
 
         # Link all consequents from me
         for c in self.consequent:
             assert isinstance(c, WeightedTerm)
-            graph.add_path([self, c.term])
+            graph.add_edge(self, c.term)
             graph = nx.compose(graph, c.term.parent.graph)
         return graph
 
