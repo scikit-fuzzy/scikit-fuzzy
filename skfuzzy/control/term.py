@@ -78,7 +78,10 @@ class Term(TermPrimitive):
 
     def __mod__(self, other):
         from .rule import WeightedTerm
-        assert isinstance(other, float)
+        if isinstance(other, int):
+            other = float(other)
+        else:
+            assert isinstance(other, float)
         return WeightedTerm(self, other)
 
 
