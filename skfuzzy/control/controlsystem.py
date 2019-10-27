@@ -756,7 +756,7 @@ class RuleOrderGenerator(object):
                 self.all_rules.append(node)
 
     def _process_rules(self, rules):
-        # Recursive funcion to process rules in the correct firing order
+        # Recursive function to process rules in the correct firing order
         len_rules = len(rules)
         skipped_rules = []
         while len(rules) > 0:

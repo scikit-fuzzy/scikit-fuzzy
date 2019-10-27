@@ -47,8 +47,8 @@ class Term(TermPrimitive):
     A Term is a universe and associated specific membership function.
 
     For example, if one were creating a FuzzyVariable with a simple three-
-    point liker scale, three `Term` would be created named poor, average,
-    and good.
+    point like scale, three `Terms` would be created named 'poor', 'average',
+    and 'good'.
     """
 
     # State variables
