@@ -195,7 +195,7 @@ class TermAggregate(TermPrimitive):
             raise ValueError("Expected FuzzyAggregationMethods")
         self._agg_methods = agg_methods
 
-        # Propegate agg method down to all agg terms below me
+        # Propagate agg method down to all agg terms below me
         for term in (self.term1, self.term2):
             if isinstance(term, TermAggregate):
                 term.agg_methods = agg_methods
