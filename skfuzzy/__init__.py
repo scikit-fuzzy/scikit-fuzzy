@@ -62,50 +62,68 @@ __all__.extend(_image.__all__)
 
 # Enable testing of the package
 import os.path as osp
-import imp
 import functools
 import warnings
 import sys
 
 pkg_dir = osp.abspath(osp.dirname(__file__))
 data_dir = osp.join(pkg_dir, 'data')
+nose_installed = False
 
+# verify if nose is installed
 try:
-    imp.find_module('nose')
+    # py3
+    import importlib.util
+    importlib.import_module('nose')
+    nose_installed = True
 except ImportError:
-    def _test(doctest=False, verbose=False):
-        """This would run all unit tests, but nose couldn't be
-        imported so the test suite can not run.
-        """
-        raise ImportError("Could not load nose. Unit tests not available.")
+    try:
+        # py2
+        import imp
+        imp.find_module('nose')
+        nose_installed = True
+    except ImportError:
+        pass
+finally:
+    if 'importlib' in locals():
+        del importlib
+    elif 'imp' in locals():
+        del imp
 
-else:
-    def _test(doctest=False, verbose=False):
-        """Run all unit tests."""
-        import nose
-        import warnings
-        args = ['', pkg_dir, '--exe', '--ignore-files=^_test']
-        if verbose:
-            args.extend(['-v', '-s'])
-        if doctest:
-            args.extend(['--with-doctest', '--ignore-files=^\.',
-                         '--ignore-files=^setup\.py$$', '--ignore-files=test'])
-            # Make sure warnings do not break the doc tests
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                success = nose.run('skfuzzy', argv=args)
-        else:
+
+def test_withnose(doctest=False, verbose=False):
+    """Run all unit tests."""
+    import nose
+    import warnings
+    args = ['', pkg_dir, '--exe', '--ignore-files=^_test']
+    if verbose:
+        args.extend(['-v', '-s'])
+    if doctest:
+        args.extend(['--with-doctest', '--ignore-files=^\.',
+                     '--ignore-files=^setup\.py$$', '--ignore-files=test'])
+        # Make sure warnings do not break the doc tests
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
             success = nose.run('skfuzzy', argv=args)
-        # Return sys.exit code
-        if success:
-            return 0
-        else:
-            return 1
+    else:
+        success = nose.run('skfuzzy', argv=args)
+    # Return sys.exit code
+    if success:
+        return 0
+    else:
+        return 1
+
+
+def test_nonose(doctest=False, verbose=False):
+    """This would run all unit tests, but nose couldn't be
+    imported so the test suite can not run.
+    """
+    raise ImportError("Could not load nose. Unit tests not available.")
 
 
 # do not use `test` as function name as this leads to a recursion problem with
 # the nose test suite
-test = _test
+test = test_withnose if nose_installed else test_nonose
 test_verbose = functools.partial(test, verbose=True)
 test_verbose.__doc__ = test.__doc__
 doctest = functools.partial(test, doctest=True)
@@ -152,4 +170,4 @@ if __SKFUZZY_SETUP__:
     # We are not importing the rest of the scikit during the build
     # process, as it may not be compiled yet
 
-del warnings, functools, osp, imp, sys
+del warnings, functools, osp, sys
