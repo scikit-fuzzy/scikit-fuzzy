@@ -107,9 +107,10 @@ The plot directive has the following configuration options:
 
 """
 
-import sys, os, glob, shutil, imp, warnings, cStringIO, re, textwrap, \
+import sys, os, glob, shutil, imp, warnings, re, textwrap, \
        traceback, exceptions
 
+from io import BytesIO
 from docutils.parsers.rst import directives
 from docutils import nodes
 from docutils.parsers.rst.directives.images import Image
@@ -452,7 +453,7 @@ def run_code(code, code_path, ns=None, function_name=None):
 
     # Redirect stdout
     stdout = sys.stdout
-    sys.stdout = cStringIO.StringIO()
+    sys.stdout = BytesIO.BytesIO()
 
     # Reset sys.argv
     old_sys_argv = sys.argv
@@ -749,7 +750,7 @@ def run(arguments, content, options, state_machine, state, lineno):
     # copy image files to builder's output directory, if necessary
     if not os.path.exists(dest_dir):
         cbook.mkdirs(dest_dir)
-    
+
     for code_piece, images in results:
         for img in images:
             for fn in img.filenames():
