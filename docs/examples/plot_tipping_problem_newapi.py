@@ -156,7 +156,7 @@ tipping.compute()
 """
 Once computed, we can view the result as well as visualize it.
 """
-print tipping.output['tip']
+print(tipping.output['tip'])
 tip.view(sim=tipping)
 
 """
