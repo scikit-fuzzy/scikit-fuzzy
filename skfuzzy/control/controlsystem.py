@@ -501,7 +501,7 @@ class ControlSystemSimulation(object):
         print(" Antecedents ")
         print("=============")
         for v in self.ctrl.antecedents:
-            print("{0:<35} = {1}".format(v, v.input[self]))
+            print("{0:<35} = {1}".format(str(v), v.input[self]))
             for term in v.terms.values():
                 print("  - {0:<32}: {1}".format(term.label,
                                                 term.membership_value[self]))
@@ -520,13 +520,13 @@ class ControlSystemSimulation(object):
                 assert isinstance(term, Term)
                 print("  - {0:<55}: {1}".format(term.full_label,
                                                 term.membership_value[self]))
-            print("    {0:>54} = {1}".format(r.antecedent,
+            print("    {0:>54} = {1}".format(str(r.antecedent),
                                              r.aggregate_firing[self]))
 
             print("  Activation (THEN-clause):")
             for c in r.consequent:
                 assert isinstance(c, WeightedTerm)
-                print("    {0:>54} : {1}".format(c,
+                print("    {0:>54} : {1}".format(str(c),
                                                  c.activation[self]))
             print("")
         print("")
@@ -536,7 +536,7 @@ class ControlSystemSimulation(object):
         print("==============================")
         for c in self.ctrl.consequents:
             print("{0:<36} = {1}".format(
-                c, CrispValueCalculator(c, self).defuzz()))
+                str(c), CrispValueCalculator(c, self).defuzz()))
 
             for term in c.terms.values():
                 print("  %s:" % term.label)
@@ -545,8 +545,8 @@ class ControlSystemSimulation(object):
                         continue
                     print("    {0:>32} : {1}".format(rule_number[cut_rule],
                                                      cut_value))
-                accu = "Accumulate using %s" % c.accumulation_method.func_name
-                print("    {0:>32} : {1}".format(accu,
+                accu = "Accumulate using %s" % c.accumulation_method.__name__
+                print("    {0:>32} : {1}".format(str(accu),
                                                  term.membership_value[self]))
             print("")
 
