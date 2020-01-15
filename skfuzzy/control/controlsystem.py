@@ -550,6 +550,24 @@ class ControlSystemSimulation(object):
                                                  term.membership_value[self]))
             print("")
 
+    def serialize(self):
+        """
+        Serialize the info about the inner workings of a ControlSystemSimulation to a dictionary (instead of printing
+        this info by the use of print_state()).
+        """
+        if next(self.ctrl.consequents).output[self] is None:
+            raise ValueError("Call compute method first.")
+
+        inner_workings = dict()
+        inner_workings['Antecedents'] = []
+        for v in self.ctrl.antecedents:
+            inner_workings['Antecedents'].append({str(v)+' - input': str(v.input[self])})
+            inner_workings['Antecedents'].append({
+                str(v)+' - membership_value': {term.label: term.membership_value[self] for term in v.terms.values()}
+            })
+
+        return inner_workings
+
 
 class CrispValueCalculator(object):
     """
