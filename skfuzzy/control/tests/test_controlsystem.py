@@ -583,7 +583,8 @@ def test_print_state_for_complex_system(mock_stdout):
     sim.reset()
 
 
-def test_serialize():
+def test_log_state():
+    # TO BE REMOVED LATER!
     # A much more complex system, run multiple times & with array inputs
     universe = np.linspace(-2, 2, 5)
     error = ctrl.Antecedent(universe, 'error')
@@ -652,8 +653,11 @@ def test_serialize():
             sim.compute()
             z[i, j] = sim.output['output']
 
-    dict = sim.serialize()
-    print(dict)
+    # dict = sim.log_state()
+    # sim.log_state_2()
+    # print(dict['Intermediaries and Conquests'])
+    sim.print_state()
+    # print(dict)
     sim.reset()
 
 
