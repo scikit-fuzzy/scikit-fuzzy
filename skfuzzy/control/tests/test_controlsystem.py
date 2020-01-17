@@ -583,8 +583,7 @@ def test_print_state_for_complex_system(mock_stdout):
     sim.reset()
 
 
-def test_log_state():
-    # TO BE REMOVED LATER!
+def test_print_state(print_state=False):
     # A much more complex system, run multiple times & with array inputs
     universe = np.linspace(-2, 2, 5)
     error = ctrl.Antecedent(universe, 'error')
@@ -652,12 +651,8 @@ def test_log_state():
             sim.input['delta'] = y[i, j]
             sim.compute()
             z[i, j] = sim.output['output']
-
-    # dict = sim.log_state()
-    # sim.log_state_2()
-    # print(dict['Intermediaries and Conquests'])
-    sim.print_state()
-    # print(dict)
+    if print_state:
+        sim.print_state()
     sim.reset()
 
 
