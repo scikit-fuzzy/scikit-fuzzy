@@ -497,16 +497,16 @@ class ControlSystemSimulation(object):
         if next(self.ctrl.consequents).output[self] is None:
             raise ValueError("Call compute method first.")
         # inner_workings and self.log_state() should be removed later!
-        inner_workings = self.log_state()
-        log_state_obj = LogStateControlSystemSimulation(self)
+        # inner_workings = self.log_state()
+        log_state = LogStateControlSystemSimulation(self)
 
         print("=============")
         print(" Antecedents ")
         print("=============")
-        for v in log_state_obj.antecedents:
-            print("{0:<35} = {1}".format(str(v), log_state_obj.dict_antecedents_input()[str(v)]))
+        for v in log_state.antecedents:
+            print("{0:<35} = {1}".format(str(v), log_state.dict_antecedents_input()[str(v)]))
             for term_label, term_membership_value \
-                    in log_state_obj.dict_antecedents_membership_values()[str(v)].items():
+                    in log_state.dict_antecedents_membership_values()[str(v)].items():
                 print("  - {0:<32}: {1}".format(term_label,
                                                 term_membership_value))
         print("")
@@ -526,31 +526,58 @@ class ControlSystemSimulation(object):
         print("=======")
         print(" Rules ")
         print("=======")
-        for rn in inner_workings['Rules']:
-            for rule_number_str, r in inner_workings['Rules'][rn][0].items():
-                print("RULE #%d:\n  %s\n" % (rn, r))
-
-            print("  Aggregation (IF-clause):")
-            for cnt in range(len(inner_workings['Rules'][rn][1]['Aggregation (IF-clause)_membership_values'])):
-                for term_full_label, term_membership_value in \
-                        inner_workings['Rules'][rn][1]['Aggregation (IF-clause)_membership_values'][cnt].items():
-                    print("  - {0:<55}: {1}".format(term_full_label,
-                                                    term_membership_value))
-            for r_antecedent, r_aggregate_firing in \
-                    inner_workings['Rules'][rn][2]['Aggregation (IF-clause)_aggregate_firing'].items():
-                print("    {0:>54} = {1}".format(r_antecedent,
-                                                 r_aggregate_firing))
-            print("  Activation (THEN-clause):")
-            for c, c_activation in \
-                    inner_workings['Rules'][rn][3]['Activation (THEN-clause)'].items():
-                print("    {0:>54} : {1}".format(c,
-                                                 c_activation))
-            print("")
-        print("")
         rule_number = {}
-        for rn, r in enumerate(self.ctrl.rules):
+        for rn, r in enumerate(log_state.rules):
             assert isinstance(r, Rule)
             rule_number[r] = "RULE #%d" % rn
+            print("RULE #%d:\n  %s\n" % (rn, r))
+
+            print("  Aggregation (IF-clause):")
+            for cnt in range(len(log_state.dict_rules_aggregation_if_membership_values()[rule_number[r]])):
+
+                for term_full_label, term_membership_value in \
+                        log_state.dict_rules_aggregation_if_membership_values()[rule_number[r]][cnt].items():
+                    print("  - {0:<55}: {1}".format(term_full_label,
+                                                    term_membership_value))
+
+            for antecedent, aggregate_firing in \
+                    log_state.dict_rules_aggregation_if_aggregate_firing()[rule_number[r]].items():
+                print("    {0:>54} = {1}".format(antecedent, aggregate_firing))
+
+            print("  Activation (THEN-clause):")
+
+            for consequent, activation in \
+                    log_state.dict_rules_activation_then()[rule_number[r]].items():
+                for c in r.consequent:
+                    assert isinstance(c, WeightedTerm)
+                print("    {0:>54} : {1}".format(consequent, activation))
+            print("")
+        print("")
+        # for rn in inner_workings['Rules']:
+        #     for rule_number_str, r in inner_workings['Rules'][rn][0].items():
+        #         print("RULE #%d:\n  %s\n" % (rn, r))
+        #
+        #     print("  Aggregation (IF-clause):")
+        #     for cnt in range(len(inner_workings['Rules'][rn][1]['Aggregation (IF-clause)_membership_values'])):
+        #         for term_full_label, term_membership_value in \
+        #                 inner_workings['Rules'][rn][1]['Aggregation (IF-clause)_membership_values'][cnt].items():
+        #             print("  - {0:<55}: {1}".format(term_full_label,
+        #                                             term_membership_value))
+        #     for r_antecedent, r_aggregate_firing in \
+        #             inner_workings['Rules'][rn][2]['Aggregation (IF-clause)_aggregate_firing'].items():
+        #         print("    {0:>54} = {1}".format(r_antecedent,
+        #                                          r_aggregate_firing))
+        #     print("  Activation (THEN-clause):")
+        #     for c, c_activation in \
+        #             inner_workings['Rules'][rn][3]['Activation (THEN-clause)'].items():
+        #         print("    {0:>54} : {1}".format(c,
+        #                                          c_activation))
+        #     print("")
+        # print("")
+        # rule_number = {}
+        # for rn, r in enumerate(self.ctrl.rules):
+        #     assert isinstance(r, Rule)
+        #     rule_number[r] = "RULE #%d" % rn
         #     print("RULE #%d:\n  %s\n" % (rn, r))
         #
         #     print("  Aggregation (IF-clause):")
@@ -721,20 +748,117 @@ class LogStateControlSystemSimulation(object):
         """ + '\n'.join(LogStateControlSystemSimulation.__doc__.split('\n')[1:])
         assert isinstance(sim, ControlSystemSimulation)
         self.sim = sim
+        if next(self.sim.ctrl.consequents).output[self.sim] is None:
+            raise ValueError("Call compute method first.")
         self.antecedents = self.sim.ctrl.antecedents
+        self.rules = self.sim.ctrl.rules
+        self.consequents = self.sim.ctrl.consequents
 
     def dict_antecedents_input(self):
+        """
+        Returns dictionary with the antecedents of self.sim as keys and their input as values.
+        """
         dict_antecedents = {}
         for v in self.sim.ctrl.antecedents:
             dict_antecedents[str(v)] = str(v.input[self.sim])
         return dict_antecedents
 
     def dict_antecedents_membership_values(self):
+        """
+        Returns dictionary with the antecedents of self.sim as keys and dictionaries as values.
+        Every value-dictionary contains the label of every term in terms.values() linked to the antecedent
+        in consideration with the corresponding membership_value determined by its input value.
+        """
         dict_antecedents_membership_values = {}
         for v in self.sim.ctrl.antecedents:
             dict_antecedents_membership_values[str(v)] = {term.label: term.membership_value[self.sim]
                                                           for term in v.terms.values()}
         return dict_antecedents_membership_values
+
+    def dict_rules(self):
+        """
+        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and the rules as values.
+        """
+        dict_rules = {}
+        rule_number = {}
+        for rn, r in enumerate(self.sim.ctrl.rules):
+            assert isinstance(r, Rule)
+            rule_number[r] = "RULE #%d" % rn
+            dict_rules[rule_number[r]] = r
+        return dict_rules
+
+    def dict_rules_aggregation_if_membership_values(self):
+        """
+        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and lists of dictionaries as values.
+        Every value-dictionary in the list contains the full_label and the corresponding membership_value
+        of one term in antecedent_term linked to the rule in consideration.
+        """
+        dict_rules_aggregation_if_membership_values = {}
+        rule_number = {}
+        for rn, r in enumerate(self.sim.ctrl.rules):
+            assert isinstance(r, Rule)
+            rule_number[r] = "RULE #%d" % rn
+            for term in r.antecedent_terms:
+                assert isinstance(term, Term)
+            dict_rules_aggregation_if_membership_values[rule_number[r]] = \
+                [{term.full_label: term.membership_value[self.sim]} for term in r.antecedent_terms]
+        return dict_rules_aggregation_if_membership_values
+
+    def dict_rules_aggregation_if_aggregate_firing(self):
+        """
+        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and dictionaries as values.
+        Every value-dictionary contains the antecedent and the corresponding aggregate_firing of the rule
+        in consideration .
+        """
+        dict_rules_aggregation_if_aggregate_firing = {}
+        rule_number = {}
+        for rn, r in enumerate(self.sim.ctrl.rules):
+            assert isinstance(r, Rule)
+            rule_number[r] = "RULE #%d" % rn
+            for term in r.antecedent_terms:
+                assert isinstance(term, Term)
+            dict_rules_aggregation_if_aggregate_firing[rule_number[r]] = \
+                {str(r.antecedent): r.aggregate_firing[self.sim]}
+        return dict_rules_aggregation_if_aggregate_firing
+
+    def dict_rules_activation_then(self):
+        """
+        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and dictionaries as values.
+        Every value-dictionary contains the consequents and the corresponding activation of the rule
+        in consideration .
+        """
+        dict_rules_activation_then = {}
+        rule_number = {}
+        for rn, r in enumerate(self.sim.ctrl.rules):
+            assert isinstance(r, Rule)
+            rule_number[r] = "RULE #%d" % rn
+            for c in r.consequent:
+                assert isinstance(c, WeightedTerm)
+            dict_rules_activation_then[rule_number[r]] = \
+                {str(c): c.activation[self.sim] for c in r.consequent}
+        return dict_rules_activation_then
+
+        # for rn, r in enumerate(self.ctrl.rules):
+        #     assert isinstance(r, Rule)
+        #     rule_number[r] = "RULE #%d" % rn
+        #     inner_workings['Rules'][rn] = []
+        #     inner_workings['Rules'][rn].append({rule_number[r]: r})
+        #
+        #     for term in r.antecedent_terms:
+        #         assert isinstance(term, Term)
+        #     inner_workings['Rules'][rn].append({
+        #         'Aggregation (IF-clause)_membership_values': [{term.full_label: term.membership_value[self]}
+        #                                                       for term in r.antecedent_terms]
+        #     })
+        #     inner_workings['Rules'][rn].append({
+        #         'Aggregation (IF-clause)_aggregate_firing': {str(r.antecedent): r.aggregate_firing[self]}
+        #     })
+        #
+        #     for c in r.consequent:
+        #         assert isinstance(c, WeightedTerm)
+        #     inner_workings['Rules'][rn].append({
+        #         'Activation (THEN-clause)': {str(c): c.activation[self] for c in r.consequent}
+        #     })
 
 
 class CrispValueCalculator(object):
