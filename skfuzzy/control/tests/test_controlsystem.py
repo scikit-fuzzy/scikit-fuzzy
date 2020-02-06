@@ -505,7 +505,7 @@ def test_print_state_for_complex_system(mock_stdout):
     # rule 3:  IF e = SN AND delta = SN THEN output = LP
     # rule 4:  IF e = LP OR  delta = LP THEN output = LN
 
-    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) | # This combination, or...
+    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) |
                                   (error['ns'] & delta['nb']) |
                                   (error['nb'] & delta['ns'])),
                       consequent=output['nb'], label='rule nb')
@@ -566,7 +566,8 @@ def test_print_state_for_complex_system(mock_stdout):
     # Rules testing
     assert 'Rules' in mock_stdout.getvalue()
     assert 'RULE #0:' in mock_stdout.getvalue()
-    assert 'IF ((error[nb] AND delta[nb]) OR (error[ns] AND delta[nb])) OR (error[nb] AND delta[ns]) THEN output[nb]' \
+    assert 'IF ((error[nb] AND delta[nb]) OR (error[ns] AND delta[nb])) ' + \
+           'OR (error[nb] AND delta[ns]) THEN output[nb]' \
            in mock_stdout.getvalue()
     assert 'Aggregation (IF-clause):' in mock_stdout.getvalue()
     assert 'Activation (THEN-clause):' in mock_stdout.getvalue()
@@ -601,7 +602,7 @@ def test_print_state(print_state=False):
     # rule 3:  IF e = SN AND delta = SN THEN output = LP
     # rule 4:  IF e = LP OR  delta = LP THEN output = LN
 
-    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) | # This combination, or...
+    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) |
                                   (error['ns'] & delta['nb']) |
                                   (error['nb'] & delta['ns'])),
                       consequent=output['nb'], label='rule nb')

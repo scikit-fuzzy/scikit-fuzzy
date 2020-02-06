@@ -502,9 +502,11 @@ class ControlSystemSimulation(object):
         print(" Antecedents ")
         print("=============")
         for v in log_state.antecedents:
-            print("{0:<35} = {1}".format(str(v), log_state.dict_antecedents_input()[str(v)]))
+            print("{0:<35} = {1}".format(str(v), log_state.
+                                         dict_antecedents_input()[str(v)]))
             for term_label, term_membership_value \
-                    in log_state.dict_antecedents_membership_values()[str(v)].items():
+                in log_state.dict_antecedents_membership_values()[str(v)].\
+                    items():
                 print("  - {0:<32}: {1}".format(term_label,
                                                 term_membership_value))
         print("")
@@ -524,21 +526,26 @@ class ControlSystemSimulation(object):
             print("RULE #%d:\n  %s\n" % (rn, r))
 
             print("  Aggregation (IF-clause):")
-            for cnt in range(len(log_state.dict_rules_aggregation_if_membership_values()[rule_number[r]])):
+            for cnt in range(len(
+                log_state.dict_rules_aggregation_if_membership_values()[
+                    rule_number[r]])):
 
                 for term_full_label, term_membership_value in \
-                        log_state.dict_rules_aggregation_if_membership_values()[rule_number[r]][cnt].items():
+                        log_state.dict_rules_aggregation_if_membership_values()[
+                            rule_number[r]][cnt].items():
                     print("  - {0:<55}: {1}".format(term_full_label,
                                                     term_membership_value))
 
             for antecedent, aggregate_firing in \
-                    log_state.dict_rules_aggregation_if_aggregate_firing()[rule_number[r]].items():
+                    log_state.dict_rules_aggregation_if_aggregate_firing()[
+                        rule_number[r]].items():
                 print("    {0:>54} = {1}".format(antecedent, aggregate_firing))
 
             print("  Activation (THEN-clause):")
 
             for consequent, activation in \
-                    log_state.dict_rules_activation_then()[rule_number[r]].items():
+                    log_state.dict_rules_activation_then()[
+                        rule_number[r]].items():
                 for c in r.consequent:
                     assert isinstance(c, WeightedTerm)
                 print("    {0:>54} : {1}".format(consequent, activation))
@@ -570,16 +577,22 @@ class ControlSystemSimulation(object):
         print("==============================")
         for c in log_state.consequents:
             print("{0:<36} = {1}".format(
-                str(c), log_state.dict_consequents_crispvalue()[c]))
+                str(c), log_state.dict_consequents_crisp_value()[c]))
 
-            for term_label, dict_cut_rules_values in log_state.dict_consequents_terms_cut_rules_and_values()[c].items():
+            for term_label, dict_cut_rules_values in \
+                log_state.dict_consequents_terms_cut_rules_and_values()[c]\
+                    .items():
                 print("  %s:" % term_label)
-                for rule_number_cut_rule, cut_value in dict_cut_rules_values:
+                for rule_number_cut_rule, cut_value \
+                    in dict_cut_rules_values.items():
                     print("    {0:>32} : {1}".format(rule_number_cut_rule,
                                                      cut_value))
                 for accu, term_membership_value in \
-                        log_state.dict_consequents_terms_accumulation_membership_value()[c][term_label].items():
-                    print("    {0:>32} : {1}".format(accu, term_membership_value))
+                    log_state.\
+                        dict_consequents_terms_accumulation_membership_value()[
+                        c][term_label].items():
+                    print("    {0:>32} : {1}".
+                          format(accu, term_membership_value))
             print("")
         # for c in self.ctrl.consequents:
         #     print("{0:<36} = {1}".format(
@@ -611,7 +624,8 @@ class LogStateControlSystemSimulation(object):
     def __init__(self, sim):
         """
         Initialization method for LogStateControlSystemSimulation.
-        """ + '\n'.join(LogStateControlSystemSimulation.__doc__.split('\n')[1:])
+        """ + '\n'.join(LogStateControlSystemSimulation.__doc__.split('\n'
+                                                                      )[1:])
         assert isinstance(sim, ControlSystemSimulation)
         self.sim = sim
         if next(self.sim.ctrl.consequents).output[self.sim] is None:
@@ -622,7 +636,8 @@ class LogStateControlSystemSimulation(object):
 
     def dict_antecedents_input(self):
         """
-        Returns dictionary with the antecedents of self.sim as keys and their input as values.
+        Returns dictionary with the antecedents of self.sim as keys
+        and their input as values.
         """
         dict_antecedents = {}
         for v in self.sim.ctrl.antecedents:
@@ -631,19 +646,24 @@ class LogStateControlSystemSimulation(object):
 
     def dict_antecedents_membership_values(self):
         """
-        Returns dictionary with the antecedents of self.sim as keys and dictionaries as values.
-        Every value-dictionary contains the label of every term in terms.values() linked to the antecedent
-        in consideration with the corresponding membership_value determined by its input value.
+        Returns dictionary with the antecedents of self.sim
+        as keys and dictionaries as values.
+        Every value-dictionary contains the label of every term
+        in terms.values() linked to the antecedent
+        in consideration with the corresponding membership_value
+        determined by its input value.
         """
         dict_antecedents_membership_values = {}
         for v in self.sim.ctrl.antecedents:
-            dict_antecedents_membership_values[str(v)] = {term.label: term.membership_value[self.sim]
-                                                          for term in v.terms.values()}
+            dict_antecedents_membership_values[str(v)] = \
+                {term.label: term.membership_value[self.sim]
+                 for term in v.terms.values()}
         return dict_antecedents_membership_values
 
     def dict_rules(self):
         """
-        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and the rules as values.
+        Returns dictionary with the rule_number of self.sim.ctrl.rules
+        as keys and the rules as values.
         """
         dict_rules = {}
         rule_number = {}
@@ -655,8 +675,10 @@ class LogStateControlSystemSimulation(object):
 
     def dict_rules_aggregation_if_membership_values(self):
         """
-        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and lists of dictionaries as values.
-        Every value-dictionary in the list contains the full_label and the corresponding membership_value
+        Returns dictionary with the rule_number of self.sim.ctrl.rules
+        as keys and lists of dictionaries as values.
+        Every value-dictionary in the list contains the full_label
+        and the corresponding membership_value
         of one term in antecedent_term linked to the rule in consideration.
         """
         dict_rules_aggregation_if_membership_values = {}
@@ -667,13 +689,16 @@ class LogStateControlSystemSimulation(object):
             for term in r.antecedent_terms:
                 assert isinstance(term, Term)
             dict_rules_aggregation_if_membership_values[rule_number[r]] = \
-                [{term.full_label: term.membership_value[self.sim]} for term in r.antecedent_terms]
+                [{term.full_label: term.membership_value[self.sim]}
+                 for term in r.antecedent_terms]
         return dict_rules_aggregation_if_membership_values
 
     def dict_rules_aggregation_if_aggregate_firing(self):
         """
-        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and dictionaries as values.
-        Every value-dictionary contains the antecedent and the corresponding aggregate_firing of the rule
+        Returns dictionary with the rule_number of self.sim.ctrl.rules
+        as keys and dictionaries as values.
+        Every value-dictionary contains the antecedent
+        and the corresponding aggregate_firing of the rule
         in consideration .
         """
         dict_rules_aggregation_if_aggregate_firing = {}
@@ -689,8 +714,10 @@ class LogStateControlSystemSimulation(object):
 
     def dict_rules_activation_then(self):
         """
-        Returns dictionary with the rule_number of self.sim.ctrl.rules as keys and dictionaries as values.
-        Every value-dictionary contains the consequents and the corresponding activation of the rule
+        Returns dictionary with the rule_number of self.sim.ctrl.rules
+        as keys and dictionaries as values.
+        Every value-dictionary contains the consequents
+        and the corresponding activation of the rule
         in consideration .
         """
         dict_rules_activation_then = {}
@@ -704,22 +731,27 @@ class LogStateControlSystemSimulation(object):
                 {str(c): c.activation[self.sim] for c in r.consequent}
         return dict_rules_activation_then
 
-    def dict_consequents_crispvalue(self):
+    def dict_consequents_crisp_value(self):
         """
-        Returns dictionary with the consequent of self.sim.ctrl.consequents as keys and the corresponding
+        Returns dictionary with the consequent of self.sim.ctrl.consequents
+        as keys and the corresponding
         crisp values as values.
         """
-        dict_consequents_crispvalue = {}
+        dict_consequents_crisp_value = {}
         for c in self.sim.ctrl.consequents:
-            dict_consequents_crispvalue[c] = CrispValueCalculator(c, self.sim).defuzz()
-        return dict_consequents_crispvalue
+            dict_consequents_crisp_value[c] = \
+                CrispValueCalculator(c, self.sim).defuzz()
+        return dict_consequents_crisp_value
 
     def dict_consequents_terms_cut_rules_and_values(self):
         """
-        Returns dictionary with the consequent c of self.sim.ctrl.consequents as keys and dictionaries as values.
-        Every value-dictionary contains the term.label of a term in c.terms.values() as key
-        and a list of dictionaries as values. Every dictionary
-        from this list of dictionaries contains a rule_number and cut_value of term.cuts[self.sim].items().
+        Returns dictionary with the consequent c of self.sim.ctrl.consequents
+        as keys and dictionaries as values.
+        Every value-dictionary contains the term.label
+        of a term in c.terms.values() as key
+        and a list of dictionaries as values.
+        Every dictionary from this list of dictionaries contains a rule_number
+        and cut_value of term.cuts[self.sim].items().
         """
         dict_consequents_terms_cut_rules_and_values = {}
         rule_number = {}
@@ -731,17 +763,23 @@ class LogStateControlSystemSimulation(object):
             for term in c.terms.values():
                 dict_consequents_terms_cut_rules_and_values[c][term.label] = {}
                 for cut_rule, cut_value in term.cuts[self.sim].items():
-                    if cut_rule not in rule_number.keys():
+                    output_cut_rule = 'output[' + cut_rule.split()[1] + ']'
+                    if output_cut_rule not in str(rule_number.keys()):
                         continue
-                    dict_consequents_terms_cut_rules_and_values[c][term.label][rule_number[cut_rule]] = cut_value
+                    key_cut_rule = [key for key in rule_number.keys()
+                                    if output_cut_rule in str(key)][0]
+                    dict_consequents_terms_cut_rules_and_values[c][term.label][
+                        rule_number[key_cut_rule]] = cut_value
         return dict_consequents_terms_cut_rules_and_values
 
     def dict_consequents_terms_accumulation_membership_value(self):
         """
-        Returns dictionary with the consequent c of self.sim.ctrl.consequents as keys and dictionaries as values.
-        Every value-dictionary contains the term.label of a term in c.terms.values() as key
-        and a dictionary as values. This dictionary contains information about the accumulation method of the consequent
-        and the corresponding membership_value of the term.
+        Returns dictionary with the consequent c of
+        self.sim.ctrl.consequents as keys and dictionaries as values.
+        Every value-dictionary contains the term.label
+        of a term in c.terms.values() as key and a dictionary as values.
+        This dictionary contains information about the accumulation method
+        of the consequent and the corresponding membership_value of the term.
         """
         dict_consequents_terms_accumulation_membership_value = {}
         rule_number = {}
@@ -752,8 +790,8 @@ class LogStateControlSystemSimulation(object):
             dict_consequents_terms_accumulation_membership_value[c] = {}
             for term in c.terms.values():
                 accu = "Accumulate using %s" % c.accumulation_method.__name__
-                dict_consequents_terms_accumulation_membership_value[c][term.label] = \
-                    {accu: term.membership_value[self.sim]}
+                dict_consequents_terms_accumulation_membership_value[c][
+                    term.label] = {accu: term.membership_value[self.sim]}
         return dict_consequents_terms_accumulation_membership_value
 
 
@@ -881,7 +919,7 @@ class CrispValueCalculator(object):
 
         new_universe = np.union1d(self.var.universe, new_values)
 
-        # Initilize membership
+        # Initialize membership
         output_mf = np.zeros_like(new_universe, dtype=np.float64)
 
         # Build output membership function
