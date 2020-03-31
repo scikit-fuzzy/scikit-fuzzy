@@ -5,7 +5,11 @@ from __future__ import print_function, division
 
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+    matplotlib_present = True
+except ImportError:
+    matplotlib_present = False
 
 from ..fuzzymath.fuzzy_ops import interp_membership
 
@@ -33,6 +37,9 @@ class FuzzyVariableVisualizer(object):
         ----------
         fuzzy_var : FuzzyVariable or Term to plot
         """
+        if not matplotlib_present:
+            raise ImportError("`FuzzyVariableVisualizer` can only be used "
+                              "with `matplotlib` present in the system.")
         from .fuzzyvariable import FuzzyVariable, Term
 
         # self.term allows us to know if this is a Term quickly, later
@@ -169,7 +176,11 @@ class ControlSystemVisualizer(object):
         -------
 
         """
-        self.ctrl = control_system
+        if not matplotlib_present:
+            raise ImportError("`ControlSystemVisualizer` can only be used "
+                              "with `matplotlib` present in the system.")
+
+            self.ctrl = control_system
 
         self.fig, self.ax = plt.subplots()
 
@@ -207,10 +218,10 @@ class ControlSystemVisualizer(object):
 
         Notes
         -----
-        This method uses the NetworkX ``draw_networkx`` command, to check that 
-        all Mebership Functions, MF, are used (green) among the rules. The plot 
-        also writes the name of the MF. If further customization is desired, the 
-        matplotlib Figure/Axis objects are returned.  In a Jupyter notebook, 
+        This method uses the NetworkX ``draw_networkx`` command, to check that
+        all Mebership Functions, MF, are used (green) among the rules. The plot
+        also writes the name of the MF. If further customization is desired, the
+        matplotlib Figure/Axis objects are returned.  In a Jupyter notebook,
         these will be displayed inline.
         If the network model fails, it will return the ordenary view.
         """
