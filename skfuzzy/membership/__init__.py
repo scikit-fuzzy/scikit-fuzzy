@@ -8,6 +8,7 @@ __all__ = ['dsigmf',
            'gbellmf',
            'piecemf',
            'pimf',
+           'Polynomial',
            'psigmf',
            'sigmf',
            'smf',
@@ -16,4 +17,4 @@ __all__ = ['dsigmf',
            'zmf']
 
 from .generatemf import (dsigmf, gaussmf, gauss2mf, gbellmf, piecemf, pimf,
-                         psigmf, sigmf, smf, trapmf, trimf, zmf)
+                         Polynomial, psigmf, sigmf, smf, trapmf, trimf, zmf)

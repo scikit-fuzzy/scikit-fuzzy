@@ -487,3 +487,37 @@ def zmf(x, a, b):
     y[idx] = 0
 
     return y
+
+class Polynomial:
+
+    @staticmethod
+    def term(coef, exp):
+        return (coef,exp)
+    def __init__(self, domain, expression):
+        #domain is used to limit the possible values for the inference for this individual consequent
+        #(not as a global prediction, this is done in controlsystem, function defuzz).
+        #Therefore,, the domain must contain only 2 values, the minimum and the maximum.
+
+        #The expression should be a dictionary where the keys are the variable names or '' for the
+        #independent term. The values are a list of 2-length tuples (coefficient,exponen) or in the case
+        #of the independent term a single number.
+
+        self.domain = domain
+        self.expression = expression
+
+    def evaluate(self, inputs):
+        #First the independent term
+        output = 0 if '' not in self.expression else self.expression['']
+        for name,value in inputs.items():
+            # It is possible to use a subset of the input variables
+            if name in self.expression:
+                for (coef,exp) in self.expression[name]:
+                    output += coef*value**exp
+
+        if output>self.domain[1]:
+            output = self.domain[1]
+        if output<self.domain[0]:
+            output = self.domain[0]
+        return output
+
+
