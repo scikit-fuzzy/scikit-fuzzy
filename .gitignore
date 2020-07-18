@@ -9,9 +9,8 @@
 *.md5
 *.old
 *.DS_Store
-docs/api
-docs/build
 docs/source/api
+docs/build
 build
 dist
 skfuzzy/version.py
