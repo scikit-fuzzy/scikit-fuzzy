@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 DEST = build
-.PHONY: all api help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery logo
+.PHONY: all help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest gitwash gh-pages random_gallery logo
 
 all: html
 
@@ -34,7 +34,6 @@ help:
 
 clean:
 	-rm -rf $(DEST)/*
-	-rm -rf ./source/api
 	-find ./source/auto_examples/* -type f | grep -v blank | xargs rm -f
 	-find . -type f -name "*.pyc" | xargs rm -f
 
@@ -42,15 +41,10 @@ logo:
 	cd logo; python skfuzzy_logo.py; rm -f ./logo/temp.py
 	cd logo; python skfuzzy_icon.py; rm -f ./logo/temp.py
 
-api:
-	@mkdir -p source/api
-	$(PYTHON) tools/build_modref_templates.py
-	@echo "Build API docs...done."
-
 random_gallery:
 	@cd source && $(PYTHON) random_gallery.py
 
-html: api logo random_gallery gitwash
+html: logo random_gallery gitwash
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(DEST)/html
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
@@ -94,19 +88,6 @@ devhelp:
 	@echo "# ln -s build/devhelp $$HOME/.local/share/devhelp/scikitfuzzy"
 	@echo "# devhelp"
 
-latex: api
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(DEST)/latex
-	@echo
-	@echo "Build finished; the LaTeX files are in $(DEST)/latex."
-	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
-	      "run these through (pdf)latex."
-
-latexpdf: latex
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(DEST)/latex
-	@echo "Running LaTeX files through pdflatex..."
-	make -C build/latex all-pdf
-	@echo "pdflatex finished; the PDF files are in build/latex."
-
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(DEST)/changes
 	@echo
@@ -122,9 +103,6 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(DEST)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in build/doctest/output.txt."
-
-gh-pages:
-	$(PYTHON) gh-pages.py
 
 gitwash:
 	git submodule update --init --recursive
