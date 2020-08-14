@@ -1,4 +1,4 @@
-"""Tests for the array pading functions.
+"""Tests for the array padding functions.
 
 """
 from __future__ import division, absolute_import, print_function
@@ -13,6 +13,9 @@ try:
     from numpy.testing.decorators import skipif
 except AttributeError:
     from numpy.testing.dec import skipif
+except ModuleNotFoundError:
+    from numpy.testing import dec
+    skipif = dec.skipif
 from _skipclass import skipclassif
 
 from skfuzzy.image import pad

@@ -9,9 +9,24 @@ try:
     from numpy.testing.decorators import skipif
 except AttributeError:
     from numpy.testing.dec import skipif
+except ModuleNotFoundError:
+    from numpy.testing import dec
+    skipif = dec.skipif
 
-from io import StringIO
-from unittest.mock import patch
+if sys.version_info[0] < 3:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
+
+if sys.version_info >= (3, 3):
+    from unittest.mock import patch
+    run_test_print_state_for_complex_system = True
+else:
+    try:
+        from mock import patch
+        run_test_print_state_for_complex_system = True
+    except ImportError:
+        run_test_print_state_for_complex_system = False
 
 import networkx
 import nose
@@ -137,7 +152,7 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
+@skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
@@ -155,7 +170,7 @@ def test_rule_order():
 
 
 # The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(
+@skipif(
     (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
@@ -486,102 +501,104 @@ def test_complex_system():
     np.testing.assert_allclose(z1, expected)
 
 
-@patch('sys.stdout', new_callable=StringIO)
-def test_print_state_for_complex_system(mock_stdout):
-    # A much more complex system, run multiple times & with array inputs
-    universe = np.linspace(-2, 2, 5)
-    error = ctrl.Antecedent(universe, 'error')
-    delta = ctrl.Antecedent(universe, 'delta')
-    output = ctrl.Consequent(universe, 'output')
+if run_test_print_state_for_complex_system:
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_print_state_for_complex_system(mock_stdout):
+        # A much more complex system, run multiple times & with array inputs
+        universe = np.linspace(-2, 2, 5)
+        error = ctrl.Antecedent(universe, 'error')
+        delta = ctrl.Antecedent(universe, 'delta')
+        output = ctrl.Consequent(universe, 'output')
 
-    names = ['nb', 'ns', 'ze', 'ps', 'pb']
-    error.automf(names=names)
-    delta.automf(names=names)
-    output.automf(names=names)
+        names = ['nb', 'ns', 'ze', 'ps', 'pb']
+        error.automf(names=names)
+        delta.automf(names=names)
+        output.automf(names=names)
 
-    # The rulebase:
-    # rule 1:  IF e = ZE AND delta = ZE THEN output = ZE
-    # rule 2:  IF e = ZE AND delta = SP THEN output = SN
-    # rule 3:  IF e = SN AND delta = SN THEN output = LP
-    # rule 4:  IF e = LP OR  delta = LP THEN output = LN
+        # The rulebase:
+        # rule 1:  IF e = ZE AND delta = ZE THEN output = ZE
+        # rule 2:  IF e = ZE AND delta = SP THEN output = SN
+        # rule 3:  IF e = SN AND delta = SN THEN output = LP
+        # rule 4:  IF e = LP OR  delta = LP THEN output = LN
 
-    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) |
-                                  (error['ns'] & delta['nb']) |
-                                  (error['nb'] & delta['ns'])),
-                      consequent=output['nb'], label='rule nb')
+        rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) |
+                                      (error['ns'] & delta['nb']) |
+                                      (error['nb'] & delta['ns'])),
+                          consequent=output['nb'], label='rule nb')
 
-    rule1 = ctrl.Rule(antecedent=((error['nb'] & delta['ze']) |
-                                  (error['nb'] & delta['ps']) |
-                                  (error['ns'] & delta['ns']) |
-                                  (error['ns'] & delta['ze']) |
-                                  (error['ze'] & delta['ns']) |
-                                  (error['ze'] & delta['nb']) |
-                                  (error['ps'] & delta['nb'])),
-                      consequent=output['ns'], label='rule ns')
+        rule1 = ctrl.Rule(antecedent=((error['nb'] & delta['ze']) |
+                                      (error['nb'] & delta['ps']) |
+                                      (error['ns'] & delta['ns']) |
+                                      (error['ns'] & delta['ze']) |
+                                      (error['ze'] & delta['ns']) |
+                                      (error['ze'] & delta['nb']) |
+                                      (error['ps'] & delta['nb'])),
+                          consequent=output['ns'], label='rule ns')
 
-    rule2 = ctrl.Rule(antecedent=((error['nb'] & delta['pb']) |
-                                  (error['ns'] & delta['ps']) |
-                                  (error['ze'] & delta['ze']) |
-                                  (error['ps'] & delta['ns']) |
-                                  (error['pb'] & delta['nb'])),
-                      consequent=output['ze'], label='rule ze')
+        rule2 = ctrl.Rule(antecedent=((error['nb'] & delta['pb']) |
+                                      (error['ns'] & delta['ps']) |
+                                      (error['ze'] & delta['ze']) |
+                                      (error['ps'] & delta['ns']) |
+                                      (error['pb'] & delta['nb'])),
+                          consequent=output['ze'], label='rule ze')
 
-    rule3 = ctrl.Rule(antecedent=((error['ns'] & delta['pb']) |
-                                  (error['ze'] & delta['pb']) |
-                                  (error['ze'] & delta['ps']) |
-                                  (error['ps'] & delta['ps']) |
-                                  (error['ps'] & delta['ze']) |
-                                  (error['pb'] & delta['ze']) |
-                                  (error['pb'] & delta['ns'])),
-                      consequent=output['ps'], label='rule ps')
+        rule3 = ctrl.Rule(antecedent=((error['ns'] & delta['pb']) |
+                                      (error['ze'] & delta['pb']) |
+                                      (error['ze'] & delta['ps']) |
+                                      (error['ps'] & delta['ps']) |
+                                      (error['ps'] & delta['ze']) |
+                                      (error['pb'] & delta['ze']) |
+                                      (error['pb'] & delta['ns'])),
+                          consequent=output['ps'], label='rule ps')
 
-    rule4 = ctrl.Rule(antecedent=((error['ps'] & delta['pb']) |
-                                  (error['pb'] & delta['pb']) |
-                                  (error['pb'] & delta['ps'])),
-                      consequent=output['pb'], label='rule pb')
+        rule4 = ctrl.Rule(antecedent=((error['ps'] & delta['pb']) |
+                                      (error['pb'] & delta['pb']) |
+                                      (error['pb'] & delta['ps'])),
+                          consequent=output['pb'], label='rule pb')
 
-    system = ctrl.ControlSystem(rules=[rule0, rule1, rule2, rule3, rule4])
+        system = ctrl.ControlSystem(rules=[rule0, rule1, rule2, rule3, rule4])
 
-    sim = ctrl.ControlSystemSimulation(system, flush_after_run=21 * 21 + 1)
+        sim = ctrl.ControlSystemSimulation(system, flush_after_run=21 * 21 + 1)
 
-    upsampled = np.linspace(-2, 2, 21)
-    x, y = np.meshgrid(upsampled, upsampled)
-    z = np.zeros_like(x)
+        upsampled = np.linspace(-2, 2, 21)
+        x, y = np.meshgrid(upsampled, upsampled)
+        z = np.zeros_like(x)
 
-    # Loop through the system 21*21 times to collect the control surface
-    for i in range(21):
-        for j in range(21):
-            sim.input['error'] = x[i, j]
-            sim.input['delta'] = y[i, j]
-            sim.compute()
-            z[i, j] = sim.output['output']
+        # Loop through the system 21*21 times to collect the control surface
+        for i in range(21):
+            for j in range(21):
+                sim.input['error'] = x[i, j]
+                sim.input['delta'] = y[i, j]
+                sim.compute()
+                z[i, j] = sim.output['output']
 
-    sim.print_state()
+        sim.print_state()
 
-    # Antecedent testing
-    assert 'Antecedents' in mock_stdout.getvalue()
-    assert 'Antecedent: error' in mock_stdout.getvalue()
-    assert 'Antecedent: delta' in mock_stdout.getvalue()
+        # Antecedent testing
+        assert 'Antecedents' in mock_stdout.getvalue()
+        assert 'Antecedent: error' in mock_stdout.getvalue()
+        assert 'Antecedent: delta' in mock_stdout.getvalue()
 
-    # Rules testing
-    assert 'Rules' in mock_stdout.getvalue()
-    assert 'RULE #0:' in mock_stdout.getvalue()
-    assert 'IF ((error[nb] AND delta[nb]) OR (error[ns] AND delta[nb])) ' + \
-           'OR (error[nb] AND delta[ns]) THEN output[nb]' \
-           in mock_stdout.getvalue()
-    assert 'Aggregation (IF-clause):' in mock_stdout.getvalue()
-    assert 'Activation (THEN-clause):' in mock_stdout.getvalue()
-    assert 'RULE #1:' in mock_stdout.getvalue()
-    assert 'RULE #2:' in mock_stdout.getvalue()
-    assert 'RULE #3:' in mock_stdout.getvalue()
-    assert 'RULE #4:' in mock_stdout.getvalue()
+        # Rules testing
+        assert 'Rules' in mock_stdout.getvalue()
+        assert 'RULE #0:' in mock_stdout.getvalue()
+        assert (
+            'IF ((error[nb] AND delta[nb]) OR (error[ns] AND delta[nb])) '
+               'OR (error[nb] AND delta[ns]) THEN output[nb]'
+        ) in mock_stdout.getvalue()
+        assert 'Aggregation (IF-clause):' in mock_stdout.getvalue()
+        assert 'Activation (THEN-clause):' in mock_stdout.getvalue()
+        assert 'RULE #1:' in mock_stdout.getvalue()
+        assert 'RULE #2:' in mock_stdout.getvalue()
+        assert 'RULE #3:' in mock_stdout.getvalue()
+        assert 'RULE #4:' in mock_stdout.getvalue()
 
-    # Intermediaries and Conquests testing
-    assert 'Intermediaries and Conquests' in mock_stdout.getvalue()
-    assert 'Consequent: output' in mock_stdout.getvalue()
-    assert 'Accumulate using accumulation_max' in mock_stdout.getvalue()
+        # Intermediaries and Conquests testing
+        assert 'Intermediaries and Conquests' in mock_stdout.getvalue()
+        assert 'Consequent: output' in mock_stdout.getvalue()
+        assert 'Accumulate using accumulation_max' in mock_stdout.getvalue()
 
-    sim.reset()
+        sim.reset()
 
 
 def test_print_state(print_state=False):

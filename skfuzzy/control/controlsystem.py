@@ -437,7 +437,7 @@ class ControlSystemSimulation(object):
         """
         Reset the simulation.
 
-        Cear memory by removing all inputs, outputs, and intermediate values.
+        Clear memory by removing all inputs, outputs, and intermediate values.
         """
         self._reset_simulation()
 

@@ -7,7 +7,7 @@
 language: python
 
 
-#  The Travis python is set to 3.2 for all builds, since we use the default python for the 3.2 build and the anaconda python otherwise
+#  The Travis python is set to 3.6 for all builds, since we use the default python for the 3.6 build and the anaconda python otherwise
 python:
     - 3.6
 
@@ -37,6 +37,9 @@ before_install:
         travis_retry conda install pyqt;
       else
         travis_retry conda install pillow;
+      fi
+    - if [[ $ENV == python=2.7* ]]; then
+        travis_retry conda install mock;
       fi
     - travis_retry pip install coveralls
 
