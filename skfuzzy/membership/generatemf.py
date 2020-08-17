@@ -170,27 +170,134 @@ def piecemf(x, abc):
                 y = 0,                    min(x) <= x <= a
                 y = b(x - a)/c(b - a),    a <= x <= b
                 y = x/c,                  b <= x <= c
+                y = 1,                    c <= x <= max(x)
     """
     a, b, c = abc
-    if c != x.max():
-        c = x.max()
 
     assert a <= b and b <= c, '`abc` requires a <= b <= c.'
 
-    n = len(x)
-    y = np.zeros(n)
+    y = np.zeros(len(x))
 
-    idx0 = _nearest(x, 0)[0]
-    idxa = _nearest(x, a)[0]
-    idxb = _nearest(x, b)[0]
+    idx = np.logical_and(a <= x, x <= b)
+    y[idx] = (b * (x[idx] - a)) / float(c * (b - a))
 
-    n = np.r_[0:n - idx0]
-    y[idx0 + n] = n / float(c)
-    y[idx0:idxa] = 0
-    m = np.r_[0:idxb - idxa]
-    y[idxa:idxb] = b * m / (float(c) * (b - a))
+    idx = np.logical_and(b < x, x <= c)
+    y[idx] = x[idx] / float(c)
 
-    return y / y.max()
+    idx = x >= c
+    y[idx] = 1
+
+    return y
+
+
+def ipiecemf(x, abc):
+    """
+    Inverse piecewise linear membership function (inverse of piecemf).
+
+    Parameters
+    ----------
+    x : 1d array
+        Independent variable vector.
+    abc : 1d array, length 3
+        Defines the inverse piecewise function. Important: if abc = [a, b, c]
+        then a <= b <= c is REQUIRED!
+
+    Returns
+    -------
+    y : 1d array
+        Inverse piecewise fuzzy membership function for x.
+
+    Notes
+    -----
+    Inverse piecewise definition:
+                y = 1,                    min(x) <= x <= a
+                y = (b + a - x)/b,        a <= x <= b
+                y = a(c - x)/b(c - b),    b <= x <= c
+                y = 0,                    c <= x <= max(x)
+    """
+    a, b, c = abc
+
+    assert a <= b and b <= c, '`abc` requires a <= b <= c.'
+
+    y = np.zeros(len(x))
+
+    idx = x <= a
+    y[idx] = 1
+
+    idx = np.logical_and(a <= x, x <= b)
+    y[idx] = (b + a - x[idx]) / float(b)
+
+    idx = np.logical_and(b < x, x <= c)
+    y[idx] = (a * (c - x[idx])) / float(b * (c - b))
+
+    return y
+
+
+def gpiecemf(x, abc, efg):
+    """
+    General piecewise linear membership function, which combines the
+    functionalities of piecemf and ipiecemf.
+
+    Parameters
+    ----------
+    x : 1d array
+        Independent variable vector.
+    abc : 1d array, length 3
+        Defines the piecewise function. Important: if abc = [a, b, c] then
+        a <= b <= c is REQUIRED!
+    efg : 1d array, length 3
+        Defines the inverse piecewise function. Important: if efg = [e, f, g]
+        then e <= f <= g is REQUIRED! In addition, c <= e or g <= a is also
+        REQUIRED!
+
+    Returns
+    -------
+    y : 1d array
+        General piecewise fuzzy membership function for x.
+
+    Notes
+    -----
+    General piecewise definition:
+        if c<=e:
+                y = 0,                    min(x) <= x <= a
+                y = b(x - a)/c(b - a),    a <= x <= b
+                y = x/c,                  b <= x <= c
+                y = 1,                    c <= x <= e
+                y = (f + e - x)/f,        e <= x <= f
+                y = e(g - x)/f(g - f),    f <= x <= g
+                y = 0,                    g <= x <= max(x)
+        if g<=a:
+                y = 1,                    min(x) <= x <= e
+                y = (f + e - x)/f,        e <= x <= f
+                y = e(g - x)/f(g - f),    f <= x <= g
+                y = 0,                    g <= x <= a
+                y = b(x - a)/c(b - a),    a <= x <= b
+                y = x/c,                  b <= x <= c
+                y = 1,                    c <= x <= max(x)
+    """
+    a, b, c = abc
+    e, f, g = efg
+
+    assert c <= e or g <= a, 'c <= e or g <= a required.'
+
+    y_piecemf = piecemf(x, abc)
+    y_ipiecemf = ipiecemf(x, efg)
+    if c <= e:
+        y = np.ones(len(x))
+        idx = x <= c
+        y[idx] = y_piecemf[idx]
+
+        idx = x >= e
+        y[idx] = y_ipiecemf[idx]
+    elif g <= a:
+        y = np.zeros(len(x))
+        idx = x <= g
+        y[idx] = y_ipiecemf[idx]
+
+        idx = x >= a
+        y[idx] = y_piecemf[idx]
+
+    return y
 
 
 def pimf(x, a, b, c, d):
