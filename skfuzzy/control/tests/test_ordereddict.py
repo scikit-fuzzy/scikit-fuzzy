@@ -22,6 +22,9 @@ try:
     from numpy.testing.decorators import skipif
 except AttributeError:
     from numpy.testing.dec import skipif
+except ModuleNotFoundError:
+    from numpy.testing import dec
+    skipif = dec.skipif
 from _skipclass import skipclassif
 
 

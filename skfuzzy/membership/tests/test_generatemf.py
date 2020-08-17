@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.testing import assert_allclose
-from skfuzzy.membership import (gaussmf, gauss2mf, gbellmf, piecemf, pimf,
-                                psigmf, sigmf, smf, trapmf, trimf, zmf)
+from skfuzzy.membership import (gaussmf, gauss2mf, gbellmf, gpiecemf, ipiecemf,
+                                piecemf, pimf, psigmf, sigmf, smf, trapmf,
+                                trimf, zmf)
 
 
 def test_gaussmf():
@@ -28,13 +29,53 @@ def test_gbellmf():
     assert_allclose(test, expected)
 
 
-def test_piecemf():
+def test_piecemf_c_equal_to_max_x():
     x = np.arange(0, 2.1, 0.1)
     expected = np.r_[0.,    0.,   0.,  0.,   0.,  0.,   0.,  0.,   0.,
-                     0.,    0., 0.25, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85,
+                     0.,    0., 0.25, 0.5, 0.65, 0.7, 0.75, 0.8, 0.85,
                      0.9, 0.95,   1.]
     test = piecemf(x, [1, 1.25, 2])
     assert_allclose(test, expected)
+
+
+def test_piecemf_c_smaller_than_max_x():
+    x = np.arange(0, 2.6, 0.1)
+    expected = np.r_[0.,    0.,   0.,  0.,   0.,  0.,   0.,  0.,   0.,
+                     0.,    0., 0.25, 0.5, 0.65, 0.7, 0.75, 0.8, 0.85,
+                     0.9, 0.95,   1.,  1.,   1.,  1.,   1.,  1.]
+    test = piecemf(x, [1, 1.25, 2])
+    assert_allclose(test, expected)
+
+
+def test_ipiecemf():
+    x = np.arange(0, 2.6, 0.1)
+    expected = np.r_[1.,     1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,
+                     1.,     1., 0.92, 0.84, 0.75, 0.65, 0.55, 0.45, 0.35,
+                     0.25, 0.15, 0.05,   0.,   0.,   0.,   0.,   0.]
+    test = ipiecemf(x, [1, 1.25, 2.05])
+    assert_allclose(test, expected)
+
+
+def test_gpiecemf_c_smaller_than_e():
+    x = np.arange(0, 4.1, 0.1)
+    expected = np.r_[0.,    0.,   0.,  0.,   0.,  0.,   0.,  0.,   0.,
+                     0.,    0., 0.25, 0.5, 0.65, 0.7, 0.75, 0.8, 0.85,
+                     0.9, 0.95,   1.,  1.,   1.,  1.,   1.,  1., 0.963636,
+                     0.927272, 0.852272, 0.738636, 0.625, 0.511363, 0.397727,
+                     0.284090, 0.170454, 0.056818, 0., 0., 0., 0., 0.]
+    test = gpiecemf(x, [1, 1.25, 2], [2.5, 2.75, 3.55])
+    assert_allclose(test, expected, rtol=1e-5)
+
+
+def test_gpiecemf_g_smaller_than_a():
+    x = np.arange(0, 4.1, 0.1)
+    expected = np.r_[1.,     1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,
+                     1.,     1., 0.92, 0.84, 0.75, 0.65, 0.55, 0.45, 0.35,
+                     0.25, 0.15, 0.05,   0.,   0.,   0.,   0.,   0., 0.314285,
+                     0.628571, 0.8, 0.828571, 0.857142, 0.885714, 0.914285,
+                     0.942857, 0.971428, 1., 1., 1., 1., 1., 1.]
+    test = gpiecemf(x, [2.5, 2.75, 3.5], [1, 1.25, 2.05])
+    assert_allclose(test, expected, rtol=1e-5)
 
 
 def test_pimf_smf_zmf():

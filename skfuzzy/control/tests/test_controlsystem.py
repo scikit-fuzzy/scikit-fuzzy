@@ -9,6 +9,9 @@ try:
     from numpy.testing.decorators import skipif
 except AttributeError:
     from numpy.testing.dec import skipif
+except ModuleNotFoundError:
+    from numpy.testing import dec
+    skipif = dec.skipif
 
 import networkx
 import nose
@@ -134,7 +137,7 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
+@skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
@@ -152,7 +155,7 @@ def test_rule_order():
 
 
 # The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(
+@skipif(
     (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
