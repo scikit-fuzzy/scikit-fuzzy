@@ -151,9 +151,7 @@ def test_rule_order():
         resolved, [r1.label, r2.label, r3.label])
 
 
-# The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(
-    (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
+@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user

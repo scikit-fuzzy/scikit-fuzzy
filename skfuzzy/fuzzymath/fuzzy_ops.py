@@ -127,7 +127,6 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     skfuzzy.fuzzymath.sigmoid
 
     """
-    # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
     im = arr.astype(float)
     amount_ = np.asarray(amount, dtype=np.float64).ravel()
@@ -160,7 +159,7 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
 def fuzzy_op(x, a, y, b, op):
     """Operation of two fuzzy sets.
-    
+
     Operate fuzzy set ``a`` with fuzzy set ``b``,
     using +, * or any other binary operator.
 
@@ -896,5 +895,5 @@ def sigmoid(x, power, split=0.5):
     --------
     skfuzzy.fuzzymath.contrast
     """
- 
+
     return 1. / (1. + np.exp(- power * (x - split)))

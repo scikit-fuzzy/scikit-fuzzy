@@ -1,16 +1,13 @@
 """
 fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
+from collections import OrderedDict
+
 import numpy as np
 
 from ..membership import trimf
 from .visualization import FuzzyVariableVisualizer
 from .term import Term
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .ordereddict import OrderedDict
 
 
 class FuzzyVariable(object):

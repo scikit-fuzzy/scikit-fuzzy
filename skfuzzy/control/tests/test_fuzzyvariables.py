@@ -1,11 +1,8 @@
+from collections import OrderedDict
+
 import numpy as np
 import numpy.testing as tst
 import nose
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from skfuzzy.control.ordereddict import OrderedDict
 
 from skfuzzy.control import Antecedent, Consequent
 

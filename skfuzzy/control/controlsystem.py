@@ -3,9 +3,11 @@ controlsystem.py : Framework for the new fuzzy logic control system API.
 """
 from __future__ import print_function, division
 
+from collections import OrderedDict
+from warnings import warn
+
 import numpy as np
 import networkx as nx
-from warnings import warn
 
 from ..fuzzymath.fuzzy_ops import _interp_universe_fast
 from skfuzzy import interp_membership, defuzz
@@ -14,11 +16,6 @@ from .antecedent_consequent import Antecedent, Consequent
 from .term import Term, WeightedTerm, TermAggregate
 from .rule import Rule
 from .visualization import ControlSystemVisualizer
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .ordereddict import OrderedDict
 
 
 class ControlSystem(object):
