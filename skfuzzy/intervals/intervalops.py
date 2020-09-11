@@ -33,7 +33,7 @@ def addval(interval1, interval2):
 
     try:
         return np.r_[interval1] + np.r_[interval2]
-    except:
+    except Exception:
         return interval1 + interval2
 
 
@@ -330,7 +330,7 @@ def multval(interval1, interval2):
                         interval1[1] * interval2[0],
                         interval1[1] * interval2[1]]
         return np.r_[crosses.min(), crosses.max()]
-    except:
+    except Exception:
         return interval1 * interval2
 
 
@@ -358,7 +358,7 @@ def scaleval(q, interval):
     try:
         return np.r_[min(q * interval[0], q * interval[1]),
                      max(q * interval[0], q * interval[1])]
-    except:
+    except Exception:
         return q * interval
 
 
@@ -387,5 +387,5 @@ def subval(interval1, interval2):
 
     try:
         return np.r_[interval1[0] - interval2[1], interval1[1] - interval2[0]]
-    except:
+    except Exception:
         return interval1 - interval2

@@ -21,38 +21,38 @@ __version__ = '0.4.2'
 ######################
 
 # Core fuzzy mathematics subpackage
-import skfuzzy.fuzzymath as _fuzzymath
-from skfuzzy.fuzzymath import *
+import skfuzzy.fuzzymath as _fuzzymath  # noqa: E402
+from skfuzzy.fuzzymath import *  # noqa: E402,F403
 __all__.extend(_fuzzymath.__all__)
 
 # Fuzzy membership function subpackage
-import skfuzzy.membership as _membership
-from skfuzzy.membership import *
+import skfuzzy.membership as _membership  # noqa: E402
+from skfuzzy.membership import *  # noqa: E402,F403
 __all__.extend(_membership.__all__)
 
 # Clustering subpackage including fuzzy c-means
-import skfuzzy.cluster as _cluster
-from skfuzzy.cluster import *
+import skfuzzy.cluster as _cluster  # noqa: E402
+from skfuzzy.cluster import *  # noqa: E402,F403
 __all__.extend(_cluster.__all__)
 
 # Interval subpackage
-import skfuzzy.intervals as _intervals
-from skfuzzy.intervals import *
+import skfuzzy.intervals as _intervals  # noqa: E402
+from skfuzzy.intervals import *  # noqa: E402,F403
 __all__.extend(_intervals.__all__)
 
 # Filtering subpackage, including 1D and 2D FIRE functions
-import skfuzzy.filters as _filters
-from skfuzzy.filters import *
+import skfuzzy.filters as _filters  # noqa: E402
+from skfuzzy.filters import *  # noqa: E402,F403
 __all__.extend(_filters.__all__)
 
 # Defuzzification subpackage
-import skfuzzy.defuzzify as _defuzz
-from skfuzzy.defuzzify import *
+import skfuzzy.defuzzify as _defuzz  # noqa: E402
+from skfuzzy.defuzzify import *  # noqa: E402,F403
 __all__.extend(_defuzz.__all__)
 
 # Image processing subpackage
-import skfuzzy.image as _image
-from skfuzzy.image import *
+import skfuzzy.image as _image  # noqa: E402
+from skfuzzy.image import *  # noqa: E402,F403
 __all__.extend(_image.__all__)
 
 # Fuzzy control system subpackage
@@ -61,11 +61,11 @@ __all__.extend(_image.__all__)
 # __all__.extend(_control.__all__)
 
 # Enable testing of the package
-import os.path as osp
-import imp
-import functools
-import warnings
-import sys
+import os.path as osp  # noqa: E402
+import imp  # noqa: E402
+import functools  # noqa: E402
+import warnings  # noqa: E402
+import sys  # noqa: E402
 
 pkg_dir = osp.abspath(osp.dirname(__file__))
 data_dir = osp.join(pkg_dir, 'data')
@@ -88,8 +88,10 @@ else:
         if verbose:
             args.extend(['-v', '-s'])
         if doctest:
-            args.extend(['--with-doctest', '--ignore-files=^\.',
-                         '--ignore-files=^setup\.py$$', '--ignore-files=test'])
+            args.extend([r"--with-doctest",
+                         r"--ignore-files=^\.",
+                         r"--ignore-files=^setup\.py$$",
+                         r"--ignore-files=test"])
             # Make sure warnings do not break the doc tests
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -139,11 +141,12 @@ def _raise_build_error(e):
 It seems that scikit-fuzzy has not been built correctly.
 %s""" % (e, msg))
 
+
 try:
     # This variable is injected in the __builtins__ by the build
     # process. It used to enable importing subpackages of skimage when
     # the binaries are not built
-    __SKFUZZY_SETUP__
+    __SKFUZZY_SETUP__  # noqa: F405
 except NameError:
     __SKFUZZY_SETUP__ = False
 

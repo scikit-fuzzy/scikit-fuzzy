@@ -2,8 +2,8 @@
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
 """
-
 from __future__ import division, print_function
+
 import numpy as np
 
 
@@ -221,6 +221,7 @@ def fuzzy_op(x, a, y, b, op):
             break
 
     return z, mfz
+
 
 def fuzzy_add(x, a, y, b):
     """
@@ -606,11 +607,14 @@ def interp_universe(x, xmf, y):
         idx = np.where(np.diff(xmf > y))[0]
     else:
         idx = np.where(np.diff(xmf >= y))[0]
-    xx = x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
+    xx = (x[idx]
+          + (y - xmf[idx])
+          * (x[idx + 1] - x[idx])
+          / (xmf[idx + 1] - xmf[idx]))
 
     # The above method is fast, but duplicates point values where
-    # y == peak of a membership function.  Ducking briefly into a set
-    # elimniates this.  Benchmarked multiple ways; this is by far the fastest.
+    # y == peak of a membership function. Ducking briefly into a set
+    # eliminates this. Benchmarked multiple ways; this is by far the fastest.
     # Speed penalty approximately 10%, worth it.
     return [n for n in set(xx.tolist())]
 
@@ -654,7 +658,10 @@ def _interp_universe_fast(x, xmf, y):
 
     # This method is fast, but duplicates point values where
     # y == peak of a membership function.
-    return x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
+    return (x[idx]
+            + (y - xmf[idx])
+            * (x[idx+1] - x[idx])
+            / (xmf[idx+1] - xmf[idx]))
 
 
 def modus_ponens(a, b, ap, c=None):

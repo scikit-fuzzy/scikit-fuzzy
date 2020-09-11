@@ -82,7 +82,9 @@ def _fp_coeff(u):
     return np.trace(u.dot(u.T)) / float(n)
 
 
-def cmeans(data, c, m, error, maxiter, metric='euclidean', init=None, seed=None):
+def cmeans(data, c, m, error, maxiter,
+           metric='euclidean',
+           init=None, seed=None):
     """
     Fuzzy c-means clustering algorithm [1].
 
@@ -182,7 +184,9 @@ def cmeans(data, c, m, error, maxiter, metric='euclidean', init=None, seed=None)
     return cntr, u, u0, d, jm, p, fpc
 
 
-def cmeans_predict(test_data, cntr_trained, m, error, maxiter, metric='euclidean', init=None,
+def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
+                   metric='euclidean',
+                   init=None,
                    seed=None):
     """
     Prediction of new data in given a trained fuzzy c-means framework [1].
@@ -260,7 +264,8 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter, metric='euclidean
     # Main cmeans loop
     while p < maxiter - 1:
         u2 = u.copy()
-        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m, metric)
+        [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m,
+                                       metric)
         jm = np.hstack((jm, Jjm))
         p += 1
 

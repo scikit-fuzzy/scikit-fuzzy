@@ -29,8 +29,10 @@ DEBUG = True
 
 
 class ApiDocWriter(object):
-    ''' Class for automatic detection and parsing of API docs
-    to Sphinx-parsable reST format'''
+    """
+    Class for automatic detection and parsing of API docs
+    to Sphinx-parsable reST format.
+    """
 
     # only separating first two levels
     rst_section_levels = ['*', '=', '-', '~', '^']
@@ -41,7 +43,7 @@ class ApiDocWriter(object):
                  package_skip_patterns=None,
                  module_skip_patterns=None,
                  ):
-        ''' Initialize package for parsing
+        """Initialize package for parsing
 
         Parameters
         ----------
@@ -66,7 +68,7 @@ class ApiDocWriter(object):
             ``.util.console``
             If is None, gives default. Default is:
             ['\.setup$', '\._']
-        '''
+        """
         if package_skip_patterns is None:
             package_skip_patterns = ['\\.tests$']
         if module_skip_patterns is None:
@@ -80,7 +82,7 @@ class ApiDocWriter(object):
         return self._package_name
 
     def set_package_name(self, package_name):
-        ''' Set package_name
+        """Set package_name
 
         >>> docwriter = ApiDocWriter('sphinx')
         >>> import sphinx
@@ -90,7 +92,7 @@ class ApiDocWriter(object):
         >>> import docutils
         >>> docwriter.root_path == docutils.__path__[0]
         True
-        '''
+        """
         # It's also possible to imagine caching the module parsing here
         self._package_name = package_name
         root_module = self._import(package_name)

@@ -4,10 +4,14 @@ scikit-fuzzy
 `scikit-fuzzy` is a fuzzy logic toolkit for SciPy.
 
 The goals of scikit-fuzzy are:
-* To provide the community with a robust toolkit of independently developed and implemented fuzzy logic algorithms
-* To increase the attractiveness of scientific Python as a valid alternative to closed-source options.
+* To provide the community with a robust toolkit of independently developed and
+  implemented fuzzy logic algorithms
+* To increase the attractiveness of scientific Python as a valid alternative to
+  closed-source options.
 
-Please cite [![DOI](https://zenodo.org/badge/8872608.svg)](https://zenodo.org/badge/latestdoi/8872608) if you find scikit-fuzzy useful.  A formal paper describing this package is in preparation.
+Please cite [![DOI](https://zenodo.org/badge/8872608.svg)](https://zenodo.org/badge/latestdoi/8872608)
+if you find scikit-fuzzy useful.  A formal paper describing this package is in
+preparation.
 
 Source
 ------
@@ -37,7 +41,7 @@ Scikit-Fuzzy depends on
   * SciPy >= 0.9
   * NetworkX >= 1.9
 
-and is available on PyPi! The lastest stable release can always be obtained
+and is available on PyPi! The latest stable release can always be obtained
 and installed simply by running
 
     $ pip install -U scikit-fuzzy

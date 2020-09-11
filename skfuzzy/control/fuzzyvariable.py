@@ -5,9 +5,9 @@ from collections import OrderedDict
 
 import numpy as np
 
-from ..membership import trimf
-from .visualization import FuzzyVariableVisualizer
 from .term import Term
+from .visualization import FuzzyVariableVisualizer
+from ..membership import trimf
 
 
 class FuzzyVariable(object):

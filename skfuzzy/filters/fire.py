@@ -131,8 +131,9 @@ def fire2d(im, l1=0, l2=255, fuzzyresolution=1):
     im = padimg(im.astype(float), 1, mode='reflect')
 
     # Fuzzy input sequence
-    dx = np.arange(- l2 + fuzzyresolution,
-                     l2 - fuzzyresolution, fuzzyresolution)
+    dx = np.arange(-l2 + fuzzyresolution,
+                   l2 - fuzzyresolution,
+                   fuzzyresolution)
 
     # Fuzzy membership functions
     po = np.atleast_2d(trimf(dx, [l1,

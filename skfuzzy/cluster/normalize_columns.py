@@ -22,7 +22,7 @@ def normalize_columns(columns):
 
     # broadcast sum over columns
     normalized_columns = columns/np.sum(columns, axis=0, keepdims=1)
-    
+
     return normalized_columns
 
 
@@ -42,13 +42,13 @@ def normalize_power_columns(x, exponent):
     -------
     result : 2d array (M x N)
         normalize_columns(x**n) but safe
-    
+
     """
 
     assert np.all(x >= 0.0)
 
     x = x.astype(np.float64)
-    
+
     # values in range [0, 1]
     x = x/np.max(x, axis=0, keepdims=True)
 
@@ -58,7 +58,7 @@ def normalize_power_columns(x, exponent):
     if exponent < 0:
         # values in range [1, 1/eps]
         x /= np.min(x, axis=0, keepdims=True)
-        
+
         # values in range [1, (1/eps)**exponent] where exponent < 0
         # this line might trigger an underflow warning
         # if (1/eps)**exponent becomes zero, but that's ok

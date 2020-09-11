@@ -111,11 +111,11 @@ def test_lambda_cut_series():
     x = np.arange(21) - 10
     mfx = fuzz.trimf(x, [-2, 3, 5])
 
-    expected = np.array([[0.  , -2.,  5.],
-                         [0.25,  0.,  4.],
-                         [0.5 ,  1.,  4.],
-                         [0.75,  2.,  3.],
-                         [1.  ,  3.,  3.]])
+    expected = np.array([[0., -2., 5.],
+                         [0.25, 0., 4.],
+                         [0.5, 1., 4.],
+                         [0.75, 2., 3.],
+                         [1., 3., 3.]])
 
     assert_allclose(expected, fuzz.lambda_cut_series(x, mfx, 5))
 

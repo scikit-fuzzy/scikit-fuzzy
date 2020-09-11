@@ -29,7 +29,7 @@ class TestFire1D():
 
     def test_fire1d(self):
         fired = fire1d(self.data)
-        assert fired.std() < 0.65        # Lower variation
+        assert fired.std() < 0.65  # Lower variation
         assert fired[:64].min() >= -0.1  # Correction terminates at zero
         assert fired[64:].max() <= 0.1
 
@@ -52,6 +52,7 @@ class TestFire2D():
         fired = fire2d(self.im, fuzzyresolution=0.1)
 
         assert fired.std() < self.im.std()
+
 
 if __name__ == '__main__':
     np.testing.run_module_suite()

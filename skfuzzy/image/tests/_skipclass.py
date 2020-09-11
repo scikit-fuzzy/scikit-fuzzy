@@ -2,7 +2,7 @@ import functools
 import types
 try:
     from unittest import SkipTest, TestCase
-except:
+except Exception:
     from nose import SkipTest
     from nose.case import Test as TestCase
 
