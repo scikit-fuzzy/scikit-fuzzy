@@ -46,7 +46,7 @@ class ControlSystem(object):
                 self.addrule(rules)
             else:
                 raise ValueError("Expected a Rule or a collection of Rules as"
-                                 " `rules` argument, got '%s'." % rules)
+                                 " `rules` argument, got '{}'.".format(rules))
 
     @property
     def rules(self):
@@ -186,14 +186,14 @@ class _InputAcceptor(object):
             if self.sim.clip_to_bounds:
                 value = np.fmin(value, var.universe.max())
             else:
-                raise IndexError("Input value out of bounds. Max is %s" %
-                                 str(max(var.universe)))
+                raise IndexError("Input value out of bounds. Max is {}."
+                                 .format(max(var.universe)))
         if minval < var.universe.min():
             if self.sim.clip_to_bounds:
                 value = np.fmax(value, var.universe.min())
             else:
-                raise IndexError("Input value is out of bounds. Min is %s" %
-                                 str(min(var.universe)))
+                raise IndexError("Input value is out of bounds. Min is {}."
+                                 .format(min(var.universe)))
 
         var.input['current'] = value
         self.sim._update_unique_id()
@@ -490,10 +490,10 @@ class ControlSystemSimulation(object):
         print(" Antecedents ")
         print("=============")
         for v in self.ctrl.antecedents:
-            print("{0:<35} = {1}".format(v, v.input[self]))
+            print("{!s:<35} = {}".format(v, v.input[self]))
             for term in v.terms.values():
-                print("  - {0:<32}: {1}".format(term.label,
-                                                term.membership_value[self]))
+                print("  - {:<32}: {}".format(term.label,
+                                              term.membership_value[self]))
         print("")
         print("=======")
         print(" Rules ")
@@ -501,22 +501,21 @@ class ControlSystemSimulation(object):
         rule_number = {}
         for rn, r in enumerate(self.ctrl.rules):
             assert isinstance(r, Rule)
-            rule_number[r] = "RULE #%d" % rn
-            print("RULE #%d:\n  %s\n" % (rn, r))
+            rule_number[r] = "RULE #{}".format(rn)
+            print("RULE #{}:\n  {!s}\n".format(rn, r))
 
             print("  Aggregation (IF-clause):")
             for term in r.antecedent_terms:
                 assert isinstance(term, Term)
                 print("  - {0:<55}: {1}".format(term.full_label,
                                                 term.membership_value[self]))
-            print("    {0:>54} = {1}".format(r.antecedent,
+            print("    {!s:>54} = {}".format(r.antecedent,
                                              r.aggregate_firing[self]))
 
             print("  Activation (THEN-clause):")
             for c in r.consequent:
                 assert isinstance(c, WeightedTerm)
-                print("    {0:>54} : {1}".format(c,
-                                                 c.activation[self]))
+                print("    {!s:>54} : {}".format(c, c.activation[self]))
             print("")
         print("")
 
@@ -524,18 +523,19 @@ class ControlSystemSimulation(object):
         print(" Intermediaries and Conquests ")
         print("==============================")
         for c in self.ctrl.consequents:
-            print("{0:<36} = {1}".format(
-                c, CrispValueCalculator(c, self).defuzz()))
+            print("{!s:<36} = {}"
+                  .format(c, CrispValueCalculator(c, self).defuzz()))
 
             for term in c.terms.values():
-                print("  %s:" % term.label)
+                print("  {}:".format(term.label))
                 for cut_rule, cut_value in term.cuts[self].items():
                     if cut_rule not in rule_number.keys():
                         continue
-                    print("    {0:>32} : {1}".format(rule_number[cut_rule],
-                                                     cut_value))
-                accu = "Accumulate using %s" % c.accumulation_method.func_name
-                print("    {0:>32} : {1}".format(accu,
+                    print("    {:>32} : {}".format(rule_number[cut_rule],
+                                                   cut_value))
+                accu = "Accumulate using {}".format(
+                    c.accumulation_method.__name__)
+                print("    {!s:>32} : {}".format(accu,
                                                  term.membership_value[self]))
             print("")
 

@@ -413,7 +413,7 @@ def _append_max(arr, pad_amt, num, axis=-1):
             slice(None) if i != axis else slice(end, end - num, -1)
             for (i, x) in enumerate(arr.shape))
     else:
-        max_slice = tuple(slice(None) for x in arr.shape)
+        max_slice = (slice(None),) * len(arr.shape)
 
     # Shape to restore singleton dimension after slicing
     pad_singleton = tuple(x if i != axis else 1
@@ -521,7 +521,7 @@ def _append_mean(arr, pad_amt, num, axis=-1):
             slice(None) if i != axis else slice(end, end - num, -1)
             for (i, x) in enumerate(arr.shape))
     else:
-        mean_slice = tuple(slice(None) for x in arr.shape)
+        mean_slice = (slice(None),) * len(arr.shape)
 
     # Shape to restore singleton dimension after slicing
     pad_singleton = tuple(x if i != axis else 1
@@ -630,7 +630,7 @@ def _append_med(arr, pad_amt, num, axis=-1):
             slice(None) if i != axis else slice(end, end - num, -1)
             for (i, x) in enumerate(arr.shape))
     else:
-        med_slice = tuple(slice(None) for x in arr.shape)
+        med_slice = (slice(None),) * len(arr.shape)
 
     # Shape to restore singleton dimension after slicing
     pad_singleton = tuple(x if i != axis else 1
@@ -739,7 +739,7 @@ def _append_min(arr, pad_amt, num, axis=-1):
             slice(None) if i != axis else slice(end, end - num, -1)
             for (i, x) in enumerate(arr.shape))
     else:
-        min_slice = tuple(slice(None) for x in arr.shape)
+        min_slice = (slice(None),) * len(arr.shape)
 
     # Shape to restore singleton dimension after slicing
     pad_singleton = tuple(x if i != axis else 1
@@ -1041,8 +1041,8 @@ def _normalize_shape(ndarray, shape, cast_to_int=True):
             # Create new axis 0, repeat along it for every axis
             arr = arr[np.newaxis, :].repeat(ndims, axis=0)
         else:
-            fmt = "Unable to create correctly shaped tuple from %s"
-            raise ValueError(fmt % (shape,))
+            fmt = "Unable to create correctly shaped tuple from {!s}."
+            raise ValueError(fmt.format(shape))
 
     elif arr.ndim == 2:
         if arr.shape[1] == 1 and arr.shape[0] == ndims:
@@ -1052,12 +1052,12 @@ def _normalize_shape(ndarray, shape, cast_to_int=True):
             # Input correctly formatted, pass it on as `arr`
             arr = shape
         else:
-            fmt = "Unable to create correctly shaped tuple from %s"
-            raise ValueError(fmt % (shape,))
+            fmt = "Unable to create correctly shaped tuple from {!s}."
+            raise ValueError(fmt.format(shape))
 
     else:
-        fmt = "Unable to create correctly shaped tuple from %s"
-        raise ValueError(fmt % (shape,))
+        fmt = "Unable to create correctly shaped tuple from {!s}."
+        raise ValueError(fmt.format(shape))
 
     # Cast if necessary
     if cast_to_int is True:
@@ -1103,8 +1103,8 @@ def _validate_lengths(narray, number_elements):
         chk = [1 if x is None else x for x in i]
         chk = [1 if x >= 0 else -1 for x in chk]
         if (chk[0] < 0) or (chk[1] < 0):
-            fmt = "%s cannot contain negative values."
-            raise ValueError(fmt % (number_elements,))
+            fmt = "{!s} cannot contain negative values."
+            raise ValueError(fmt.format(number_elements))
     return normshp
 
 
@@ -1312,7 +1312,7 @@ def pad(array, pad_width, mode=None, **kwargs):
            [10, 10, 10, 10, 10, 10, 10]])
     """
     if not np.asarray(pad_width).dtype.kind == 'i':
-        raise TypeError('`pad_width` must be of integral type.')
+        raise TypeError("`pad_width` must be of integral type.")
 
     narray = np.array(array)
     pad_width = _validate_lengths(narray, pad_width)
@@ -1328,21 +1328,21 @@ def pad(array, pad_width, mode=None, **kwargs):
         'reflect': ['reflect_type'],
         'symmetric': ['reflect_type'],
         'wrap': [],
-        }
+    }
 
     kwdefaults = {
         'stat_length': None,
         'constant_values': 0,
         'end_values': 0,
         'reflect_type': 'even',
-        }
+    }
 
     if isinstance(mode, str):
         # Make sure have allowed kwargs appropriate for mode
         for key in kwargs:
             if key not in allowedkwargs[mode]:
-                raise ValueError('%s keyword not in allowed keywords %s' %
-                                 (key, allowedkwargs[mode]))
+                raise ValueError("{!s} keyword not in allowed keywords {!s}"
+                                 .format(key, allowedkwargs[mode]))
 
         # Set kwarg defaults
         for kw in allowedkwargs[mode]:
@@ -1356,8 +1356,8 @@ def pad(array, pad_width, mode=None, **kwargs):
                 kwargs[i] = _normalize_shape(narray, kwargs[i],
                                              cast_to_int=False)
     elif mode is None:
-        raise ValueError('Keyword "mode" must be a function or one of %s.' %
-                         (list(allowedkwargs.keys()),))
+        raise ValueError("Keyword `mode` must be a function or one of {}."
+                         .format(list(allowedkwargs.keys())))
     else:
         # Drop back to old, slower np.apply_along_axis mode for user-supplied
         # vector function

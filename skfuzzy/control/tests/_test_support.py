@@ -57,10 +57,10 @@ def _filterwarnings(filters, quiet=False):
             # This filter caught nothing
             missing.append((msg, cat.__name__))
     if reraise:
-        raise AssertionError("unhandled warning %r" % reraise[0])
+        raise AssertionError("unhandled warning '{}'".format(reraise[0]))
     if missing:
-        raise AssertionError("filter (%r, %s) did not catch any warning" %
-                             missing[0])
+        raise AssertionError("filter ('{}', {}) did not catch any warning"
+                             .format(*missing[0]))
 
 
 class WarningsRecorder(object):
@@ -76,7 +76,7 @@ class WarningsRecorder(object):
             return getattr(self._warnings[-1], attr)
         elif attr in warnings.WarningMessage._WARNING_DETAILS:
             return None
-        raise AttributeError("%r has no attribute %r" % (self, attr))
+        raise AttributeError("{!s} has no attribute '{}'".format(self, attr))
 
     @property
     def warnings(self):

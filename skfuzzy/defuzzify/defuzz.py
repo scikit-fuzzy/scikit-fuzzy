@@ -242,12 +242,12 @@ def defuzz(x, mfx, mode):
     x = x.ravel()
     mfx = mfx.ravel()
     n = len(x)
-    assert n == len(mfx), 'Length of x and fuzzy membership function must be \
-                          identical.'
+    assert n == len(mfx), ("Length of x and fuzzy membership function must be "
+                           "identical.")
 
     if 'centroid' in mode or 'bisector' in mode:
         zero_truth_degree = mfx.sum() == 0  # Approximation of total area
-        assert not zero_truth_degree, 'Total area is zero in defuzzification!'
+        assert not zero_truth_degree, "Total area is zero in defuzzification!"
 
         if 'centroid' in mode:
             return centroid(x, mfx)
@@ -265,7 +265,8 @@ def defuzz(x, mfx, mode):
         return np.max(x[mfx == mfx.max()])
 
     else:
-        raise ValueError('The input for `mode`, %s, was incorrect.' % (mode))
+        raise ValueError("The input for `mode`, {}, was incorrect."
+                         .format(mode))
 
 
 def _interp_universe(x, xmf, mf_val):

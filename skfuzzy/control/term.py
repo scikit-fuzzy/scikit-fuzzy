@@ -117,7 +117,7 @@ class WeightedTerm(object):
         if self.weight == 1.:
             return self.term.full_label
         else:
-            return "%s@%0.2f%%" % (self.term.full_label, self.weight)
+            return "{}@{:0.2f}%".format(self.term.full_label, self.weight)
 
 
 class FuzzyAggregationMethods(object):
@@ -178,13 +178,14 @@ class TermAggregate(TermPrimitive):
             if isinstance(term, Term):
                 return term.full_label
             elif isinstance(term, TermAggregate):
-                return "(%s)" % term
+                return "({!s})".format(term)
 
         if self.kind == 'not':
-            return "NOT-%s" % _term_to_str(self.term1)
+            return "NOT-{}".format(_term_to_str(self.term1))
 
-        return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
-                             _term_to_str(self.term2))
+        return "{} {} {}".format(_term_to_str(self.term1),
+                                 self.kind.upper(),
+                                 _term_to_str(self.term2))
 
     @property
     def agg_methods(self):

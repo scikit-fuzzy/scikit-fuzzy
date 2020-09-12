@@ -32,11 +32,11 @@ class Rule(object):
         Unweighted single output.
             output['term']
         Weighted single output
-            (output['term']%0.5)
+            (output['term'] % 0.5)
         Unweighted multiple output
             (output1['term1'], output2['term2'])
         Weighted multiple output
-            ((output1['term1']%1.0), (output2['term2']%0.5))
+            ((output1['term1'] % 1.0), (output2['term2'] % 0.5))
     label : string, optional
         Label to reference the meaning of this rule. Optional, but recommended.
         If provided, the label must be unique among rules in any particular
