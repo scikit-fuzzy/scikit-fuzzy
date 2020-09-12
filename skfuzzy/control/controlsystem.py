@@ -276,10 +276,12 @@ class ControlSystemSimulation(object):
         The default of 1000 is appropriate for most hardware, but for small
         embedded systems this can be lowered as appropriate. Higher memory
         systems may see better performance with a higher limit.
+    lenient : boolean, optional, defaults to False
+        When true, sparse rules will not cause exceptions.
     """
 
     def __init__(self, control_system, clip_to_bounds=True, cache=True,
-                 flush_after_run=1000):
+                 flush_after_run=1000, lenient=False):
         """
         Initialize a new ControlSystemSimulation.
         """ + '\n'.join(ControlSystemSimulation.__doc__.split('\n')[1:])
@@ -287,6 +289,7 @@ class ControlSystemSimulation(object):
         self.ctrl = control_system
 
         self.input = _InputAcceptor(self)
+        self.lenient = lenient
         self.output = OrderedDict()
         self.cache = cache
         self._array_inputs = False  # Disable caching if True
@@ -371,10 +374,7 @@ class ControlSystemSimulation(object):
             self.compute_rule(rule)
 
         # Collect the results and present them as a dict
-        for consequent in self.ctrl.consequents:
-            consequent.output[self] = \
-                CrispValueCalculator(consequent, self).defuzz()
-            self.output[consequent.label] = consequent.output[self]
+        self.output = self.defuzz_consequents()
 
         # Make note of this run so we can easily find it again
         if self.cache is not False:
@@ -387,6 +387,21 @@ class ControlSystemSimulation(object):
         self._run += 1
         if self._run % self._flush_after_run == 0:
             self._reset_simulation()
+
+    def defuzz_consequents(self):
+        """Collect and return the defuzzified consequents."""
+        results = {}
+        for consequent in self.ctrl.consequents:
+            try:
+                consequent.output[self] = \
+                    CrispValueCalculator(consequent, self).defuzz()
+            except (NoTermMembershipsError, EmptyMembershipError) as error:
+                if self.lenient:
+                    continue
+                else:
+                    raise error
+            results[consequent.label] = consequent.output[self]
+        return results
 
     def compute_rule(self, rule):
         """
