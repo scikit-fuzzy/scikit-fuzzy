@@ -1,5 +1,5 @@
-"""Tests for the array pading functions.
-
+"""
+Tests for the array padding functions.
 """
 from __future__ import division, absolute_import, print_function
 

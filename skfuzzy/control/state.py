@@ -29,7 +29,7 @@ class StatefulProperty(object):
 
     def __set__(self, instance, value):
         raise AttributeError("Property is read-only. "
-                             "Did you mean to access via a simultation?")
+                             "Did you mean to access via a simulation?")
 
     def clear(self, initial_condition=None):
         self.__init__(self.default)

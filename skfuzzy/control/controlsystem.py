@@ -424,7 +424,7 @@ class ControlSystemSimulation(object):
         """
         Reset the simulation.
 
-        Cear memory by removing all inputs, outputs, and intermediate values.
+        Clear memory by removing all inputs, outputs, and intermediate values.
         """
         self._reset_simulation()
 
@@ -739,7 +739,7 @@ class RuleOrderGenerator(object):
             assert n == len(self.all_rules) - 1, "Not all rules exposed"
 
     def _init_state(self):
-        # This graph will represent what's been calculated so far.  We
+        # This graph will represent what's been calculated so far. We
         # initialize it to just the antecedents as they, by definition, already
         # have fuzzy values
         self.calced_graph = nx.DiGraph()
@@ -755,7 +755,7 @@ class RuleOrderGenerator(object):
                 self.all_rules.append(node)
 
     def _process_rules(self, rules):
-        # Recursive funcion to process rules in the correct firing order
+        # Recursive function to process rules in the correct firing order
         len_rules = len(rules)
         skipped_rules = []
         while len(rules) > 0:

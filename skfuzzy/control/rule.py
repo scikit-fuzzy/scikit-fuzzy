@@ -63,20 +63,28 @@ class Rule(object):
             be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
             parentheticals to group terms.
         consequent : Consequent term(s) or combination thereof, optional
-            Consequent terms serving as outputs from this rule. Multiple terms
-            may be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
-            parentheticals to group terms.
+            Consequent terms serving as outputs from this rule.
+            Accept consequents in four formats:
+
+             a) Unweighted single output.
+                e.g.: output['term']
+             b) Weighted single output
+                e.g.: (output['term'] % 0.5)
+             c) Unweighted multiple output
+                e.g.: (output1['term1'], output2['term2'])
+             d) Weighted multiple output
+                e.g.: ((output1['term1'] % 1.0), (output2['term2'] % 0.5))
         label : string, optional
             Label to reference the meaning of this rule. Optional, but
             recommended.
         and_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to NumPy function `fmin`, to
+            returns a single value. Defaults to NumPy function `fmin`, to
             support both single values and arrays. For multiplication,
             substitute `fuzz.control.mult` or `np.multiply`.
         or_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to NumPy function `fmax`, to
+            returns a single value. Defaults to NumPy function `fmax`, to
             support both single values and arrays.
         """
         self._aggregation_methods = FuzzyAggregationMethods()
@@ -194,7 +202,7 @@ class Rule(object):
         Consequent clause, consisting of multiple term(s) in this fuzzy Rule.
         """
         if self._consequent is None:
-            raise ValueError("Consquent not set")
+            raise ValueError("Consequent not set")
         return self._consequent
 
     @consequent.setter
@@ -221,8 +229,7 @@ class Rule(object):
             raise ValueError("Unexpected consequent type")
 
         else:
-
-            # Must be one of formats b) to d)
+            # Must be one of formats c) or d)
             self._consequent = []
             for i in value:
                 if isinstance(i, Term):

@@ -135,7 +135,7 @@ class FuzzyVariable(object):
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
         names : list
-            List of names to use when creating mebership functions if you wish
+            List of names to use when creating membership functions if you wish
             to override the default. Naming proceeds from lowest to highest,
             unless invert is True.
         invert : bool

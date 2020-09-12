@@ -994,7 +994,7 @@ def _normalize_shape(ndarray, shape, cast_to_int=True):
 
     Parameters
     ----------
-    narray : ndarray
+    ndarray : ndarray
         Input ndarray
     shape : {sequence, array_like, float, int}, optional
         The width of padding (pad_width), the number of elements on the
