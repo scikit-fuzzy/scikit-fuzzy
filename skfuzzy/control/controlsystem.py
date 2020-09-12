@@ -8,11 +8,14 @@ import networkx as nx
 import numpy as np
 
 from .antecedent_consequent import Antecedent, Consequent
+from .exceptions import EmptyMembershipError, NoTermMembershipsError
 from .fuzzyvariable import FuzzyVariable
 from .rule import Rule
 from .term import Term, TermAggregate, WeightedTerm
 from .visualization import ControlSystemVisualizer
-from ..defuzzify import defuzz
+from ..defuzzify import (
+    EmptyMembershipError as DefuzzEmptyMembershipError, defuzz,
+)
 from ..fuzzymath.fuzzy_ops import _interp_universe_fast, interp_membership
 
 
@@ -580,21 +583,13 @@ class CrispValueCalculator(object):
             ups_universe, output_mf, term_mfs = self.find_memberships()
 
             if len(term_mfs) == 0:
-                raise ValueError("No terms have memberships.  Make sure you "
-                                 "have at least one rule connected to this "
-                                 "variable and have run the rules "
-                                 "calculation.")
+                raise NoTermMembershipsError(self.var)
 
             try:
                 return defuzz(ups_universe, output_mf,
                               self.var.defuzzify_method)
-            except AssertionError:
-                raise ValueError("Crisp output cannot be calculated, likely "
-                                 "because the system is too sparse. Check to "
-                                 "make sure this set of input values will "
-                                 "activate at least one connected Term in "
-                                 "each Antecedent via the current set of "
-                                 "Rules.")
+            except DefuzzEmptyMembershipError:
+                raise EmptyMembershipError(self.var)
         else:
             # Calculate using array-aware version, one cut at a time.
             output = np.zeros(self.sim._array_shape, dtype=np.float64)

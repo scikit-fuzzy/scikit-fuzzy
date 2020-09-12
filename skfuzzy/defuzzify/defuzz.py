@@ -4,6 +4,7 @@ defuzz.py : Various methods for defuzzification and lambda-cuts, to convert
 """
 import numpy as np
 
+from .exceptions import EmptyMembershipError, InconsistentMFDataError
 from ..image.arraypad import pad
 
 
@@ -235,6 +236,12 @@ def defuzz(x, mfx, mode):
     u : float or int
         Defuzzified result.
 
+    Raises
+    ------
+    - EmptyMembershipError : When the membership function area is empty.
+    - InconsistentMFDataError : When the length of the 'x' and the fuzzy
+        membership function arrays are not equal.
+
     See Also
     --------
     skfuzzy.defuzzify.centroid, skfuzzy.defuzzify.dcentroid
@@ -243,12 +250,12 @@ def defuzz(x, mfx, mode):
     x = x.ravel()
     mfx = mfx.ravel()
     n = len(x)
-    assert n == len(mfx), ("Length of x and fuzzy membership function must be "
-                           "identical.")
+    if n != len(mfx):
+        raise InconsistentMFDataError()
 
     if 'centroid' in mode or 'bisector' in mode:
-        zero_truth_degree = mfx.sum() == 0  # Approximation of total area
-        assert not zero_truth_degree, "Total area is zero in defuzzification!"
+        if mfx.sum() == 0:  # Approximation of total area
+            raise EmptyMembershipError()
 
         if 'centroid' in mode:
             return centroid(x, mfx)
