@@ -33,7 +33,6 @@ class ControlSystem(object):
         Initialization method for the fuzzy ControlSystem object.
         """ + '\n'.join(ControlSystem.__doc__.split('\n')[1:])
         self.graph = nx.DiGraph()
-        self._rule_generator = RuleOrderGenerator(self)
 
         # Construct a system from provided rules, if given
         if rules is not None:
@@ -49,13 +48,19 @@ class ControlSystem(object):
     @property
     def rules(self):
         """
-        Generator which yields Rules in the system in calculation order.
+        Generator which yields the rules in the system in calculation order.
+
+        The generator exposes the rules in order from antecedents to
+        consequences. Consider for example the following rule dependencies:
+
+            Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
+
+        If we expose rule2 before rule1, we won't calculate correctly.
+
+        Note that each access of this property yields a new generator such that
+        these rules can be accessed from other separated client components.
         """
-        # We have to expose the rules in the order from antecedents to
-        #  consequences.  For example if we have:
-        #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
-        #  if we expose rule1 before rule2, we won't calculate correctly
-        return self._rule_generator
+        return RuleOrderGenerator(self)
 
     @property
     def antecedents(self):
@@ -772,18 +777,18 @@ class RuleOrderGenerator(object):
                 self.all_rules.append(node)
 
     def _process_rules(self, rules):
-        # Recursive function to process rules in the correct firing order
+        # Recursive function to process rules in the correct firing order.
         len_rules = len(rules)
         skipped_rules = []
         while len(rules) > 0:
             rule = rules.pop(0)
             if self._can_calc_rule(rule):
                 yield rule
-                # Add rule to calced graph
+                # Add rule to the calculated graph:
                 self.calced_graph = nx.compose(self.calced_graph, rule.graph)
             else:
-                # We have not calculated the predecsors for this rule yet.
-                #  Skip it for now
+                # We have not calculated the predecessors for this rule yet.
+                # Skip it for now:
                 skipped_rules.append(rule)
 
         if len(skipped_rules) == 0:
@@ -794,13 +799,13 @@ class RuleOrderGenerator(object):
                 return
         else:
             if len(skipped_rules) == len_rules:
-                # Avoid being caught in an infinite loop
+                # Avoid being caught in an infinite loop:
                 raise RuntimeError("Unable to resolve rule execution order. "
                                    "The most likely reason is two or more "
                                    "rules that depend on each other.\n"
                                    "Please check the rule graph for loops.")
             else:
-                # Recurse across the skipped rules
+                # Recurse across the skipped rules:
                 for r in self._process_rules(skipped_rules):
                     yield r
 
