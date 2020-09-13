@@ -28,7 +28,7 @@ before_install:
     - conda config --set always_yes yes;
     - conda update conda;
     - conda info -a;
-    - travis_retry conda create -n test $ENV six scipy pip flake8 nose networkx matplotlib;
+    - travis_retry conda create -n test $ENV scipy pip flake8 nose networkx matplotlib;
     - source activate test;
     - travis_retry conda install pillow;
     - travis_retry pip install coveralls
@@ -44,7 +44,7 @@ script:
     - nosetests --exe -v skfuzzy
 
     # Run pep8 and flake tests
-    - flake8 --exit-zero --exclude=test_*,six.py skfuzzy docs/examples
+    - flake8 --exit-zero --exclude=test_* skfuzzy docs/examples
 
 after_success:
     - coveralls

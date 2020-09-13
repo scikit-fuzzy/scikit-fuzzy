@@ -5,10 +5,9 @@ from __future__ import print_function
 import numpy as np
 import scipy as sp
 from PIL import Image
-import six
 import networkx
 
-for m in (np, sp, Image, six, networkx):
+for m in (np, sp, Image, networkx):
     if not m is None:
         if m is Image:
             # Pillow 6.0.0 and above have removed the 'VERSION' attribute
