@@ -62,23 +62,22 @@ __all__.extend(_image.__all__)
 
 # Enable testing of the package
 import os.path as osp  # noqa: E402
-import imp  # noqa: E402
 import functools  # noqa: E402
 import warnings  # noqa: E402
 import sys  # noqa: E402
+from importlib import util as importlib_utils  # noqa: E402
 
 pkg_dir = osp.abspath(osp.dirname(__file__))
 data_dir = osp.join(pkg_dir, 'data')
 
 try:
-    imp.find_module('nose')
+    importlib_utils.find_spec('nose')
 except ImportError:
     def _test(doctest=False, verbose=False):
         """This would run all unit tests, but nose couldn't be
         imported so the test suite can not run.
         """
         raise ImportError("Could not load nose. Unit tests not available.")
-
 else:
     def _test(doctest=False, verbose=False):
         """Run all unit tests."""
@@ -155,4 +154,4 @@ if __SKFUZZY_SETUP__:
     # We are not importing the rest of the scikit during the build
     # process, as it may not be compiled yet
 
-del warnings, functools, osp, imp, sys
+del warnings, functools, importlib_utils, osp, sys
