@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
+import networkx
 import numpy as np
 import scipy as sp
 from PIL import Image
-import networkx
 
 for m in (np, sp, Image, networkx):
     if not m is None:

@@ -1,5 +1,9 @@
+import networkx
+import nose
 import numpy as np
 import numpy.testing as tst
+import skfuzzy as fuzz
+import skfuzzy.control as ctrl
 
 try:
     from numpy.testing.decorators import skipif
@@ -8,12 +12,6 @@ except AttributeError:
 except ModuleNotFoundError:
     from numpy.testing import dec
     skipif = dec.skipif
-
-import networkx
-import nose
-
-import skfuzzy as fuzz
-import skfuzzy.control as ctrl
 
 
 def test_tipping_problem():

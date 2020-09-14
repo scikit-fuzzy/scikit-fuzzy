@@ -10,8 +10,8 @@ combination of several during Rule creation.
 """
 import numpy as np
 
-from .visualization import FuzzyVariableVisualizer
 from .state import StatefulProperty
+from .visualization import FuzzyVariableVisualizer
 
 
 class TermPrimitive(object):

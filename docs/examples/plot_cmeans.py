@@ -20,8 +20,8 @@ In this example we will first undertake necessary imports, then define some
 test data to work with.
 
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import skfuzzy as fuzz
 
 colors = ['b', 'orange', 'g', 'r', 'c', 'm', 'y', 'k', 'Brown', 'ForestGreen']

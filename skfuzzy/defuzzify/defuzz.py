@@ -3,6 +3,7 @@ defuzz.py : Various methods for defuzzification and lambda-cuts, to convert
             'fuzzy' systems back into 'crisp' values for decisions.
 """
 import numpy as np
+
 from ..image.arraypad import pad
 
 

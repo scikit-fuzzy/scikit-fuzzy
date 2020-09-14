@@ -4,7 +4,7 @@ from skfuzzy.fuzzymath import continuous_to_discrete
 
 
 def test_c2d():
-    a = np.r_[[[1, 0],[1, -1]]]
+    a = np.r_[[[1, 0], [1, -1]]]
     b = np.r_[1, 0.1]
     b2 = np.r_[[[1], [0.1]]]
     ts = [0.1, 0.5, 1.0]

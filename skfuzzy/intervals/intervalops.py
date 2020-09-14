@@ -2,6 +2,7 @@
 intervalops.py : Functions for proper mathematical treatment of intervals.
 """
 import numpy as np
+
 from ..defuzzify import lambda_cut_series
 
 

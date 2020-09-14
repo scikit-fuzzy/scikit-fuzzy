@@ -130,7 +130,7 @@ Try re-installing the package."""
 
 def _raise_build_error(e):
     # Raise a comprehensible error
-    local_dir = osp.split(__file__)[0]
+    local_dir = osp.split(__file__)[0]  # noqa: F405
     msg = _STANDARD_MSG
     if local_dir == "skfuzzy":
         # Picking up the local install: this will work only if the

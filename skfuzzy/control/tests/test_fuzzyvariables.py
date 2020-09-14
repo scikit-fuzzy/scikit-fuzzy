@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
+import nose
 import numpy as np
 import numpy.testing as tst
-import nose
 
 from skfuzzy.control import Antecedent, Consequent
 
@@ -22,7 +22,7 @@ def setup():
 
 
 def assert_empty_ordereddict(obj):
-    assert len(obj) is 0
+    assert len(obj) == 0
     assert isinstance(obj, OrderedDict)
 
 
@@ -244,7 +244,6 @@ def test_automf_bad():
     tst.assert_raises(ValueError, ant.automf, np.pi)
     tst.assert_raises(ValueError, con.automf, 4.1)
     tst.assert_raises(ValueError, con.automf, np.pi)
-
 
 
 @nose.with_setup(setup)

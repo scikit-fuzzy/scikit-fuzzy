@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
-from skfuzzy.membership import trimf
 from skfuzzy.fuzzymath import fuzzy_not, fuzzy_and, fuzzy_or
+from skfuzzy.membership import trimf
 
 
 def test_fuzzy_not():

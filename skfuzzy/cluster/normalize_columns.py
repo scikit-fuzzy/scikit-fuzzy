@@ -1,7 +1,6 @@
 """
 _normalize_columns.py : Normalize columns.
 """
-
 import numpy as np
 
 

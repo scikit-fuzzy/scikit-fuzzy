@@ -3,6 +3,7 @@ cmeans.py : Fuzzy C-means clustering algorithm.
 """
 import numpy as np
 from scipy.spatial.distance import cdist
+
 from .normalize_columns import normalize_columns, normalize_power_columns
 
 

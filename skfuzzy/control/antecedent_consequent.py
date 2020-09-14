@@ -1,11 +1,11 @@
 """
 antecedent_consequent.py : Contains Antecedent and Consequent classes.
 """
-import numpy as np
 import networkx as nx
+import numpy as np
 
-from .state import StatefulProperty
 from .fuzzyvariable import FuzzyVariable
+from .state import StatefulProperty
 
 
 def accumulation_max(*args):

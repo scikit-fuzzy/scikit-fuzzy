@@ -1,7 +1,7 @@
-import sys
-import re
-import warnings
 import contextlib
+import re
+import sys
+import warnings
 
 
 @contextlib.contextmanager
