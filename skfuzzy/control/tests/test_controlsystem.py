@@ -146,7 +146,7 @@ def test_rule_order():
     r3 = ctrl.Rule(c['good'] | a['good'], d['good'], label='r3')
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
-    resolved = [r for r in ctrl_sys.rules]
+    resolved = list(ctrl_sys.rules)
     assert resolved == [r1, r2, r3], ("Order given was: {0}, expected {1}"
                                       .format(resolved,
                                               [r1.label, r2.label, r3.label]))
@@ -172,6 +172,8 @@ def test_unresolvable_rule_order():
 
 @nose.with_setup(setup_rule_order)
 def test_bad_rules():
+    global a
+
     not_rules = ['me', 192238, 42, dict()]
     tst.assert_raises(ValueError, ctrl.ControlSystem, not_rules)
 
