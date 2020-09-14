@@ -1,8 +1,6 @@
 """
 visualization.py : Visualize fuzzy control systems.
 """
-from __future__ import print_function, division
-
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt

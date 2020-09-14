@@ -1,7 +1,6 @@
 """
 intervalops.py : Functions for proper mathematical treatment of intervals.
 """
-from __future__ import division, print_function
 import numpy as np
 from ..defuzzify import lambda_cut_series
 

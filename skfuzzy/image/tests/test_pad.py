@@ -1,8 +1,6 @@
 """
 Tests for the array padding functions.
 """
-from __future__ import division, absolute_import, print_function
-
 from distutils.version import LooseVersion
 
 import numpy as np

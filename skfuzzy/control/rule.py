@@ -4,8 +4,6 @@ rule.py : Contains structure to create fuzzy rules.
 Most notably, contains the `Rule` class which is used to connect antecedents
 with consequents in a `ControlSystem`.
 """
-from __future__ import division, print_function
-
 import networkx as nx
 import numpy as np
 

@@ -7,7 +7,6 @@ usually with discrete-valued inputs. However, if your controller can contain
 all possible input states in memory and repeat values are likely, enabling
 caching will result in major efficiency gains.
 """
-from __future__ import print_function, division
 
 
 class StatefulProperty(object):

@@ -1,8 +1,6 @@
 """
 controlsystem.py : Framework for the new fuzzy logic control system API.
 """
-from __future__ import division, print_function
-
 from collections import OrderedDict
 from warnings import warn
 

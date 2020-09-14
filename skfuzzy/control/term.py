@@ -8,8 +8,6 @@ Consequents when constructing fuzzy Rules.
 Terms have redefined logical operators which enable the simple and elegant
 combination of several during Rule creation.
 """
-from __future__ import print_function, division
-
 import numpy as np
 
 from .visualization import FuzzyVariableVisualizer
