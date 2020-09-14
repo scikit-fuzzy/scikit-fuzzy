@@ -44,7 +44,7 @@ script:
     - nosetests --exe -v skfuzzy
 
     # Run pep8 and flake tests
-    - flake8 --exit-zero --exclude=test_* skfuzzy docs/examples
+    - flake8 --exclude=test_* skfuzzy docs/examples
 
 after_success:
     - coveralls
