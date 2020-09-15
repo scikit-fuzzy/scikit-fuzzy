@@ -1,6 +1,5 @@
 """
 skfuzzy.defuzzify subpackage, containing various defuzzification algorithms.
-
 """
 
 __all__ = ['arglcut',

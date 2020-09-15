@@ -7,7 +7,6 @@ usually with discrete-valued inputs. However, if your controller can contain
 all possible input states in memory and repeat values are likely, enabling
 caching will result in major efficiency gains.
 """
-from __future__ import print_function, division
 
 
 class StatefulProperty(object):
@@ -29,7 +28,7 @@ class StatefulProperty(object):
 
     def __set__(self, instance, value):
         raise AttributeError("Property is read-only. "
-                             "Did you mean to access via a simultation?")
+                             "Did you mean to access via a simulation?")
 
     def clear(self, initial_condition=None):
         self.__init__(self.default)

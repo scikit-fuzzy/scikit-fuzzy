@@ -4,7 +4,6 @@ descr = """scikit-fuzzy (a.k.a. `skfuzzy`): Fuzzy logic toolbox for Python.
 
 This package implements many useful tools for projects involving fuzzy logic,
 also known as grey logic.
-
 """
 
 DISTNAME            = 'scikit-fuzzy'

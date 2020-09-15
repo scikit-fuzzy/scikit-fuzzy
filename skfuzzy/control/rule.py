@@ -1,17 +1,15 @@
 """
 rule.py : Contains structure to create fuzzy rules.
 
-Most notably, contains the `Rule` object which is used to connect atecedents
-with conqeuents in a `ControlSystem`.
+Most notably, contains the `Rule` class which is used to connect antecedents
+with consequents in a `ControlSystem`.
 """
-from __future__ import print_function, division
-
-import numpy as np
 import networkx as nx
+import numpy as np
 
-from .term import (Term, WeightedTerm, TermAggregate, FuzzyAggregationMethods,
-                   TermPrimitive)
 from .state import StatefulProperty
+from .term import (FuzzyAggregationMethods, Term, TermAggregate, TermPrimitive,
+                   WeightedTerm)
 from .visualization import ControlSystemVisualizer
 
 
@@ -32,11 +30,11 @@ class Rule(object):
         Unweighted single output.
             output['term']
         Weighted single output
-            (output['term']%0.5)
+            (output['term'] % 0.5)
         Unweighted multiple output
             (output1['term1'], output2['term2'])
         Weighted multiple output
-            ((output1['term1']%1.0), (output2['term2']%0.5))
+            ((output1['term1'] % 1.0), (output2['term2'] % 0.5))
     label : string, optional
         Label to reference the meaning of this rule. Optional, but recommended.
         If provided, the label must be unique among rules in any particular
@@ -44,7 +42,7 @@ class Rule(object):
 
     Notes
     -----
-    Fuzzy Rules can be completely built on instantatiation or one can begin
+    Fuzzy Rules can be completely built on instantiation or one can begin
     with an empty Rule and construct interactively by setting `.antecedent`,
     `.consequent`, and `.label` variables.
     """
@@ -63,20 +61,28 @@ class Rule(object):
             be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
             parentheticals to group terms.
         consequent : Consequent term(s) or combination thereof, optional
-            Consequent terms serving as outputs from this rule. Multiple terms
-            may be combined using operators `|` (OR), `&` (AND), `~` (NOT), and
-            parentheticals to group terms.
+            Consequent terms serving as outputs from this rule.
+            Accept consequents in four formats:
+
+             a) Unweighted single output.
+                e.g.: output['term']
+             b) Weighted single output
+                e.g.: (output['term'] % 0.5)
+             c) Unweighted multiple output
+                e.g.: (output1['term1'], output2['term2'])
+             d) Weighted multiple output
+                e.g.: ((output1['term1'] % 1.0), (output2['term2'] % 0.5))
         label : string, optional
             Label to reference the meaning of this rule. Optional, but
             recommended.
         and_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to NumPy function `fmin`, to
+            returns a single value. Defaults to NumPy function `fmin`, to
             support both single values and arrays. For multiplication,
             substitute `fuzz.control.mult` or `np.multiply`.
         or_func : function, optional
             Function which accepts multiple floating-point arguments and
-            returns a single value. Defalts to NumPy function `fmax`, to
+            returns a single value. Defaults to NumPy function `fmax`, to
             support both single values and arrays.
         """
         self._aggregation_methods = FuzzyAggregationMethods()
@@ -125,9 +131,9 @@ class Rule(object):
         """
         try:
             newfunc(0.3, 0.96)
-        except:
-            return ValueError("The provided function does not support "
-                              "floating-point arguments.")
+        except Exception:
+            raise ValueError("The provided function does not support "
+                             "floating-point arguments.")
         self._aggregation_methods.and_func = newfunc
 
     @property
@@ -144,9 +150,9 @@ class Rule(object):
         """
         try:
             newfunc(0.3, 0.96)
-        except:
-            return ValueError("The provided function does not support "
-                              "floating-point arguments.")
+        except Exception:
+            raise ValueError("The provided function does not support "
+                             "floating-point arguments.")
         self._aggregation_methods.or_func = newfunc
 
     @property
@@ -194,7 +200,7 @@ class Rule(object):
         Consequent clause, consisting of multiple term(s) in this fuzzy Rule.
         """
         if self._consequent is None:
-            raise ValueError("Consquent not set")
+            raise ValueError("Consequent not set")
         return self._consequent
 
     @consequent.setter
@@ -205,11 +211,11 @@ class Rule(object):
          a) Unweighted single output.
             e.g.: output['term']
          b) Weighted single output
-            e.g.: (output['term']%0.5)
+            e.g.: (output['term'] % 0.5)
          c) Unweighted multiple output
             e.g.: (output1['term1'], output2['term2'])
          d) Weighted multiple output
-            e.g.: ( (output1['term1']%1.0), (output2['term2']%0.5) )
+            e.g.: ((output1['term1'] % 1.0), (output2['term2'] % 0.5))
         """
         if isinstance(value, Term):
             self._consequent = [WeightedTerm(value, 1.)]
@@ -221,8 +227,7 @@ class Rule(object):
             raise ValueError("Unexpected consequent type")
 
         else:
-
-            # Must be one of formats b) to d)
+            # Must be one of formats c) or d)
             self._consequent = []
             for i in value:
                 if isinstance(i, Term):
@@ -236,7 +241,7 @@ class Rule(object):
     def graph_n(self):
         graph = nx.DiGraph()
         # Link all antecedents to me by decomposing
-        #  TermAggregate down to just Terms
+        # TermAggregate down to just Terms
         nodes = []
         structure = []
         colors = []
@@ -276,8 +281,7 @@ class Rule(object):
                 structure.append([self.antecedent.parent.label,
                                   self.consequent[j].term.parent.label])
                 nodes.append(self.consequent[j].term.parent.label)
-                colors.append(
-                    [self.consequent[j].term.parent.label, 'green'])
+                colors.append([self.consequent[j].term.parent.label, 'green'])
         graph.add_nodes_from(nodes)
         graph.add_edges_from(structure)
         return graph, colors

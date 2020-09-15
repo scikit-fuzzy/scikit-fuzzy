@@ -1,9 +1,8 @@
-"""Tests for the array pading functions.
-
 """
-from __future__ import division, absolute_import, print_function
-
+Tests for the array padding functions.
+"""
 import os
+
 import numpy as np
 import skfuzzy.image
 from numpy.testing import (assert_allclose, TestCase, run_module_suite)

@@ -1,16 +1,13 @@
 """
 fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
+from collections import OrderedDict
+
 import numpy as np
 
-from ..membership import trimf
-from .visualization import FuzzyVariableVisualizer
 from .term import Term
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .ordereddict import OrderedDict
+from .visualization import FuzzyVariableVisualizer
+from ..membership import trimf
 
 
 class FuzzyVariable(object):
@@ -138,7 +135,7 @@ class FuzzyVariable(object):
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
         names : list
-            List of names to use when creating mebership functions if you wish
+            List of names to use when creating membership functions if you wish
             to override the default. Naming proceeds from lowest to highest,
             unless invert is True.
         invert : bool

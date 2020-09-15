@@ -1,6 +1,3 @@
-from __future__ import division
-
-
 def nmse(known, degraded):
     """
     Computes the percent normalized mean square error (NMSE %) between known
