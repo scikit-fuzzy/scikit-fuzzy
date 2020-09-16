@@ -213,7 +213,6 @@ class ControlSystemVisualizer(object):
         If the network model fails, it will return the ordenary view.
         """
         try:
-            # structure = []
             graph, color_list = self.ctrl.graph_n
             colors = []
             c_nodes = []

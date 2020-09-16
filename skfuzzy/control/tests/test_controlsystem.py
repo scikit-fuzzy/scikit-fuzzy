@@ -305,7 +305,6 @@ def test_complex_system():
 
     x, y = np.meshgrid(np.linspace(-2, 2, 21), np.linspace(-2, 2, 21))
     z0 = np.zeros_like(x)
-    # z1 = np.zeros_like(x)
 
     # The original, slow way - one set of values at a time
     for i in range(21):
