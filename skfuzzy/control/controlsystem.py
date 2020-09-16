@@ -351,7 +351,8 @@ class ControlSystemSimulation(object):
         # Shortcut with lookup if this calculation was done before
         if self.cache is not False and self.unique_id in self._calculated:
             for consequent in self.ctrl.consequents:
-                self.output[consequent.label] = consequent.output[self]
+                if consequent.output[self] is not None:
+                    self.output[consequent.label] = consequent.output[self]
             return
 
         # If we get here, cache is disabled OR the inputs are novel. Compute!
