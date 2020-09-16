@@ -2,7 +2,6 @@
 fuzzy_logic.py : General logical operations on fuzzy membership functions,
                  a.k.a. fuzzy sets.
 """
-
 import numpy as np
 
 
@@ -32,6 +31,50 @@ def _resampleuniverse(x, mfx, y, mfy):
     return z, mfx2, mfy2
 
 
+def fuzzy_norm(x, mfx, y, mfy, norm):
+    """
+    Fuzzy operator, logic operatrion of two fuzzy sets.
+
+    Parameters
+    ----------
+    x : 1d array
+        Universe variable for fuzzy membership function `mfx`.
+    mfx : 1d array
+        Fuzzy membership function for universe variable `x`.
+    y : 1d array
+        Universe variable for fuzzy membership function `mfy`.
+    mfy : 1d array
+        Fuzzy membership function for universe variable `y`.
+    norm : Function
+        T-norm or T-conorm (S-norm)
+
+    Returns
+    -------
+    z : 1d array
+        Universe variable for union of the two provided fuzzy sets.
+    mfz : 1d array
+        Fuzzy membership function, the result of the operation
+        of `mfx` and `mfy`.
+
+    Notes
+    -------
+    See `T-Norm <https://en.wikipedia.org/wiki/T-norm>`_ for t-norms.
+
+    """
+    # Check if universes are the same
+    sameuniverse = False
+    if x.shape == y.shape and (x == y).all():
+        z = x
+        mfx2 = mfx
+        mfy2 = mfy
+        sameuniverse = True
+
+    if not sameuniverse:
+        z, mfx2, mfy2 = _resampleuniverse(x, mfx, y, mfy)
+
+    return z, norm(mfx2, mfy2)
+
+
 def fuzzy_and(x, mfx, y, mfy):
     """
     Fuzzy AND operator, a.k.a. the intersection of two fuzzy sets.
@@ -56,18 +99,7 @@ def fuzzy_and(x, mfx, y, mfy):
 
     """
     # Check if universes are the same
-    sameuniverse = False
-    if x.shape == y.shape:
-        if (x == y).all():
-            z = x
-            mfx2 = mfx
-            mfy2 = mfy
-            sameuniverse = True
-
-    if not sameuniverse:
-        z, mfx2, mfy2 = _resampleuniverse(x, mfx, y, mfy)
-
-    return z, np.fmin(mfx2, mfy2)
+    return fuzzy_norm(x, mfx, y, mfy, norm=np.fmin)
 
 
 def fuzzy_or(x, mfx, y, mfy):
@@ -94,18 +126,7 @@ def fuzzy_or(x, mfx, y, mfy):
 
     """
     # Check if universes are the same
-    sameuniverse = False
-    if x.shape == y.shape:
-        if (x == y).all():
-            z = x
-            mfx2 = mfx
-            mfy2 = mfy
-            sameuniverse = True
-
-    if not sameuniverse:
-        z, mfx2, mfy2 = _resampleuniverse(x, mfx, y, mfy)
-
-    return z, np.fmax(mfx2, mfy2)
+    return fuzzy_norm(x, mfx, y, mfy, norm=np.fmax)
 
 
 def fuzzy_not(mfx):

@@ -1,16 +1,13 @@
 """
 fuzzyvariable.py : Contains the base fuzzy variable class, FuzzyVariable.
 """
+from collections import OrderedDict
+
 import numpy as np
 
-from ..membership import trimf
-from .visualization import FuzzyVariableVisualizer
 from .term import Term
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from .ordereddict import OrderedDict
+from .visualization import FuzzyVariableVisualizer
+from ..membership import trimf
 
 
 class FuzzyVariable(object):
@@ -128,17 +125,19 @@ class FuzzyVariable(object):
 
         Parameters
         ----------
-        number : [3, 5, 7] or list of names
-            Number of membership functions to create. Must be an odd integer.
-            At present, only 3, 5, or 7 are supported.
-            If a list of names is given, then those are used
+        number : integer or list of names
+            Number of membership functions to create. For fully automated use,
+            supply 3, 5, or 7.  Any number may be generated, if you provide
+            an appropriately sized list of `names`.  If names are provided,
+            they are used in lieu of the default names below.
         variable_type : string
             Type of variable this is. Accepted arguments are
             * 'quality' : Continuous variable, higher values are better.
             * 'quant' : Quantitative variable, no value judgements.
         names : list
-            List of names to use when creating mebership functions if you wish
-            to override the default. Naming proceeds from lowest to highest.
+            List of names to use when creating membership functions if you wish
+            to override the default. Naming proceeds from lowest to highest,
+            unless invert is True.
         invert : bool
             Reverses the naming order if True. Membership function peaks still
             march from lowest to highest.
@@ -174,11 +173,11 @@ class FuzzyVariable(object):
         if names is not None:
             # set number based on names passed
             number = len(names)
-            if number % 2 != 1:
-                raise ValueError("Must provide an odd number of names")
         else:
             if number not in [3, 5, 7]:
-                raise ValueError("Only number = 3, 5, or 7 supported.")
+                raise ValueError("If number is not 3, 5, or 7, "
+                                 "you must pass a list of names "
+                                 "equal in length to number.")
 
             if variable_type.lower() == 'quality':
                 names = ['dismal',

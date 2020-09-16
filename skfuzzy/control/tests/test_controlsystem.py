@@ -1,14 +1,17 @@
-from __future__ import division
-
-import sys
-
-import numpy as np
-import numpy.testing as tst
 import networkx
 import nose
-
+import numpy as np
+import numpy.testing as tst
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
+
+try:
+    from numpy.testing.decorators import skipif
+except AttributeError:
+    from numpy.testing.dec import skipif
+except ModuleNotFoundError:
+    from numpy.testing import dec
+    skipif = dec.skipif
 
 
 def test_tipping_problem():
@@ -128,11 +131,11 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@tst.decorators.skipif(float(networkx.__version__) >= 2.0)
+@skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
-    #  correctly
+    # correctly
     global a, b, c, d
 
     r1 = ctrl.Rule(a['average'] | a['poor'], c['poor'], label='r1')
@@ -141,17 +144,17 @@ def test_rule_order():
 
     ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
     resolved = [r for r in ctrl_sys.rules]
-    assert resolved == [r1, r2, r3], "Order given was: {0}, expected {1}".format(
-        resolved, [r1.label, r2.label, r3.label])
+    assert resolved == [r1, r2, r3], ("Order given was: {0}, expected {1}"
+                                      .format(resolved,
+                                              [r1.label, r2.label, r3.label]))
 
 
 # The assert_raises decorator does not work in Python 2.6
-@tst.decorators.skipif(
-    (sys.version_info < (2, 7)) or (float(networkx.__version__) >= 2.0))
+@skipif(float(networkx.__version__) >= 2.0)
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
-    #  gives an unresolvable rule order
+    # gives an unresolvable rule order
     global a, b, c, d
 
     r1 = ctrl.Rule(a['average'] | a['poor'], c['poor'], label='r1')
@@ -261,7 +264,7 @@ def test_complex_system():
     # rule 3:  IF e = SN AND delta = SN THEN output = LP
     # rule 4:  IF e = LP OR  delta = LP THEN output = LN
 
-    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) | # This combination, or...
+    rule0 = ctrl.Rule(antecedent=((error['nb'] & delta['nb']) |
                                   (error['ns'] & delta['nb']) |
                                   (error['nb'] & delta['ns'])),
                       consequent=output['nb'], label='rule nb')
@@ -302,7 +305,7 @@ def test_complex_system():
 
     x, y = np.meshgrid(np.linspace(-2, 2, 21), np.linspace(-2, 2, 21))
     z0 = np.zeros_like(x)
-    z1 = np.zeros_like(x)
+    # z1 = np.zeros_like(x)
 
     # The original, slow way - one set of values at a time
     for i in range(21):

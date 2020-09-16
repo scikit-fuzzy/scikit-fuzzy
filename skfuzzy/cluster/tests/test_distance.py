@@ -1,6 +1,6 @@
 import numpy as np
-from skfuzzy.cluster._cmeans import _distance
 from numpy.testing import assert_allclose
+from skfuzzy.cluster._cmeans import _distance
 
 
 def test_distance():

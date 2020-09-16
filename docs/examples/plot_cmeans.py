@@ -20,9 +20,8 @@ In this example we will first undertake necessary imports, then define some
 test data to work with.
 
 """
-from __future__ import division, print_function
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import skfuzzy as fuzz
 
 colors = ['b', 'orange', 'g', 'r', 'c', 'm', 'y', 'k', 'Brown', 'ForestGreen']
@@ -182,7 +181,7 @@ u, u0, d, jm, p, fpc = fuzz.cluster.cmeans_predict(
 cluster_membership = np.argmax(u, axis=0)  # Hardening for visualization
 
 fig3, ax3 = plt.subplots()
-ax3.set_title('Random points classifed according to known centers')
+ax3.set_title('Random points classified according to known centers')
 for j in range(3):
     ax3.plot(newdata[cluster_membership == j, 0],
              newdata[cluster_membership == j, 1], 'o',

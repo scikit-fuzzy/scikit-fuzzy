@@ -18,7 +18,6 @@ It will:
 
 import os, re, pydoc
 from docscrape_sphinx import get_doc_object, SphinxDocString
-from sphinx.util.compat import Directive
 import inspect
 
 def mangle_docstrings(app, what, name, obj, options, lines,
@@ -161,4 +160,3 @@ def wrap_mangling_directive(base_directive, objtype):
             return base_directive.run(self)
 
     return directive
-

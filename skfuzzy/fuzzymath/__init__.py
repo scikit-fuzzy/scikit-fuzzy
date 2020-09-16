@@ -34,10 +34,10 @@ __all__ = ['cartadd',
 from .fuzzy_ops import (cartadd, cartprod, classic_relation, contrast,
                         fuzzy_add, fuzzy_sub, fuzzy_mult, fuzzy_div,
                         fuzzy_min, fuzzy_compare, fuzzy_similarity,
-                        inner_product, interp_membership, interp_universe, interp10,
-                        maxmin_composition, maxprod_composition, modus_ponens,
-                        outer_product, relation_min, relation_product,
-                        sigmoid, partial_dmf)
+                        inner_product, interp_membership, interp_universe,
+                        interp10, maxmin_composition, maxprod_composition,
+                        modus_ponens, outer_product, relation_min,
+                        relation_product, sigmoid, partial_dmf)
 
 from .fuzzy_logic import fuzzy_and, fuzzy_or, fuzzy_not
 

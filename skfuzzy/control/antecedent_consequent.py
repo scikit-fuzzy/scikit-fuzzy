@@ -1,11 +1,11 @@
 """
 antecedent_consequent.py : Contains Antecedent and Consequent classes.
 """
-import numpy as np
 import networkx as nx
+import numpy as np
 
-from .state import StatefulProperty
 from .fuzzyvariable import FuzzyVariable
+from .state import StatefulProperty
 
 
 def accumulation_max(*args):
@@ -54,7 +54,7 @@ class Antecedent(FuzzyVariable):
         """
         g = nx.DiGraph()
         for t in self.terms.values():
-            g.add_path([self, t])
+            g.add_edge(self, t)
         return g
 
 
@@ -96,5 +96,5 @@ class Consequent(FuzzyVariable):
         """
         g = nx.DiGraph()
         for t in self.terms.values():
-            g.add_path([t, self])
+            g.add_edge(t, self)
         return g

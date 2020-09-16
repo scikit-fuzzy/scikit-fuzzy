@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal, TestCase
 from random import randint
-from skfuzzy.membership import trapmf
 from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                interp10, maxmin_composition,
                                maxprod_composition, interp_membership,
@@ -10,6 +9,7 @@ from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                fuzzy_div, fuzzy_compare, inner_product,
                                modus_ponens, outer_product, fuzzy_similarity,
                                sigmoid, partial_dmf)
+from skfuzzy.membership import trapmf
 
 
 def test_cartadd():
@@ -338,6 +338,7 @@ def test_interp_universe():
     xx = interp_universe(x, mfx, 0.3)
     y = [interp_membership(x, mfx, value) for value in xx]
     assert_allclose(y, 0.3)
+
 
 def test_modus_ponens():
     A = np.r_[0, 0.6, 1, 0.2]

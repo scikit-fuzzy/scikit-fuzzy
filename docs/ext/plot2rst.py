@@ -66,10 +66,12 @@ Suggested CSS definitions
 
 """
 import os
+import re
 import shutil
 import token
 import tokenize
 import traceback
+import itertools
 
 import numpy as np
 import matplotlib
@@ -80,6 +82,10 @@ from skimage import io
 from skimage import transform
 from skimage.util.dtype import dtype_range
 
+from notebook_doc import Notebook
+
+from docutils.core import publish_parts
+from sphinx.domains.python import PythonDomain
 
 LITERALINCLUDE = """
 .. literalinclude:: {src_name}
@@ -90,6 +96,13 @@ LITERALINCLUDE = """
 CODE_LINK = """
 
 **Python source code:** :download:`download <{0}>`
+(generated using ``skimage`` |version|)
+
+"""
+
+NOTEBOOK_LINK = """
+
+**IPython Notebook:** :download:`download <{0}>`
 (generated using ``skimage`` |version|)
 
 """
@@ -121,8 +134,8 @@ GALLERY_IMAGE_TEMPLATE = """
 class Path(str):
     """Path object for manipulating directory and file paths."""
 
-    def __init__(self, path):
-        super(Path, self).__init__(path)
+    def __new__(self, path):
+        return str.__new__(self, path)
 
     @property
     def isdir(self):
@@ -178,7 +191,7 @@ def generate_example_galleries(app):
     else:
         cfg.source_suffix_str = cfg.source_suffix
 
-    doc_src = Path(os.path.abspath(app.builder.srcdir))  # path/to/doc/source
+    doc_src = Path(os.path.abspath(app.builder.srcdir)) # path/to/doc/source
 
     if isinstance(cfg.plot2rst_paths, tuple):
         cfg.plot2rst_paths = [cfg.plot2rst_paths]
@@ -196,19 +209,24 @@ def generate_examples_and_gallery(example_dir, rst_dir, cfg):
         return
     rst_dir.makedirs()
 
-    # we create an index.rst with all examples
-    gallery_index = open(rst_dir.pjoin('index' + cfg.source_suffix_str), 'w')
+    try:
+        'teststring'+cfg.source_suffix_str
+    except TypeError:
+        # This is apparently an OrderedDict in Sphinx now...
+        cfg.source_suffix_str = cfg.source_suffix_str.items()[0][0]
 
-    # Here we don't use an os.walk, but we recurse only twice: flat is
-    # better than nested.
-    write_gallery(gallery_index, example_dir, rst_dir, cfg)
-    for d in sorted(example_dir.listdir()):
-        example_sub = example_dir.pjoin(d)
-        if example_sub.isdir:
-            rst_sub = rst_dir.pjoin(d)
-            rst_sub.makedirs()
-            write_gallery(gallery_index, example_sub, rst_sub, cfg, depth=1)
-    gallery_index.flush()
+    # we create an index.rst with all examples
+    with open(rst_dir.pjoin('index'+cfg.source_suffix_str), 'w') as gallery_index:
+        # Here we don't use an os.walk, but we recurse only twice: flat is
+        # better than nested.
+        write_gallery(gallery_index, example_dir, rst_dir, cfg)
+        for d in sorted(example_dir.listdir()):
+            example_sub = example_dir.pjoin(d)
+            if example_sub.isdir:
+                rst_sub = rst_dir.pjoin(d)
+                rst_sub.makedirs()
+                write_gallery(gallery_index, example_sub, rst_sub, cfg, depth=1)
+        gallery_index.flush()
 
 
 def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
@@ -231,26 +249,28 @@ def write_gallery(gallery_index, src_dir, rst_dir, cfg, depth=0):
     gallery_template = src_dir.pjoin(index_name)
     if not os.path.exists(gallery_template):
         print(src_dir)
-        print(80 * '_')
+        print(80*'_')
         print('Example directory %s does not have a %s file'
-              % (src_dir, index_name))
+                        % (src_dir, index_name))
         print('Skipping this directory')
-        print(80 * '_')
+        print(80*'_')
         return
 
-    gallery_description = file(gallery_template).read()
+    with open(gallery_template) as f:
+        gallery_description = f.read()
     gallery_index.write('\n\n%s\n\n' % gallery_description)
 
     rst_dir.makedirs()
     examples = [fname for fname in sorted(src_dir.listdir(), key=_plots_first)
-                if fname.endswith('py')]
-    ex_names = [ex[:-3] for ex in examples]  # strip '.py' extension
+                      if fname.endswith('py')]
+    ex_names = [ex[:-3] for ex in examples] # strip '.py' extension
     if depth == 0:
         sub_dir = Path('')
     else:
         sub_dir_list = src_dir.psplit()[-depth:]
         sub_dir = Path('/'.join(sub_dir_list) + '/')
-    gallery_index.write(TOCTREE_TEMPLATE % (sub_dir + '\n   '.join(ex_names)))
+    joiner = '\n   %s' % sub_dir
+    gallery_index.write(TOCTREE_TEMPLATE % (sub_dir + joiner.join(ex_names)))
 
     for src_name in examples:
 
@@ -310,8 +330,10 @@ def write_example(src_name, src_dir, rst_dir, cfg):
 
     image_dir = rst_dir.pjoin('images')
     thumb_dir = image_dir.pjoin('thumb')
+    notebook_dir = rst_dir.pjoin('notebook')
     image_dir.makedirs()
     thumb_dir.makedirs()
+    notebook_dir.makedirs()
 
     base_image_name = os.path.splitext(src_name)[0]
     image_path = image_dir.pjoin(base_image_name + '_{0}.png')
@@ -319,13 +341,17 @@ def write_example(src_name, src_dir, rst_dir, cfg):
     basename, py_ext = os.path.splitext(src_name)
 
     rst_path = rst_dir.pjoin(basename + cfg.source_suffix_str)
+    notebook_path = notebook_dir.pjoin(basename + '.ipynb')
 
-    if _plots_are_current(src_path, image_path) and rst_path.exists:
+    if _plots_are_current(src_path, image_path) and rst_path.exists and \
+        notebook_path.exists:
         return
+
+    print('plot2rst: %s' % basename)
 
     blocks = split_code_and_text_blocks(example_file)
     if blocks[0][2].startswith('#!'):
-        blocks.pop(0)  # don't add shebang line to rst file.
+        blocks.pop(0) # don't add shebang line to rst file.
 
     rst_link = '.. _example_%s:\n\n' % (last_dir + src_name)
     figure_list, rst = process_blocks(blocks, src_path, image_path, cfg)
@@ -347,10 +373,12 @@ def write_example(src_name, src_dir, rst_dir, cfg):
         example_rst += LITERALINCLUDE.format(**code_info)
 
     example_rst += CODE_LINK.format(src_name)
+    ipnotebook_name = src_name.replace('.py', '.ipynb')
+    ipnotebook_name = './notebook/' + ipnotebook_name
+    example_rst += NOTEBOOK_LINK.format(ipnotebook_name)
 
-    f = open(rst_path, 'w')
-    f.write(example_rst)
-    f.flush()
+    with open(rst_path, 'w') as f:
+        f.write(example_rst)
 
     thumb_path = thumb_dir.pjoin(src_name[:-3] + '.png')
     first_image_file = image_dir.pjoin(figure_list[0].lstrip('/'))
@@ -364,6 +392,66 @@ def write_example(src_name, src_dir, rst_dir, cfg):
             print("Specify 'plot2rst_default_thumb' in Sphinx config file.")
         else:
             shutil.copy(cfg.plot2rst_default_thumb, thumb_path)
+
+    # Export example to IPython notebook
+    nb = Notebook()
+
+    # Add sphinx roles to the examples, otherwise docutils
+    # cannot compile the ReST for the notebook
+    sphinx_roles = PythonDomain.roles.keys()
+    preamble = '\n'.join('.. role:: py:{0}(literal)\n'.format(role)
+                         for role in sphinx_roles)
+
+    # Grab all references to inject them in cells where needed
+    ref_regexp = re.compile('\n(\.\. \[(\d+)\].*(?:\n[ ]{7,8}.*)+)')
+    math_role_regexp = re.compile(':math:`(.*?)`')
+
+    text = '\n'.join((content for (cell_type, _, content) in blocks
+                     if cell_type != 'code'))
+
+    references = re.findall(ref_regexp, text)
+
+    for (cell_type, _, content) in blocks:
+        if cell_type == 'code':
+            nb.add_cell(content, cell_type='code')
+        else:
+            if content.startswith('r'):
+                content = content.replace('r"""', '')
+                escaped = False
+            else:
+                content = content.replace('"""', '')
+                escaped = True
+
+            if not escaped:
+                content = content.replace("\\", "\\\\")
+
+            content = content.replace('.. seealso::', '**See also:**')
+            content = re.sub(math_role_regexp, r'$\1$', content)
+
+            # Remove math directive when rendering notebooks
+            # until we implement a smarter way of capturing and replacing
+            # its content
+            content = content.replace('.. math::', '')
+
+            if not content.strip():
+                continue
+
+            content = (preamble + content).rstrip('\n')
+            content = '\n'.join([line for line in content.split('\n') if
+                                 not line.startswith('.. image')])
+
+            # Remove reference links until we can figure out a better way to
+            # preserve them
+            for (reference, ref_id) in references:
+                ref_tag = '[{0}]_'.format(ref_id)
+                if ref_tag in content:
+                    content = content.replace(ref_tag, ref_tag[:-1])
+
+            html = publish_parts(content, writer_name='html')['html_body']
+            nb.add_cell(html, cell_type='markdown')
+
+    with open(notebook_path, 'w') as f:
+        f.write(nb.json())
 
 
 def save_thumbnail(image, thumb_path, shape):
@@ -383,7 +471,7 @@ def save_thumbnail(image, thumb_path, shape):
 
     i = (shape[0] - small_shape[0]) // 2
     j = (shape[1] - small_shape[1]) // 2
-    thumb[i:i + small_shape[0], j:j + small_shape[1]] = small_image
+    thumb[i:i+small_shape[0], j:j+small_shape[1]] = small_image
 
     io.imsave(thumb_path, thumb)
 
@@ -420,7 +508,7 @@ def split_code_and_text_blocks(source_file):
     for i, (start, end) in enumerate(slice_ranges):
         block_label = 'text' if i in idx_text_block else 'code'
         # subtract 1 from indices b/c line numbers start at 1, not 0
-        content = ''.join(source_lines[start - 1:end - 1])
+        content = ''.join(source_lines[start-1:end-1])
         blocks.append((block_label, (start, end), content))
     return blocks
 
@@ -442,14 +530,14 @@ def get_block_edges(source_file):
             t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
             if (token.tok_name[t_id] == 'STRING' and scol == 0):
                 # Add one point to line after text (for later slicing)
-                block_edges.extend((srow, erow + 1))
+                block_edges.extend((srow, erow+1))
     idx_first_text_block = 0
     # when example doesn't start with text block.
     if not block_edges[0] == 1:
         block_edges.insert(0, 1)
         idx_first_text_block = 1
     # when example doesn't end with text block.
-    if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
+    if not block_edges[-1] == erow: # iffy: I'm using end state of loop
         block_edges.append(erow)
     return block_edges, idx_first_text_block
 

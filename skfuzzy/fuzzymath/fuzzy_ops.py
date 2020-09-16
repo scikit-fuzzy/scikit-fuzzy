@@ -2,7 +2,6 @@
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
 """
-from __future__ import division, print_function
 import numpy as np
 
 
@@ -25,12 +24,7 @@ def cartadd(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-
-    m, n = len(x), len(y)
-
-    a = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    b = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
+    b, a = np.meshgrid(y, x, sparse=True)
     return a + b
 
 
@@ -53,12 +47,7 @@ def cartprod(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-
-    m, n = len(x), len(y)
-
-    a = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    b = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
+    b, a = np.meshgrid(y, x, sparse=True)
     return np.fmin(a, b)
 
 
@@ -88,7 +77,7 @@ def classic_relation(a, b):
 
     """
     a = np.asarray(a)
-    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones(len(b))))
+    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones_like(b)))
 
 
 def contrast(arr, amount=0.2, split=0.5, normalize=True):
@@ -136,7 +125,6 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     skfuzzy.fuzzymath.sigmoid
 
     """
-    # Ensure scalars are floats, to avoid truncating division in Python 2.x
     split = float(split)
     im = arr.astype(float)
     amount_ = np.asarray(amount, dtype=np.float64).ravel()
@@ -165,6 +153,72 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
 
     # Reapply multiplicative factor
     return focused * ma
+
+
+def fuzzy_op(x, a, y, b, op):
+    """Operation of two fuzzy sets.
+
+    Operate fuzzy set ``a`` with fuzzy set ``b``,
+    using +, * or any other binary operator.
+
+    Parameters
+    ----------
+    x : 1d array, length N
+        Universe variable for fuzzy set ``a``.
+    a : 1d array, length N
+        Fuzzy set for universe ``x``.
+    y : 1d array, length M
+        Universe variable for fuzzy set ``b``.
+    b : 1d array, length M
+        Fuzzy set for universe ``y``.
+    op: Function, pointwise binary operator on two matrices
+        (pointwise version of) +, -, *, /, min, max etc.
+
+    Returns
+    -------
+    z : 1d array
+        Output variable.
+    mfz : 1d array
+        Fuzzy membership set for variable ``z``.
+
+    Notes
+    -----
+    Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
+    Engineering Applications (2010), pp. 414, Eq. 12.17.
+
+    If these results are unexpected and your membership functions are convex,
+    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
+    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+
+    """
+    # a and x, and b and y, are formed into (MxN) matrices.  The former has
+    # identical rows; the latter identical identical columns.
+
+    yy, xx = np.meshgrid(y, x, sparse=True)       # consider broadcasting rules
+    bb, aa = np.meshgrid(b, a, sparse=True)
+
+    # Do the operation
+    zz = op(xx, yy).ravel()
+    zz_index = np.argsort(zz)
+    zz = np.sort(zz)
+
+    # Array min() operation
+    c = np.fmin(aa, bb).ravel()
+    c = c[zz_index]
+
+    # Initialize loop
+    z, mfz = np.zeros(0), np.zeros(0)
+    idx = 0
+
+    for _ in range(len(c)):
+        index = np.nonzero(zz == zz[idx])[0]
+        z = np.hstack((z, zz[idx]))
+        mfz = np.hstack((mfz, c[index].max()))
+        idx = index[-1] + 1
+        if idx >= len(zz):
+            break
+
+    return z, mfz
 
 
 def fuzzy_add(x, a, y, b):
@@ -199,37 +253,7 @@ def fuzzy_add(x, a, y, b):
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    xx = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    yy = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Do the addition
-    zz = (xx + yy).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.add)
 
 
 def fuzzy_compare(q):
@@ -261,7 +285,7 @@ def fuzzy_div(x, a, y, b):
         Universe variable for fuzzy set ``a``.
     a : 1d array, length N
         Fuzzy set for universe ``x``.
-    y : 1d array, length M
+    y : 1d array, length M (excluding zero array)
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
@@ -285,35 +309,12 @@ def fuzzy_div(x, a, y, b):
     """
     # a and x, and b and y, are formed into (MxN) matrices.  The former has
     # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Divide, adding eps to avoid potential div0
-    zz = (x / (y + np.finfo(float).eps)).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    if np.all(np.asarray(y) == 0):
+        Warning('The 0 value(s) will never be used in the calculation!')
+    index = np.where(y == 0)[0]
+    np.delete(y, index)
+    np.delete(b, index)
+    return fuzzy_op(x, a, y, b, op=np.divide)
 
 
 def fuzzy_min(x, a, y, b):
@@ -348,37 +349,7 @@ def fuzzy_min(x, a, y, b):
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Take the element-wise minimum
-    zz = np.fmin(x, y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.fmin)
 
 
 def fuzzy_mult(x, a, y, b):
@@ -413,37 +384,7 @@ def fuzzy_mult(x, a, y, b):
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Multiply universes
-    zz = (x * y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.multiply)
 
 
 def fuzzy_sub(x, a, y, b):
@@ -478,37 +419,7 @@ def fuzzy_sub(x, a, y, b):
     using interval arithmetic via the restricted Dong, Shah, and Wong method.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    n = len(b)
-    aa = np.dot(np.atleast_2d(a).T, np.ones((1, n)))
-    x = np.dot(np.atleast_2d(x).T, np.ones((1, n)))
-    m = len(a)
-    bb = np.dot(np.ones((m, 1)), np.atleast_2d(b))
-    y = np.dot(np.ones((m, 1)), np.atleast_2d(y))
-
-    # Subtract universes
-    zz = (x - y).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
-
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
-
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for i in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        if zz[idx] == zz.max():
-            break
-        idx = index.max() + 1
-
-    return z, mfz
+    return fuzzy_op(x, a, y, b, op=np.subtract)
 
 
 def inner_product(a, b):
@@ -547,7 +458,8 @@ def interp10(x):
         Linearly interpolated output.
 
     """
-    return np.interp(np.r_[0:len(x) - 0.9:0.1], range(len(x)), x)
+    L = len(x)
+    return np.interp(np.r_[0:L - 0.9:0.1], range(L), x)
 
 
 def maxmin_composition(s, r):
@@ -686,17 +598,21 @@ def interp_universe(x, xmf, y):
     ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete
     values on ``x``. This function computes the value (or values) of ``xx``
     such that ``u(xx) == y`` using linear interpolation.
+
     """
     # Special case required or zero-level cut does not work with faster method
     if y == 0.:
         idx = np.where(np.diff(xmf > y))[0]
     else:
         idx = np.where(np.diff(xmf >= y))[0]
-    xx = x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
+    xx = (x[idx]
+          + (y - xmf[idx])
+          * (x[idx + 1] - x[idx])
+          / (xmf[idx + 1] - xmf[idx]))
 
     # The above method is fast, but duplicates point values where
-    # y == peak of a membership function.  Ducking briefly into a set
-    # elimniates this.  Benchmarked multiple ways; this is by far the fastest.
+    # y == peak of a membership function. Ducking briefly into a set
+    # eliminates this. Benchmarked multiple ways; this is by far the fastest.
     # Speed penalty approximately 10%, worth it.
     return [n for n in set(xx.tolist())]
 
@@ -740,7 +656,10 @@ def _interp_universe_fast(x, xmf, y):
 
     # This method is fast, but duplicates point values where
     # y == peak of a membership function.
-    return x[idx] + (y-xmf[idx]) * (x[idx+1]-x[idx]) / (xmf[idx+1]-xmf[idx])
+    return (x[idx]
+            + (y - xmf[idx])
+            * (x[idx+1] - x[idx])
+            / (xmf[idx+1] - xmf[idx]))
 
 
 def modus_ponens(a, b, ap, c=None):
@@ -769,7 +688,7 @@ def modus_ponens(a, b, ap, c=None):
 
     """
     if c is None:
-        c = np.ones(len(b))
+        c = np.ones_like(b)
     r = np.fmax(cartprod(a, b), cartprod(1 - a, c))
     bp = maxmin_composition(ap, r)
     return r, bp.squeeze()
@@ -813,11 +732,8 @@ def relation_min(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    m = len(a)
-    n = len(b)
-    a = np.atleast_2d(a)
-    b = np.atleast_2d(b)
-    return np.fmin(np.dot(a.T, np.ones((1, m))), np.dot(np.ones((n, 1)), b))
+    bb, aa = np.meshgrid(b, a, sparse=True)
+    return np.fmin(aa, bb)
 
 
 def relation_product(a, b):
@@ -838,11 +754,8 @@ def relation_product(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    m = len(a)
-    n = len(b)
-    a = np.atleast_2d(a)
-    b = np.atleast_2d(b)
-    return np.dot(a.T, np.ones((1, n))) * np.dot(np.ones((m, 1)), b)
+    bb, aa = np.meshgrid(b, a, sparse=True)
+    return aa * bb
 
 
 def fuzzy_similarity(ai, b, mode='min'):
@@ -903,6 +816,7 @@ def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
     continuous functions. Triangular, trapezoidal designs have no partial
     derivatives to calculate. The following
     """
+
     if mf_name == 'gaussmf':
 
         sigma = mf_parameter_dict['sigma']
@@ -986,4 +900,5 @@ def sigmoid(x, power, split=0.5):
     --------
     skfuzzy.fuzzymath.contrast
     """
+
     return 1. / (1. + np.exp(- power * (x - split)))

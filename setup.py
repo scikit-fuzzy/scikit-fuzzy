@@ -4,7 +4,6 @@ descr = """scikit-fuzzy (a.k.a. `skfuzzy`): Fuzzy logic toolbox for Python.
 
 This package implements many useful tools for projects involving fuzzy logic,
 also known as grey logic.
-
 """
 
 DISTNAME            = 'scikit-fuzzy'
@@ -76,33 +75,11 @@ def configuration(parent_package='', top_path=None):
 if __name__ == "__main__":
     try:
         from numpy.distutils.core import setup
-        extra = {'configuration': configuration}
-        # Do not try and upgrade larger dependencies
-        for lib in ['numpy', 'scipy', 'matplotlib']:
-            try:
-                __import__(lib)
-                INSTALL_REQUIRES = [i for i in INSTALL_REQUIRES
-                                    if lib not in i]
-            except ImportError:
-                pass
     except ImportError:
-        if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
-                                   sys.argv[1] in ('--help-commands',
-                                                   '--version',
-                                                   'clean')):
-            # For these actions, NumPy is not required.
-            #
-            # They are required to succeed without Numpy for example when
-            # pip is used to install scikit-image when Numpy is not yet
-            # present in the system.
-            from setuptools import setup
-            extra = {}
-        else:
-            print('To install scikit-fuzzy from source, you will need numpy.\n' +
-                  'Install numpy with pip:\n' +
-                  'pip install numpy\n'
-                  'Or use your operating system package manager.')
-            sys.exit(1)
+        from setuptools import setup
+        extra = {}
+    else:
+        extra = {'configuration': configuration}
 
     setup(
         name=DISTNAME,

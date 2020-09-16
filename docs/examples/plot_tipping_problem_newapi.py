@@ -21,7 +21,7 @@ rated between 0 and 10.  You use this to leave a tip of between 0 and 25%.
 
 We would formulate this problem as:
 
-* Antecednets (Inputs)
+* Antecedents (Inputs)
    - `service`
       * Universe (ie, crisp value range): How good was the service of the wait
         staff, on a scale of 0 to 10?
@@ -132,7 +132,7 @@ tipping_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 """
 In order to simulate this control system, we will create a
 ``ControlSystemSimulation``.  Think of this object representing our controller
-applied to a specific set of cirucmstances.  For tipping, this might be tipping
+applied to a specific set of circumstances.  For tipping, this might be tipping
 Sharon at the local brew-pub.  We would create another
 ``ControlSystemSimulation`` when we're trying to apply our ``tipping_ctrl``
 for Travis at the cafe because the inputs would be different.
@@ -156,7 +156,7 @@ tipping.compute()
 """
 Once computed, we can view the result as well as visualize it.
 """
-print tipping.output['tip']
+print(tipping.output['tip'])
 tip.view(sim=tipping)
 
 """
