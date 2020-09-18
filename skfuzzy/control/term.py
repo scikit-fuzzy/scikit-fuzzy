@@ -8,12 +8,10 @@ Consequents when constructing fuzzy Rules.
 Terms have redefined logical operators which enable the simple and elegant
 combination of several during Rule creation.
 """
-from __future__ import print_function, division
-
 import numpy as np
 
-from .visualization import FuzzyVariableVisualizer
 from .state import StatefulProperty
+from .visualization import FuzzyVariableVisualizer
 
 
 class TermPrimitive(object):
@@ -47,8 +45,8 @@ class Term(TermPrimitive):
     A Term is a universe and associated specific membership function.
 
     For example, if one were creating a FuzzyVariable with a simple three-
-    point liker scale, three `Term` would be created named poor, average,
-    and good.
+    point Likert scale, three `Terms` would be created named 'poor', 'average',
+    and 'good'.
     """
 
     # State variables
@@ -117,7 +115,7 @@ class WeightedTerm(object):
         if self.weight == 1.:
             return self.term.full_label
         else:
-            return "%s@%0.2f%%" % (self.term.full_label, self.weight)
+            return "{}@{:0.2f}%".format(self.term.full_label, self.weight)
 
 
 class FuzzyAggregationMethods(object):
@@ -178,13 +176,14 @@ class TermAggregate(TermPrimitive):
             if isinstance(term, Term):
                 return term.full_label
             elif isinstance(term, TermAggregate):
-                return "(%s)" % term
+                return "({!s})".format(term)
 
         if self.kind == 'not':
-            return "NOT-%s" % _term_to_str(self.term1)
+            return "NOT-{}".format(_term_to_str(self.term1))
 
-        return "%s %s %s" % (_term_to_str(self.term1), self.kind.upper(),
-                             _term_to_str(self.term2))
+        return "{} {} {}".format(_term_to_str(self.term1),
+                                 self.kind.upper(),
+                                 _term_to_str(self.term2))
 
     @property
     def agg_methods(self):

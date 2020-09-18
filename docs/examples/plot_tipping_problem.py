@@ -42,7 +42,7 @@ import matplotlib.pyplot as plt
 #   * Tip has a range of [0, 25] in units of percentage points
 x_qual = np.arange(0, 11, 1)
 x_serv = np.arange(0, 11, 1)
-x_tip  = np.arange(0, 26, 1)
+x_tip = np.arange(0, 26, 1)
 
 # Generate fuzzy membership functions
 qual_lo = fuzz.trimf(x_qual, [0, 0, 5])

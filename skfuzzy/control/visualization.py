@@ -1,15 +1,14 @@
 """
 visualization.py : Visualize fuzzy control systems.
 """
-from __future__ import print_function, division
 
-import numpy as np
-import networkx as nx
 try:
     import matplotlib.pyplot as plt
     matplotlib_present = True
 except ImportError:
     matplotlib_present = False
+import networkx as nx
+import numpy as np
 
 from ..fuzzymath.fuzzy_ops import interp_membership
 
@@ -220,13 +219,12 @@ class ControlSystemVisualizer(object):
         -----
         This method uses the NetworkX ``draw_networkx`` command, to check that
         all Mebership Functions, MF, are used (green) among the rules. The plot
-        also writes the name of the MF. If further customization is desired, the
-        matplotlib Figure/Axis objects are returned.  In a Jupyter notebook,
-        these will be displayed inline.
+        also writes the name of the MF. If further customization is desired,
+        the matplotlib Figure/Axis objects are returned.  In a Jupyter
+        notebook, these will be displayed inline.
         If the network model fails, it will return the ordenary view.
         """
         try:
-            structure = []
             graph, color_list = self.ctrl.graph_n
             colors = []
             c_nodes = []

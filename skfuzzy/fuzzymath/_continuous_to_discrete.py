@@ -1,5 +1,5 @@
-import scipy.linalg
 import numpy as np
+import scipy.linalg
 
 
 def continuous_to_discrete(a, b, sampling_rate):

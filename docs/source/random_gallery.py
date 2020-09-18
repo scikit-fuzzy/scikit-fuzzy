@@ -32,15 +32,15 @@ gallery_div = '''\
 examples = glob.glob(os.path.join(example_dir, 'plot_*.py'))
 
 images, links = [], []
-image_url = 'http://scikit-image.org/docs/dev/_images/%s.png'
-link_url = 'http://scikit-image.org/docs/dev/auto_examples/%s.html'
+image_url = 'http://scikit-image.org/docs/dev/_images/{}.png'
+link_url = 'http://scikit-image.org/docs/dev/auto_examples/{}.html'
 
 for e in examples:
     e = os.path.basename(e)
     e = e[:-len('.py')]
 
-    images.append(image_url % e)
-    links.append(link_url % e)
+    images.append(image_url.format(e))
+    links.append(link_url.format(e))
 
 javascript = javascript.replace('{{IMAGES}}', str(images))
 javascript = javascript.replace('{{LINKS}}', str(links))

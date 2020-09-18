@@ -79,12 +79,11 @@ def test_defuzz():
     assert_allclose(5, fuzz.defuzz(x, trapmf, 'mom'))
     assert_allclose(7, fuzz.defuzz(x, trapmf, 'lom'))
 
-
     # Make sure som/lom work for all-negative universes:
     x_neg = x-20
     assert_allclose(-17, fuzz.defuzz(x_neg, trapmf, 'som'))
     assert_allclose(-13, fuzz.defuzz(x_neg, trapmf, 'lom'))
-    
+
     # Bad string argument
     assert_raises(ValueError, fuzz.defuzz, x, trapmf, 'bad string')
 
@@ -111,11 +110,11 @@ def test_lambda_cut_series():
     x = np.arange(21) - 10
     mfx = fuzz.trimf(x, [-2, 3, 5])
 
-    expected = np.array([[0.  , -2.,  5.],
-                         [0.25,  0.,  4.],
-                         [0.5 ,  1.,  4.],
-                         [0.75,  2.,  3.],
-                         [1.  ,  3.,  3.]])
+    expected = np.array([[0., -2., 5.],
+                         [0.25, 0., 4.],
+                         [0.5, 1., 4.],
+                         [0.75, 2., 3.],
+                         [1., 3., 3.]])
 
     assert_allclose(expected, fuzz.lambda_cut_series(x, mfx, 5))
 

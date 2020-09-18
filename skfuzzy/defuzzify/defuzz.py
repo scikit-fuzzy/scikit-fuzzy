@@ -3,6 +3,7 @@ defuzz.py : Various methods for defuzzification and lambda-cuts, to convert
             'fuzzy' systems back into 'crisp' values for decisions.
 """
 import numpy as np
+
 from ..image.arraypad import pad
 
 
@@ -66,7 +67,8 @@ def centroid(x, mfx):
 
     # If the membership function is a singleton fuzzy set:
     if len(x) == 1:
-        return x[0]*mfx[0] / np.fmax(mfx[0], np.finfo(float).eps).astype(float)
+        return (x[0] * mfx[0]
+                / np.fmax(mfx[0], np.finfo(float).eps).astype(float))
 
     # else return the sum of moment*area/sum of area
     for i in range(1, len(x)):
@@ -76,25 +78,26 @@ def centroid(x, mfx):
         y2 = mfx[i]
 
         # if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or width
-        if not(y1 == y2 == 0.0 or x1 == x2):
+        if not (y1 == y2 == 0.0 or x1 == x2):
             if y1 == y2:  # rectangle
                 moment = 0.5 * (x1 + x2)
                 area = (x2 - x1) * y1
             elif y1 == 0.0 and y2 != 0.0:  # triangle, height y2
-                moment = 2.0 / 3.0 * (x2-x1) + x1
+                moment = 2.0 / 3.0 * (x2 - x1) + x1
                 area = 0.5 * (x2 - x1) * y2
             elif y2 == 0.0 and y1 != 0.0:  # triangle, height y1
                 moment = 1.0 / 3.0 * (x2 - x1) + x1
                 area = 0.5 * (x2 - x1) * y1
             else:
-                moment = (2.0 / 3.0 * (x2-x1) * (y2 + 0.5*y1)) / (y1+y2) + x1
+                moment = ((2.0 / 3.0 * (x2 - x1) * (y2 + 0.5 * y1))
+                          / (y1 + y2) + x1)
                 area = 0.5 * (x2 - x1) * (y1 + y2)
 
             sum_moment_area += moment * area
             sum_area += area
 
-    return sum_moment_area / np.fmax(sum_area,
-                                     np.finfo(float).eps).astype(float)
+    return (sum_moment_area
+            / np.fmax(sum_area, np.finfo(float).eps).astype(float))
 
 
 def dcentroid(x, mfx, x0):
@@ -162,7 +165,7 @@ def bisector(x, mfx):
         y2 = mfx[i]
 
         # if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or width
-        if not(y1 == y2 == 0. or x1 == x2):
+        if not (y1 == y2 == 0. or x1 == x2):
             if y1 == y2:  # rectangle
                 area = (x2 - x1) * y1
             elif y1 == 0. and y2 != 0.:  # triangle, height y2
@@ -190,21 +193,21 @@ def bisector(x, mfx):
 
     # We are interested only in the subarea inside the figure in which the
     # bisection is present.
-    subarea = sum_area/2. - subarea
+    subarea = sum_area / 2. - subarea
 
     x2minusx1 = x2 - x1
     if y1 == y2:  # rectangle
-        u = subarea/y1 + x1
+        u = subarea / y1 + x1
     elif y1 == 0.0 and y2 != 0.0:  # triangle, height y2
         root = np.sqrt(2. * subarea * x2minusx1 / y2)
         u = (x1 + root)
     elif y2 == 0.0 and y1 != 0.0:  # triangle, height y1
-        root = np.sqrt(x2minusx1*x2minusx1 - (2.*subarea*x2minusx1/y1))
+        root = np.sqrt(x2minusx1 * x2minusx1 - (2. * subarea * x2minusx1 / y1))
         u = (x2 - root)
     else:
-        m = (y2-y1) / x2minusx1
-        root = np.sqrt(y1*y1 + 2.0*m*subarea)
-        u = (x1 - (y1-root) / m)
+        m = (y2 - y1) / x2minusx1
+        root = np.sqrt(y1 * y1 + 2.0 * m * subarea)
+        u = (x1 - (y1 - root) / m)
     return u
 
 
@@ -240,12 +243,12 @@ def defuzz(x, mfx, mode):
     x = x.ravel()
     mfx = mfx.ravel()
     n = len(x)
-    assert n == len(mfx), 'Length of x and fuzzy membership function must be \
-                          identical.'
+    assert n == len(mfx), ("Length of x and fuzzy membership function must be "
+                           "identical.")
 
     if 'centroid' in mode or 'bisector' in mode:
         zero_truth_degree = mfx.sum() == 0  # Approximation of total area
-        assert not zero_truth_degree, 'Total area is zero in defuzzification!'
+        assert not zero_truth_degree, "Total area is zero in defuzzification!"
 
         if 'centroid' in mode:
             return centroid(x, mfx)
@@ -263,7 +266,8 @@ def defuzz(x, mfx, mode):
         return np.max(x[mfx == mfx.max()])
 
     else:
-        raise ValueError('The input for `mode`, %s, was incorrect.' % (mode))
+        raise ValueError("The input for `mode`, {}, was incorrect."
+                         .format(mode))
 
 
 def _interp_universe(x, xmf, mf_val):

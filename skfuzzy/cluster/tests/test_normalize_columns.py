@@ -1,4 +1,3 @@
-import nose
 import numpy as np
 from skfuzzy.cluster.normalize_columns import normalize_power_columns
 
@@ -31,7 +30,7 @@ def test_normalize_power_columns():
         [1, 1e-100],
         [1, 0.0000],
     ])
-    
+
     b_normalized_expected = np.array([
         [0.0, 0.5],
         [0.5, 0.5],
@@ -47,7 +46,7 @@ def test_normalize_power_columns():
         [1, 1e-100, 1, 1],
         [1, 0.0000, 2, 0],
     ])
-    
+
     c_normalized_expected = np.array([
         [0.0, 0.5, 0.0, 1],
         [0.5, 0.5, 0.0, 0],
@@ -57,13 +56,13 @@ def test_normalize_power_columns():
     c_normalized = normalize_power_columns(c, 1000)
 
     np.testing.assert_allclose(c_normalized, c_normalized_expected, atol=1e-10)
-    
+
     d = np.array([
         [0, 1e-100, 0, 1e100],
         [1, 1e-100, 1, 1],
         [1, 0.0000, 2, 0],
     ])
-    
+
     d_normalized_expected = np.array([
         [1.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, 0.5],

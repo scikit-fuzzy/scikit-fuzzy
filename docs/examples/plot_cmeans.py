@@ -20,9 +20,8 @@ In this example we will first undertake necessary imports, then define some
 test data to work with.
 
 """
-from __future__ import division, print_function
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import skfuzzy as fuzz
 
 colors = ['b', 'orange', 'g', 'r', 'c', 'm', 'y', 'k', 'Brown', 'ForestGreen']
