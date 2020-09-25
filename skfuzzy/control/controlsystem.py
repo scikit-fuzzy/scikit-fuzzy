@@ -141,6 +141,10 @@ class _InputAcceptor(object):
     Inputs can be singletons or arrays, but all Antecedent inputs must match.
     If they are arrays, all must have the exact same shape.  If they are
     arrays, the output(s) will carry the same shape as the inputs.
+
+    An input value can be a "crisp" numerical value, which is fuzzified, or it
+    can be a (valid) term label, in which case the membership value for that
+    term will be set to 1 (and 0 for the others).
     """
 
     def __init__(self, simulation):
