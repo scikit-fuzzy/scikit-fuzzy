@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-PYTHON        ?= python
+PYTHON        ?= python3
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= python $(shell which sphinx-build)
 PAPER         ?=
