@@ -141,6 +141,10 @@ class _InputAcceptor(object):
     Inputs can be singletons or arrays, but all Antecedent inputs must match.
     If they are arrays, all must have the exact same shape.  If they are
     arrays, the output(s) will carry the same shape as the inputs.
+
+    An input value can be a "crisp" numerical value, which is fuzzified, or it
+    can be a (valid) term label, in which case the membership value for that
+    term will be set to 1 (and 0 for the others).
     """
 
     def __init__(self, simulation):
@@ -151,47 +155,53 @@ class _InputAcceptor(object):
         # Find the antecedent we should set the input for
         matches = [n for n in self.sim.ctrl.graph.nodes()
                    if isinstance(n, Antecedent) and n.label == key]
-
         if len(matches) == 0:
             raise ValueError("Unexpected input: " + key)
         assert len(matches) == 1
         var = matches[0]
 
-        # Inform the simulation there is an array input
-        if isinstance(value, np.ndarray):
-            self.sim._array_inputs = True
-            # Check if this is the correct array input
-            if self.sim._array_shape is not None:
-                if self.sim._array_shape != value.shape:
-                    warn("Input array is shape {0}, which is different from "
-                         "previous array(s) which were {1}.  This may cause "
-                         "problems, unless you are replacing all "
-                         "inputs.".format(value.shape, self.sim._array_shape))
-            self.sim._array_shape = value.shape
-            maxval = value.max(initial=0)
-            minval = value.min(initial=0)
+        if isinstance(value, Term):
+            value = value.label
+        elif isinstance(value, str):
+            pass
         else:
-            # Input isn't an array, but we saw arrays before... reset!
-            if self.sim._array_inputs is not False:
-                warn("This system previously accepted array inputs.  It will "
-                     "be reset to operate on the singleton input just passed.")
-                self.sim.reset()
-                self.sim._array_shape = False
-            maxval = value
-            minval = value
+            if isinstance(value, np.ndarray):
+                # Inform the simulation there is an array input
+                self.sim._array_inputs = True
+                # Check if this is the correct array input
+                if self.sim._array_shape is not None:
+                    if self.sim._array_shape != value.shape:
+                        warn("Input array is shape {0}, which is different "
+                             "from previous array(s) which were {1}.  This "
+                             "may cause problems, unless you are replacing "
+                             "all inputs."
+                             .format(value.shape, self.sim._array_shape))
+                self.sim._array_shape = value.shape
+                maxval = value.max(initial=0)
+                minval = value.min(initial=0)
+            else:
+                # Input isn't an array, but we saw arrays before... reset!
+                if self.sim._array_inputs is not False:
+                    warn("This system previously accepted array inputs.  It "
+                         "will be reset to operate on the singleton input "
+                         "just passed.")
+                    self.sim.reset()
+                    self.sim._array_shape = False
+                maxval = value
+                minval = value
 
-        if maxval > var.universe.max():
-            if self.sim.clip_to_bounds:
-                value = np.fmin(value, var.universe.max())
-            else:
-                raise IndexError("Input value out of bounds. Max is {}."
-                                 .format(max(var.universe)))
-        if minval < var.universe.min():
-            if self.sim.clip_to_bounds:
-                value = np.fmax(value, var.universe.min())
-            else:
-                raise IndexError("Input value is out of bounds. Min is {}."
-                                 .format(min(var.universe)))
+            if maxval > var.universe.max():
+                if self.sim.clip_to_bounds:
+                    value = np.fmin(value, var.universe.max())
+                else:
+                    raise IndexError("Input value out of bounds. Max is {}."
+                                     .format(max(var.universe)))
+            if minval < var.universe.min():
+                if self.sim.clip_to_bounds:
+                    value = np.fmax(value, var.universe.min())
+                else:
+                    raise IndexError("Input value is out of bounds. Min is {}."
+                                     .format(min(var.universe)))
 
         var.input['current'] = value
         self.sim._update_unique_id()
@@ -597,13 +607,22 @@ class CrispValueCalculator(object):
     def fuzz(self, value):
         """
         Propagate crisp value down to adjectives by calculating membership.
+
+        This function accepts either a crisp value or a term label.
         """
         if len(self.var.terms) == 0:
-            raise ValueError("Set Term membership function(s) first")
+            raise ValueError("No terms and membership functions were yet "
+                             "specified for the fuzzy variable '{}'."
+                             .format(self.var.label))
 
-        for label, term in self.var.terms.items():
-            term.membership_value[self.sim] = \
-                interp_membership(self.var.universe, term.mf, value)
+        if isinstance(value, str):
+            for label, term in self.var.terms.items():
+                term.membership_value[self.sim] = \
+                    1 if term.label == value else 0
+        else:
+            for label, term in self.var.terms.items():
+                term.membership_value[self.sim] = \
+                    interp_membership(self.var.universe, term.mf, value)
 
     def find_memberships(self):
         """

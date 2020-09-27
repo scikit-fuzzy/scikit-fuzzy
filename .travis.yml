@@ -28,7 +28,7 @@ before_install:
     - conda config --set always_yes yes;
     - conda update conda;
     - conda info -a;
-    - travis_retry conda create -n test $ENV scipy pip flake8 nose networkx matplotlib;
+    - travis_retry conda create -n test $ENV scipy pip pytest flake8 nose networkx matplotlib;
     - source activate test;
     - travis_retry conda install pillow;
     - travis_retry pip install coveralls
