@@ -206,7 +206,7 @@ def test_lenient_simulation():
     assert sim.output["y1"] == approx(8.333333)
     assert sim.output["y2"] == approx(8.333333)
 
-    sim = ctrl.ControlSystemSimulation(sys)
+    sim = ctrl.ControlSystemSimulation(sys, lenient=False)
     sim.input["x1"] = 10
     sim.input["x2"] = 0
     with raises(EmptyMembershipError):
@@ -235,7 +235,7 @@ def test_cached_lenient_simulation():
     r2 = ctrl.Rule(x2["poor"], y2["good"])
     sys = ctrl.ControlSystem([r1, r2])
 
-    sim = ctrl.ControlSystemSimulation(sys, lenient=True)
+    sim = ctrl.ControlSystemSimulation(sys)
     sim.input["x1"] = 10
     sim.input["x2"] = 0
     sim.compute()

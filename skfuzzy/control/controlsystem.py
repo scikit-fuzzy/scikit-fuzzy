@@ -276,12 +276,12 @@ class ControlSystemSimulation(object):
         The default of 1000 is appropriate for most hardware, but for small
         embedded systems this can be lowered as appropriate. Higher memory
         systems may see better performance with a higher limit.
-    lenient : boolean, optional, defaults to False
+    lenient : boolean, optional, defaults to True
         When true, sparse rules will not cause exceptions.
     """
 
     def __init__(self, control_system, clip_to_bounds=True, cache=True,
-                 flush_after_run=1000, lenient=False):
+                 flush_after_run=1000, lenient=True):
         """
         Initialize a new ControlSystemSimulation.
         """ + '\n'.join(ControlSystemSimulation.__doc__.split('\n')[1:])
