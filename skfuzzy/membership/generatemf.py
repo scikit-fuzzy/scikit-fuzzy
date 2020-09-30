@@ -210,27 +210,12 @@ def ipiecemf(x, abc):
     Notes
     -----
     Inverse piecewise definition:
-                y = 1,                    min(x) <= x <= a
-                y = (b + a - x)/b,        a <= x <= b
-                y = a(c - x)/b(c - b),    b <= x <= c
-                y = 0,                    c <= x <= max(x)
+                y = 1,                     min(x) <= x <= a
+                y = 1 - b(x - a)/c(b - a), a <= x <= b
+                y = 1 - x/c,               b <= x <= c
+                y = 0,                     c <= x <= max(x)
     """
-    a, b, c = abc
-
-    assert a <= b and b <= c, '`abc` requires a <= b <= c.'
-
-    y = np.zeros(len(x))
-
-    idx = x <= a
-    y[idx] = 1
-
-    idx = np.logical_and(a <= x, x <= b)
-    y[idx] = (b + a - x[idx]) / float(b)
-
-    idx = np.logical_and(b < x, x <= c)
-    y[idx] = (a * (c - x[idx])) / float(b * (c - b))
-
-    return y
+    return 1 - piecemf(x, abc)
 
 
 def gpiecemf(x, abc, efg):
@@ -259,21 +244,21 @@ def gpiecemf(x, abc, efg):
     -----
     General piecewise definition:
         if c<=e:
-                y = 0,                    min(x) <= x <= a
-                y = b(x - a)/c(b - a),    a <= x <= b
-                y = x/c,                  b <= x <= c
-                y = 1,                    c <= x <= e
-                y = (f + e - x)/f,        e <= x <= f
-                y = e(g - x)/f(g - f),    f <= x <= g
-                y = 0,                    g <= x <= max(x)
+                y = 0,                     min(x) <= x <= a
+                y = b(x - a)/c(b - a),     a <= x <= b
+                y = x/c,                   b <= x <= c
+                y = 1,                     c <= x <= e
+                y = 1 - f(x - e)/g(f - e), e <= x <= f
+                y = 1 - x/g,               f <= x <= g
+                y = 0,                     g <= x <= max(x)
         if g<=a:
-                y = 1,                    min(x) <= x <= e
-                y = (f + e - x)/f,        e <= x <= f
-                y = e(g - x)/f(g - f),    f <= x <= g
-                y = 0,                    g <= x <= a
-                y = b(x - a)/c(b - a),    a <= x <= b
-                y = x/c,                  b <= x <= c
-                y = 1,                    c <= x <= max(x)
+                y = 1,                     min(x) <= x <= e
+                y = 1 - f(x - e)/g(f - e), e <= x <= f
+                y = 1 - x/g,               f <= x <= g
+                y = 0,                     g <= x <= a
+                y = b(x - a)/c(b - a),     a <= x <= b
+                y = x/c,                   b <= x <= c
+                y = 1,                     c <= x <= max(x)
     """
     a, b, c = abc
     e, f, g = efg
