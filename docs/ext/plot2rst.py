@@ -213,7 +213,7 @@ def generate_examples_and_gallery(example_dir, rst_dir, cfg):
         'teststring'+cfg.source_suffix_str
     except TypeError:
         # This is apparently an OrderedDict in Sphinx now...
-        cfg.source_suffix_str = cfg.source_suffix_str.items()[0][0]
+        cfg.source_suffix_str = list(cfg.source_suffix_str.items())[0][0]
 
     # we create an index.rst with all examples
     with open(rst_dir.pjoin('index'+cfg.source_suffix_str), 'w') as gallery_index:

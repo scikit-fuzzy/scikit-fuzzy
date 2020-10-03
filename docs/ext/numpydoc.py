@@ -28,7 +28,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
 
     if what == 'module':
         # Strip top title
-        title_re = re.compile(ur'^\s*[#*=]{4,}\n[a-z0-9 -]+\n[#*=]{4,}\s*',
+        title_re = re.compile('^\s*[#*=]{4,}\n[a-z0-9 -]+\n[#*=]{4,}\s*',
                               re.I|re.S)
         lines[:] = title_re.sub(u'', u"\n".join(lines)).split(u"\n")
     else:
@@ -49,7 +49,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
     references = []
     for line in lines:
         line = line.strip()
-        m = re.match(ur'^.. \[([a-z0-9_.-])\]', line, re.I)
+        m = re.match('^.. \[([a-z0-9_.-])\]', line, re.I)
         if m:
             references.append(m.group(1))
 
@@ -58,7 +58,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
     if references:
         for i, line in enumerate(lines):
             for r in references:
-                if re.match(ur'^\d+$', r):
+                if re.match('^\d+$', r):
                     new_r = u"R%d" % (reference_offset[0] + int(r))
                 else:
                     new_r = u"%s%d" % (r, reference_offset[0])
