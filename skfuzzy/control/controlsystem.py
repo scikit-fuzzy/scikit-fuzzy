@@ -8,11 +8,14 @@ import networkx as nx
 import numpy as np
 
 from .antecedent_consequent import Antecedent, Consequent
+from .exceptions import EmptyMembershipError, NoTermMembershipsError
 from .fuzzyvariable import FuzzyVariable
 from .rule import Rule
 from .term import Term, TermAggregate, WeightedTerm
 from .visualization import ControlSystemVisualizer
-from ..defuzzify import defuzz
+from ..defuzzify import (
+    EmptyMembershipError as DefuzzEmptyMembershipError, defuzz,
+)
 from ..fuzzymath.fuzzy_ops import _interp_universe_fast, interp_membership
 
 
@@ -33,7 +36,6 @@ class ControlSystem(object):
         Initialization method for the fuzzy ControlSystem object.
         """ + '\n'.join(ControlSystem.__doc__.split('\n')[1:])
         self.graph = nx.DiGraph()
-        self._rule_generator = RuleOrderGenerator(self)
 
         # Construct a system from provided rules, if given
         if rules is not None:
@@ -49,13 +51,19 @@ class ControlSystem(object):
     @property
     def rules(self):
         """
-        Generator which yields Rules in the system in calculation order.
+        Generator which yields the rules in the system in calculation order.
+
+        The generator exposes the rules in order from antecedents to
+        consequences. Consider for example the following rule dependencies:
+
+            Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
+
+        If we expose rule2 before rule1, we won't calculate correctly.
+
+        Note that each access of this property yields a new generator such that
+        these rules can be accessed from other separated client components.
         """
-        # We have to expose the rules in the order from antecedents to
-        #  consequences.  For example if we have:
-        #  Antecedent -> rule1 -> Intermediary -> rule2 -> Consequence
-        #  if we expose rule1 before rule2, we won't calculate correctly
-        return self._rule_generator
+        return RuleOrderGenerator(self)
 
     @property
     def antecedents(self):
@@ -268,10 +276,12 @@ class ControlSystemSimulation(object):
         The default of 1000 is appropriate for most hardware, but for small
         embedded systems this can be lowered as appropriate. Higher memory
         systems may see better performance with a higher limit.
+    lenient : boolean, optional, defaults to True
+        When true, sparse rules will not cause exceptions.
     """
 
     def __init__(self, control_system, clip_to_bounds=True, cache=True,
-                 flush_after_run=1000):
+                 flush_after_run=1000, lenient=True):
         """
         Initialize a new ControlSystemSimulation.
         """ + '\n'.join(ControlSystemSimulation.__doc__.split('\n')[1:])
@@ -279,6 +289,7 @@ class ControlSystemSimulation(object):
         self.ctrl = control_system
 
         self.input = _InputAcceptor(self)
+        self.lenient = lenient
         self.output = OrderedDict()
         self.cache = cache
         self._array_inputs = False  # Disable caching if True
@@ -340,7 +351,8 @@ class ControlSystemSimulation(object):
         # Shortcut with lookup if this calculation was done before
         if self.cache is not False and self.unique_id in self._calculated:
             for consequent in self.ctrl.consequents:
-                self.output[consequent.label] = consequent.output[self]
+                if consequent.output[self] is not None:
+                    self.output[consequent.label] = consequent.output[self]
             return
 
         # If we get here, cache is disabled OR the inputs are novel. Compute!
@@ -363,10 +375,7 @@ class ControlSystemSimulation(object):
             self.compute_rule(rule)
 
         # Collect the results and present them as a dict
-        for consequent in self.ctrl.consequents:
-            consequent.output[self] = \
-                CrispValueCalculator(consequent, self).defuzz()
-            self.output[consequent.label] = consequent.output[self]
+        self.output = self.defuzz_consequents()
 
         # Make note of this run so we can easily find it again
         if self.cache is not False:
@@ -379,6 +388,21 @@ class ControlSystemSimulation(object):
         self._run += 1
         if self._run % self._flush_after_run == 0:
             self._reset_simulation()
+
+    def defuzz_consequents(self):
+        """Collect and return the defuzzified consequents."""
+        results = {}
+        for consequent in self.ctrl.consequents:
+            try:
+                consequent.output[self] = \
+                    CrispValueCalculator(consequent, self).defuzz()
+            except (NoTermMembershipsError, EmptyMembershipError) as error:
+                if self.lenient:
+                    continue
+                else:
+                    raise error
+            results[consequent.label] = consequent.output[self]
+        return results
 
     def compute_rule(self, rule):
         """
@@ -575,21 +599,13 @@ class CrispValueCalculator(object):
             ups_universe, output_mf, term_mfs = self.find_memberships()
 
             if len(term_mfs) == 0:
-                raise ValueError("No terms have memberships.  Make sure you "
-                                 "have at least one rule connected to this "
-                                 "variable and have run the rules "
-                                 "calculation.")
+                raise NoTermMembershipsError(self.var)
 
             try:
                 return defuzz(ups_universe, output_mf,
                               self.var.defuzzify_method)
-            except AssertionError:
-                raise ValueError("Crisp output cannot be calculated, likely "
-                                 "because the system is too sparse. Check to "
-                                 "make sure this set of input values will "
-                                 "activate at least one connected Term in "
-                                 "each Antecedent via the current set of "
-                                 "Rules.")
+            except DefuzzEmptyMembershipError:
+                raise EmptyMembershipError(self.var)
         else:
             # Calculate using array-aware version, one cut at a time.
             output = np.zeros(self.sim._array_shape, dtype=np.float64)
@@ -772,18 +788,18 @@ class RuleOrderGenerator(object):
                 self.all_rules.append(node)
 
     def _process_rules(self, rules):
-        # Recursive function to process rules in the correct firing order
+        # Recursive function to process rules in the correct firing order.
         len_rules = len(rules)
         skipped_rules = []
         while len(rules) > 0:
             rule = rules.pop(0)
             if self._can_calc_rule(rule):
                 yield rule
-                # Add rule to calced graph
+                # Add rule to the calculated graph:
                 self.calced_graph = nx.compose(self.calced_graph, rule.graph)
             else:
-                # We have not calculated the predecsors for this rule yet.
-                #  Skip it for now
+                # We have not calculated the predecessors for this rule yet.
+                # Skip it for now:
                 skipped_rules.append(rule)
 
         if len(skipped_rules) == 0:
@@ -794,13 +810,13 @@ class RuleOrderGenerator(object):
                 return
         else:
             if len(skipped_rules) == len_rules:
-                # Avoid being caught in an infinite loop
+                # Avoid being caught in an infinite loop:
                 raise RuntimeError("Unable to resolve rule execution order. "
                                    "The most likely reason is two or more "
                                    "rules that depend on each other.\n"
                                    "Please check the rule graph for loops.")
             else:
-                # Recurse across the skipped rules
+                # Recurse across the skipped rules:
                 for r in self._process_rules(skipped_rules):
                     yield r
 

@@ -113,6 +113,12 @@ class FuzzyVariable(object):
         item.parent = self
         self.terms[key] = item
 
+    def __contains__(self, item):
+        return item in self.terms
+
+    def __iter__(self):
+        return iter(self.terms)
+
     def view(self, *args, **kwargs):
         """""" + FuzzyVariableVisualizer.view.__doc__
         fig, ax = FuzzyVariableVisualizer(self).view(*args, **kwargs)
