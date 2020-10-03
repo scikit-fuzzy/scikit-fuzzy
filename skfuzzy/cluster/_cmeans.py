@@ -106,7 +106,7 @@ def cmeans(data, c, m, error, maxiter,
     metric: string
         By default is set to euclidean. Passes any option accepted by
         ``scipy.spatial.distance.cdist``.
-    init : 2d array, size (S, N)
+    init : 2d array, size (c, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
     seed : int
@@ -115,15 +115,15 @@ def cmeans(data, c, m, error, maxiter,
 
     Returns
     -------
-    cntr : 2d array, size (S, c)
+    cntr : 2d array, size (c, S)
         Cluster centers.  Data for each center along each feature provided
         for every cluster (of the `c` requested clusters).
-    u : 2d array, (S, N)
+    u : 2d array, (c, N)
         Final fuzzy c-partitioned matrix.
-    u0 : 2d array, (S, N)
+    u0 : 2d array, (c, N)
         Initial guess at fuzzy c-partitioned matrix (either provided init or
         random guess used if init was not provided).
-    d : 2d array, (S, N)
+    d : 2d array, (c, N)
         Final Euclidian distance matrix.
     jm : 1d array, length P
         Objective function history.
@@ -198,7 +198,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
         New, independent data set to be predicted based on trained c-means
         from ``cmeans``. N is the number of data sets; S is the number of
         features within each sample vector.
-    cntr_trained : 2d array, size (S, c)
+    cntr_trained : 2d array, size (c, S)
         Location of trained centers from prior training c-means.
     m : float
         Array exponentiation applied to the membership function u_old at each
@@ -210,7 +210,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
     metric: string
         By default is set to euclidean. Passes any option accepted by
         ``scipy.spatial.distance.cdist``.
-    init : 2d array, size (S, N)
+    init : 2d array, size (c, N)
         Initial fuzzy c-partitioned matrix. If none provided, algorithm is
         randomly initialized.
     seed : int
@@ -219,12 +219,12 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
 
     Returns
     -------
-    u : 2d array, (S, N)
+    u : 2d array, (c, N)
         Final fuzzy c-partitioned matrix.
-    u0 : 2d array, (S, N)
+    u0 : 2d array, (c, N)
         Initial guess at fuzzy c-partitioned matrix (either provided init or
         random guess used if init was not provided).
-    d : 2d array, (S, N)
+    d : 2d array, (c, N)
         Final Euclidian distance matrix.
     jm : 1d array, length P
         Objective function history.
