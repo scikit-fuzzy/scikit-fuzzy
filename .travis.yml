@@ -38,6 +38,7 @@ install:
     - tools/build_versions.py
     - export PYTHONWARNINGS=all
     - python setup.py build_ext --inplace
+    - pip install -e .
 
 script:
     # Run all tests with minimum dependencies
