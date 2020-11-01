@@ -1,2 +1,6 @@
+####################################################################
+# Additional dependencies necessary to run package tests           #
+####################################################################
+-r DEPENDS.txt
 nose
 pytest
