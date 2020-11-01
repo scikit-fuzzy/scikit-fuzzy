@@ -39,6 +39,7 @@ install:
     - export PYTHONWARNINGS=all
     - python setup.py build_ext --inplace
     - pip install -e .
+    - pip install -r DEPENDS-docs.txt
 
 script:
     # Run all tests with minimum dependencies
