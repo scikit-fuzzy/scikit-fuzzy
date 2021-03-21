@@ -22,7 +22,7 @@ Finding your way around
 -----------------------
 
 A list of submodules and functions is found on the `API reference
-<../api/api.html>`_ webpage.
+<../api/index.html>`_ webpage.
 
 Within :mod:`scikit-fuzzy`, universe variables and fuzzy membership functions are
 represented by :mod:`numpy` arrays. Generation of membership functions is
