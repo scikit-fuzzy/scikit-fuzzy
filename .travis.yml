@@ -51,7 +51,10 @@ script:
 after_success:
     - coveralls
     - cd docs && make
-    
+
+before_deploy:
+    - touch docs/build/html/.nojekyll
+
 deploy:
   provider: pages
   cleanup: false
