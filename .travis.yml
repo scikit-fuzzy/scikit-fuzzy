@@ -51,3 +51,12 @@ script:
 after_success:
     - coveralls
     - cd docs && make
+    
+deploy:
+  provider: pages
+  cleanup: false
+  token: $TRAVIS_DEPLOY
+  keep_history: true
+  local_dir: docs/build/html
+  on:
+    branch: master
