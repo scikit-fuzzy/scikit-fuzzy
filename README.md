@@ -21,7 +21,7 @@ https://github.com/scikit-fuzzy/scikit-fuzzy
 Documentation
 -------------
 
-The documentation of the library can be found here : http://pythonhosted.org/scikit-fuzzy
+The documentation of the library can be found here: https://scikit-fuzzy.github.io/scikit-fuzzy
 
 Online Discussion & Mailing List
 --------------------------------
