@@ -15,7 +15,7 @@ Sections
    :hidden:
 
    overview
-   api/api
+   api/index
    install
    user_guide
    contribute
@@ -30,7 +30,7 @@ Sections
 
        Introduction to skfuzzy.
 
-     - `API Reference <api/api.html>`_
+     - `API Reference <api/index.html>`_
 
        Documentation for the functions included in skfuzzy.
 

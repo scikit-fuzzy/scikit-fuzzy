@@ -87,6 +87,8 @@ from notebook_doc import Notebook
 from docutils.core import publish_parts
 from sphinx.domains.python import PythonDomain
 
+from collections import OrderedDict
+
 LITERALINCLUDE = """
 .. literalinclude:: {src_name}
     :lines: {code_start}-
@@ -188,6 +190,8 @@ def generate_example_galleries(app):
 
     if isinstance(cfg.source_suffix, list):
         cfg.source_suffix_str = cfg.source_suffix[0]
+    elif isinstance(cfg.source_suffix, OrderedDict):
+        cfg.source_suffix_str = next(iter(cfg.source_suffix))
     else:
         cfg.source_suffix_str = cfg.source_suffix
 

@@ -28,7 +28,7 @@ before_install:
     - conda config --set always_yes yes;
     - conda update conda;
     - conda info -a;
-    - travis_retry conda create -n test $ENV scipy pip pytest flake8 nose networkx matplotlib;
+    - travis_retry conda create -n test $ENV scipy pip pytest flake8 nose networkx matplotlib sphinx numpydoc;
     - source activate test;
     - travis_retry conda install pillow;
     - travis_retry pip install coveralls
@@ -38,6 +38,8 @@ install:
     - tools/build_versions.py
     - export PYTHONWARNINGS=all
     - python setup.py build_ext --inplace
+    - pip install -e .
+    - pip install -r DEPENDS-docs.txt
 
 script:
     # Run all tests with minimum dependencies
@@ -48,3 +50,16 @@ script:
 
 after_success:
     - coveralls
+    - cd docs && make
+
+before_deploy:
+    - touch docs/build/html/.nojekyll
+
+deploy:
+  provider: pages
+  cleanup: false
+  token: $TRAVIS_DEPLOY
+  keep_history: true
+  local_dir: docs/build/html
+  on:
+    branch: master

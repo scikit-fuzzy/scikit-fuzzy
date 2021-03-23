@@ -177,7 +177,7 @@ world of fuzzy membership functions. For the purposes of this example
 the centroid method will be used.
 
 The result is a tip of **19.84%**.
----------------------------------
+----------------------------------
 """
 
 # Aggregate all three output membership functions together
