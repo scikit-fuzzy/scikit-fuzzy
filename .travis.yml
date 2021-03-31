@@ -50,16 +50,17 @@ script:
 
 after_success:
     - coveralls
-    - cd docs && make
-
+    
 before_deploy:
-    - touch docs/build/html/.nojekyll
+    - cd docs && make
+    - touch build/html/.nojekyll
 
 deploy:
   provider: pages
-  cleanup: false
+  skip_cleanup: true
   token: $TRAVIS_DEPLOY
   keep_history: true
   local_dir: docs/build/html
   on:
     branch: master
+    condition: $ENV = "python=3.8 numpy"
