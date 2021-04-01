@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.filters.fire &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.filters.fire</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">fire.py : Collection of Fuzzy Inference Ruled by ELSE-action (FIRE) filters.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">..image</span> <span class="kn">import</span> <span class="n">view_as_windows</span>
+<span class="kn">from</span> <span class="nn">..membership</span> <span class="kn">import</span> <span class="n">trimf</span>
+
+
+<div class="viewcode-block" id="fire1d"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fire1d">[docs]</a><span class="k">def</span> <span class="nf">fire1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">l1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">l2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    1-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1].</span>
+
+<span class="sd">    FIRE filtering is nonlinear, and is specifically designed to remove</span>
+<span class="sd">    impulse (salt and pepper) noise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array or iterable</span>
+<span class="sd">        Input sequence, filtered range limited by ``l1`` and ``l2``.</span>
+<span class="sd">    l1 : float</span>
+<span class="sd">        Lower input range limit for ``x``.</span>
+<span class="sd">    l2 : float</span>
+<span class="sd">        Upper input range limit for ``x``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        FIRE filtered sequence.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Filtering occurs for ``l1 &lt; |x| &lt; l2``; for ``|x| &lt; l1`` there is no</span>
+<span class="sd">    effect.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Fabrizio Russo, Fuzzy Filtering of Noisy Sensor Data, IEEE</span>
+<span class="sd">           Instrumentation and Measurement Technology Conference,</span>
+<span class="sd">           Brussels, Belgium, June 4 - 6, 1996, pp 1281 - 1285.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">..image</span> <span class="kn">import</span> <span class="n">pad</span> <span class="k">as</span> <span class="n">padimg</span>
+
+    <span class="c1"># Enforce range limit</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">l2</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Fuzzy input sequence</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1001</span><span class="p">)</span> <span class="o">*</span> <span class="n">l2</span> <span class="o">/</span> <span class="mf">1000.</span>
+
+    <span class="c1"># Fuzzy membership functions</span>
+    <span class="n">po</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">trimf</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="p">[</span><span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">l2</span><span class="p">]))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">trimf</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="n">l2</span><span class="p">,</span> <span class="o">-</span><span class="n">l2</span><span class="p">,</span> <span class="o">-</span><span class="n">l1</span><span class="p">]))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="c1"># Fuzzy neighborhood rules (indices for comparison)</span>
+    <span class="n">rules</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                   <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]]</span>
+
+    <span class="c1"># Padding the array</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">padimg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Generate rolling 5-point window view into the array</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,))</span>
+
+    <span class="c1"># Zero each local window relative to center point</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">xx</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">dxx</span> <span class="o">=</span> <span class="n">xx</span> <span class="o">-</span> <span class="n">center</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Conduct interpolation all at once, on every point, for po and ne</span>
+    <span class="n">mpo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">dxx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">po</span><span class="p">)</span>
+    <span class="n">mne</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">dxx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ne</span><span class="p">)</span>
+
+    <span class="c1"># Build output correction functions all at once</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mpo</span><span class="p">)))</span>
+    <span class="n">lam2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mne</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lam</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">mpo</span><span class="p">[:,</span> <span class="n">rule</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))))</span>
+        <span class="n">lam2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lam2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">mne</span><span class="p">[:,</span> <span class="n">rule</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))))</span>
+
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">lam2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lam2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Corrected result</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">xx</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">l2</span> <span class="o">*</span> <span class="p">(</span><span class="n">lam</span> <span class="o">-</span> <span class="n">lam2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="fire2d"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fire2d">[docs]</a><span class="k">def</span> <span class="nf">fire2d</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">l1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">l2</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">fuzzyresolution</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    2-D filtering using Fuzzy Inference Ruled by Else-action (FIRE) [1].</span>
+
+<span class="sd">    FIRE filtering is nonlinear, and is specifically designed to remove</span>
+<span class="sd">    impulse (salt and pepper) noise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : 2d array</span>
+<span class="sd">        Input image.</span>
+<span class="sd">    l1 : float</span>
+<span class="sd">        Lower limit of filtering range.</span>
+<span class="sd">    l2 : float</span>
+<span class="sd">        Upper limit of filtering range.</span>
+<span class="sd">    fuzzyresolution : float, default = 1</span>
+<span class="sd">        Resolution of fuzzy input sequence, or spacing between [-l2+1, l2-1].</span>
+<span class="sd">        The default assumes an integer input; for floating point images a</span>
+<span class="sd">        decimal value should be used approximately equal to the bit depth.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    J : 2d array</span>
+<span class="sd">        FIRE filtered image.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Filtering occurs for ``l1 &lt; |x| &lt; l2``; outside this range the data is</span>
+<span class="sd">    unaffected.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Fabrizio Russo, Fuzzy Filtering of Noisy Sensor Data, IEEE</span>
+<span class="sd">           Instrumentation and Measurement Technology Conference,</span>
+<span class="sd">           Brussels, Belgium, June 4 - 6, 1996, pp 1281 - 1285.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">..image</span> <span class="kn">import</span> <span class="n">pad</span> <span class="k">as</span> <span class="n">padimg</span>
+
+    <span class="n">im</span> <span class="o">=</span> <span class="n">padimg</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Fuzzy input sequence</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">l2</span> <span class="o">+</span> <span class="n">fuzzyresolution</span><span class="p">,</span>
+                   <span class="n">l2</span> <span class="o">-</span> <span class="n">fuzzyresolution</span><span class="p">,</span>
+                   <span class="n">fuzzyresolution</span><span class="p">)</span>
+
+    <span class="c1"># Fuzzy membership functions</span>
+    <span class="n">po</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">trimf</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="p">[</span><span class="n">l1</span><span class="p">,</span>
+                                  <span class="n">l2</span> <span class="o">-</span> <span class="n">fuzzyresolution</span><span class="p">,</span>
+                                  <span class="n">l2</span> <span class="o">-</span> <span class="n">fuzzyresolution</span><span class="p">]))</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">trimf</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="p">[</span><span class="n">fuzzyresolution</span> <span class="o">-</span> <span class="n">l2</span><span class="p">,</span>
+                                  <span class="n">fuzzyresolution</span> <span class="o">-</span> <span class="n">l2</span><span class="p">,</span>
+                                  <span class="o">-</span> <span class="n">l1</span><span class="p">]))</span>
+
+    <span class="c1"># Combine into matrix</span>
+    <span class="n">multi_stack_rules</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">po</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">ne</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
+    <span class="n">rules1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">rules2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">]]]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Zero the local windows</span>
+    <span class="n">local_win</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">im2</span> <span class="o">=</span> <span class="n">im</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">im2</span> <span class="o">=</span> <span class="n">im2</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">local_win</span> <span class="o">-</span> <span class="n">im2</span>
+
+    <span class="c1"># Vectorization allows concise, fast calculation of lam and lam2</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">l2</span> <span class="o">+</span> <span class="n">dx</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">multi_stack_rules</span><span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="p">:]</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">mu</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">rules1</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="p">:],</span> <span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">mu</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">rules2</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="p">:],</span> <span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)),</span>
+                         <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">lam2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">mu</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">rules1</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">mu</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">rules2</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)),</span>
+                          <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">im</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">l2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">lam</span> <span class="o">-</span> <span class="n">lam2</span><span class="p">)</span></div>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

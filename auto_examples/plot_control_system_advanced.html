@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Fuzzy Control Systems: Advanced Example &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="General examples" href="index.html" />
+        <link rel="next" title="Defuzzification" href="plot_defuzzify.html" />
+        <link rel="prev" title="Fuzzy c-means clustering" href="plot_cmeans.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="fuzzy-control-systems-advanced-example">
+<span id="example-plot-control-system-advanced-py"></span><h1>Fuzzy Control Systems: Advanced Example<a class="headerlink" href="#fuzzy-control-systems-advanced-example" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference external" href="./plot_tipping_problem_newapi.html">tipping problem</a> is a classic,
+simple example. If you’re new to this, start with the <a class="reference external" href="../userguide/fuzzy_control_primer.html">Fuzzy Control Primer</a> and move on to the tipping problem.</p>
+<p>This example assumes you’re familiar with those topics. Go on. We’ll wait.</p>
+<div class="section" id="typical-fuzzy-control-system">
+<h2>Typical Fuzzy Control System<a class="headerlink" href="#typical-fuzzy-control-system" title="Permalink to this headline">¶</a></h2>
+<p>Many fuzzy control systems are tasked to keep a certain variable close to a
+specific value. For instance, the temperature for an industrial chemical
+process might need to be kept relatively constant. In order to do this, the
+system usually knows two things:</p>
+<ul class="simple">
+<li><p>The <cite>error</cite>, or deviation from the ideal value</p></li>
+<li><p>The way the error is changing. This is the mathematical first derivative;
+we’ll call it <cite>delta</cite></p></li>
+</ul>
+<p>From these two values we can construct a system which will act appropriately.</p>
+</div>
+<div class="section" id="set-up-the-fuzzy-control-system">
+<h2>Set up the Fuzzy Control System<a class="headerlink" href="#set-up-the-fuzzy-control-system" title="Permalink to this headline">¶</a></h2>
+<p>We’ll use the new control system API for this problem. It would be far too
+complicated to model manually!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">skfuzzy.control</span> <span class="k">as</span> <span class="nn">ctrl</span>
+
+<span class="c1"># Sparse universe makes calculations faster, without sacrifice accuracy.</span>
+<span class="c1"># Only the critical points are included here; making it higher resolution is</span>
+<span class="c1"># unnecessary.</span>
+<span class="n">universe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Create the three fuzzy variables - two inputs, one output</span>
+<span class="n">error</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Antecedent</span><span class="p">(</span><span class="n">universe</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">)</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Antecedent</span><span class="p">(</span><span class="n">universe</span><span class="p">,</span> <span class="s1">&#39;delta&#39;</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Consequent</span><span class="p">(</span><span class="n">universe</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">)</span>
+
+<span class="c1"># Here we use the convenience `automf` to populate the fuzzy variables with</span>
+<span class="c1"># terms. The optional kwarg `names=` lets us specify the names of our Terms.</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">,</span> <span class="s1">&#39;ns&#39;</span><span class="p">,</span> <span class="s1">&#39;ze&#39;</span><span class="p">,</span> <span class="s1">&#39;ps&#39;</span><span class="p">,</span> <span class="s1">&#39;pb&#39;</span><span class="p">]</span>
+<span class="n">error</span><span class="o">.</span><span class="n">automf</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+<span class="n">delta</span><span class="o">.</span><span class="n">automf</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+<span class="n">output</span><span class="o">.</span><span class="n">automf</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="define-complex-rules">
+<h2>Define complex rules<a class="headerlink" href="#define-complex-rules" title="Permalink to this headline">¶</a></h2>
+<p>This system has a complicated, fully connected set of rules defined below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rule0</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Rule</span><span class="p">(</span><span class="n">antecedent</span><span class="o">=</span><span class="p">((</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">])),</span>
+                  <span class="n">consequent</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;rule nb&#39;</span><span class="p">)</span>
+
+<span class="n">rule1</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Rule</span><span class="p">(</span><span class="n">antecedent</span><span class="o">=</span><span class="p">((</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">])),</span>
+                  <span class="n">consequent</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;rule ns&#39;</span><span class="p">)</span>
+
+<span class="n">rule2</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Rule</span><span class="p">(</span><span class="n">antecedent</span><span class="o">=</span><span class="p">((</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;nb&#39;</span><span class="p">])),</span>
+                  <span class="n">consequent</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;rule ze&#39;</span><span class="p">)</span>
+
+<span class="n">rule3</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Rule</span><span class="p">(</span><span class="n">antecedent</span><span class="o">=</span><span class="p">((</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ze&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ns&#39;</span><span class="p">])),</span>
+                  <span class="n">consequent</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;rule ps&#39;</span><span class="p">)</span>
+
+<span class="n">rule4</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">Rule</span><span class="p">(</span><span class="n">antecedent</span><span class="o">=</span><span class="p">((</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">])</span> <span class="o">|</span>
+                              <span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])),</span>
+                  <span class="n">consequent</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;pb&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;rule pb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Despite the lengthy ruleset, the new fuzzy control system framework will
+execute in milliseconds. Next we add these rules to a new <code class="docutils literal notranslate"><span class="pre">ControlSystem</span></code>
+and define a <code class="docutils literal notranslate"><span class="pre">ControlSystemSimulation</span></code> to run it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">system</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">ControlSystem</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="p">[</span><span class="n">rule0</span><span class="p">,</span> <span class="n">rule1</span><span class="p">,</span> <span class="n">rule2</span><span class="p">,</span> <span class="n">rule3</span><span class="p">,</span> <span class="n">rule4</span><span class="p">])</span>
+
+<span class="c1"># Later we intend to run this system with a 21*21 set of inputs, so we allow</span>
+<span class="c1"># that many plus one unique runs before results are flushed.</span>
+<span class="c1"># Subsequent runs would return in 1/8 the time!</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">ControlSystemSimulation</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">flush_after_run</span><span class="o">=</span><span class="mi">21</span> <span class="o">*</span> <span class="mi">21</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="view-the-control-space">
+<h2>View the control space<a class="headerlink" href="#view-the-control-space" title="Permalink to this headline">¶</a></h2>
+<p>With helpful use of Matplotlib and repeated simulations, we can observe what
+the entire control system surface looks like in three dimensions!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can simulate at higher resolution with full accuracy</span>
+<span class="n">upsampled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">upsampled</span><span class="p">,</span> <span class="n">upsampled</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Loop through the system 21*21 times to collect the control surface</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">21</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">21</span><span class="p">):</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span>
+
+<span class="c1"># Plot the result in pretty 3D with alpha blending</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>  <span class="c1"># noqa: E402</span>
+
+<span class="c1"># Required for 3D plotting</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>  <span class="c1"># noqa: F401,E402</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+
+<span class="n">surf</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">rstride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cstride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span>
+                       <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">antialiased</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_control_system_advanced_1.png" src="../_images/plot_control_system_advanced_1.png" />
+</div>
+<div class="section" id="final-thoughts">
+<h2>Final thoughts<a class="headerlink" href="#final-thoughts" title="Permalink to this headline">¶</a></h2>
+<p>This example used a number of new, advanced techniques which may be helpful in
+practical fuzzy system design:</p>
+<ul class="simple">
+<li><p>A highly sparse (maximally sparse) system</p></li>
+<li><p>Control of Term names generated by <cite>automf</cite></p></li>
+<li><p>A long and logically complicated ruleset, with order-of-operations respected</p></li>
+<li><p>Control of the cache flushing on creation of a ControlSystemSimulation,
+which can be tuned as needed depending on memory constraints</p></li>
+<li><p>Repeated runs of a ControlSystemSimulation</p></li>
+<li><p>Creating and viewing a control surface in 3D.</p></li>
+</ul>
+<p><strong>Python source code:</strong> <a class="reference download internal" download="" href="../_downloads/f409ee1419e177d04143d93e957313c0/plot_control_system_advanced.py"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+<p><strong>IPython Notebook:</strong> <a class="reference download internal" download="" href="../_downloads/8602739f4db656fd0145795ecb773c5e/plot_control_system_advanced.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_cmeans.html" title="previous chapter">Fuzzy c-means clustering</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_defuzzify.html" title="next chapter">Defuzzification</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Fuzzy Control Systems: Advanced Example</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#typical-fuzzy-control-system">Typical Fuzzy Control System</a></li>
+<li><a class="reference internal" href="#set-up-the-fuzzy-control-system">Set up the Fuzzy Control System</a></li>
+<li><a class="reference internal" href="#define-complex-rules">Define complex rules</a></li>
+<li><a class="reference internal" href="#view-the-control-space">View the control space</a></li>
+<li><a class="reference internal" href="#final-thoughts">Final thoughts</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

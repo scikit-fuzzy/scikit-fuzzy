@@ -1,0 +1,8 @@
+User Guide
+==========
+
+.. toctree::
+   :maxdepth: 2
+
+   userguide/getting_started
+   userguide/fuzzy_control_primer

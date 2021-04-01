@@ -1,0 +1,42 @@
+Pre-built installation
+----------------------
+
+On systems that support setuptools, the package can be installed from the
+`Python packaging index <http://pypi.python.org/pypi/scikit-fuzzy>`__ using
+
+
+::
+
+  easy_install -U scikit-fuzzy
+
+or
+
+::
+
+  pip install -U scikit-fuzzy
+
+Installation from source
+------------------------
+
+Obtain the source from the git-repository at
+`http://github.com/scikit-fuzzy/scikit-fuzzy
+<http://github.com/scikit-fuzzy/scikit-fuzzy>`_ by running::
+
+  git clone http://github.com/scikit-fuzzy/scikit-fuzzy.git
+
+in a terminal (you will need to have git installed on your machine).
+
+If you do not have git installed, you can also download a zipball from
+`https://github.com/scikit-fuzzy/scikit-fuzzy/zipball/master
+<https://github.com/scikit-fuzzy/scikit-fuzzy/zipball/master>`_.
+
+The SciKit can be installed globally using::
+
+  pip install -e .
+
+or locally using::
+
+  python setup.py install --prefix=${HOME}
+
+If you prefer, you can use it without installing, by simply adding
+this path to your ``PYTHONPATH`` variable.

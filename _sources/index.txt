@@ -1,0 +1,70 @@
+****************************
+skfuzzy |version| docs
+****************************
+
+This SciKit_ is a fuzzy logic toolbox for SciPy_.
+
+.. _SciKit: http://scikits.appspot.com
+.. _SciPy: http://www.scipy.org
+
+
+Sections
+========
+
+.. toctree::
+   :hidden:
+
+   overview
+   api/index
+   install
+   user_guide
+   contribute
+   license
+   auto_examples/index
+   documentation
+
+.. list-table::
+   :class: contentstable
+
+   * - `Overview <overview.html>`_
+
+       Introduction to skfuzzy.
+
+     - `API Reference <api/index.html>`_
+
+       Documentation for the functions included in skfuzzy.
+
+   * - `Installation Steps <install.html>`_
+
+       How to install skfuzzy.
+
+     - `User Guide <user_guide.html>`_
+
+       Usage guidelines.
+
+   * - `Contribute <contribute.html>`_
+
+       Take part in development.
+
+     - `License Info <license.html>`_
+
+       Conditions on the use and redistribution of this package.
+
+   * - `Examples <auto_examples/index.html>`_
+
+       Introductory examples
+
+     -
+
+
+Indices and tables
+==================
+
+`Table of Contents <contents.html>`_
+   Lists all sections and subsections.
+
+:ref:`search`
+   Search this documentation.
+
+:ref:`genindex`
+   All functions, classes, terms.

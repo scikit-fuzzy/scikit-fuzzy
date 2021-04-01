@@ -1,0 +1,573 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.membership.generatemf &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.membership.generatemf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">generatemf.py: Library of standard fuzzy membership function generators.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="k">def</span> <span class="nf">_nearest</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the index of the sequence elemnt value x0 in `x` that is closest</span>
+<span class="sd">    to the provided value, `y0`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Input sequence.</span>
+<span class="sd">    y0 : float</span>
+<span class="sd">        Desired matching value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    idx0 : int</span>
+<span class="sd">        Index of the nearest value `x0` in x; e.g. x[idx0] = x0.</span>
+<span class="sd">    x0 : float</span>
+<span class="sd">        Value in `x` which is closest to `y0`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function does support extrapolation, but it is linear.</span>
+<span class="sd">    Use with care.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Distance map</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span>
+    <span class="n">idx0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">d</span><span class="o">.</span><span class="n">min</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">idx0</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">idx0</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="dsigmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dsigmf">[docs]</a><span class="k">def</span> <span class="nf">dsigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Difference of two fuzzy sigmoid membership functions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    b1 : float</span>
+<span class="sd">        Midpoint of first sigmoid; f1(b1) = 0.5</span>
+<span class="sd">    c1 : float</span>
+<span class="sd">        Width and sign of first sigmoid.</span>
+<span class="sd">    b2 : float</span>
+<span class="sd">        Midpoint of second sigmoid; f2(b2) = 0.5</span>
+<span class="sd">    c2 : float</span>
+<span class="sd">        Width and sign of second sigmoid.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Generated sigmoid values, defined as</span>
+<span class="sd">            y = f1 - f2</span>
+<span class="sd">            f1(x) = 1 / (1. + exp[- c1 * (x - b1)])</span>
+<span class="sd">            f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c1</span><span class="p">)</span> <span class="o">-</span> <span class="n">sigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gaussmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.gaussmf">[docs]</a><span class="k">def</span> <span class="nf">gaussmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian fuzzy membership function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array or iterable</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mean : float</span>
+<span class="sd">        Gaussian parameter for center (mean) value.</span>
+<span class="sd">    sigma : float</span>
+<span class="sd">        Gaussian parameter for standard deviation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Gaussian membership function for x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="gauss2mf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.gauss2mf">[docs]</a><span class="k">def</span> <span class="nf">gauss2mf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mean1</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">,</span> <span class="n">mean2</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian fuzzy membership function of two combined Gaussians.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array or iterable</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mean1 : float</span>
+<span class="sd">        Gaussian parameter for center (mean) value of left-side Gaussian.</span>
+<span class="sd">        Note mean1 &lt;= mean2 reqiured.</span>
+<span class="sd">    sigma1 : float</span>
+<span class="sd">        Standard deviation of left Gaussian.</span>
+<span class="sd">    mean2 : float</span>
+<span class="sd">        Gaussian parameter for center (mean) value of right-side Gaussian.</span>
+<span class="sd">        Note mean2 &gt;= mean1 required.</span>
+<span class="sd">    sigma2 : float</span>
+<span class="sd">        Standard deviation of right Gaussian.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Membership function with left side up to `mean1` defined by the first</span>
+<span class="sd">        Gaussian, and the right side above `mean2` defined by the second.</span>
+<span class="sd">        In the range mean1 &lt;= x &lt;= mean2 the function has value = 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">mean1</span> <span class="o">&lt;=</span> <span class="n">mean2</span><span class="p">,</span> <span class="s1">&#39;mean1 &lt;= mean2 is required.  See docstring.&#39;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">idx1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">mean1</span>
+    <span class="n">idx2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">mean2</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span> <span class="o">=</span> <span class="n">gaussmf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx1</span><span class="p">],</span> <span class="n">mean1</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span> <span class="o">=</span> <span class="n">gaussmf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx2</span><span class="p">],</span> <span class="n">mean2</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="gbellmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.gbellmf">[docs]</a><span class="k">def</span> <span class="nf">gbellmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generalized Bell function fuzzy membership generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Bell function parameter controlling width. See Note for definition.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        Bell function parameter controlling slope. See Note for definition.</span>
+<span class="sd">    c : float</span>
+<span class="sd">        Bell function parameter defining the center. See Note for definition.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Generalized Bell fuzzy membership function.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Definition of Generalized Bell function is:</span>
+
+<span class="sd">        y(x) = 1 / (1 + abs([x - c] / a) ** [2 * b])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">b</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="piecemf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.piecemf">[docs]</a><span class="k">def</span> <span class="nf">piecemf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">abc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Piecewise linear membership function (particularly used in FIRE filters).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable vector.</span>
+<span class="sd">    abc : 1d array, length 3</span>
+<span class="sd">        Defines the piecewise function. Important: if abc = [a, b, c] then</span>
+<span class="sd">        a &lt;= b &lt;= c is REQUIRED!</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Piecewise fuzzy membership function for x.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Piecewise definition:</span>
+<span class="sd">                y = 0,                    min(x) &lt;= x &lt;= a</span>
+<span class="sd">                y = b(x - a)/c(b - a),    a &lt;= x &lt;= b</span>
+<span class="sd">                y = x/c,                  b &lt;= x &lt;= c</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">abc</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="n">c</span><span class="p">,</span> <span class="s1">&#39;`abc` requires a &lt;= b &lt;= c.&#39;</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="n">idx0</span> <span class="o">=</span> <span class="n">_nearest</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">idxa</span> <span class="o">=</span> <span class="n">_nearest</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">idxb</span> <span class="o">=</span> <span class="n">_nearest</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span> <span class="o">-</span> <span class="n">idx0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx0</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx0</span><span class="p">:</span><span class="n">idxa</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">idxb</span> <span class="o">-</span> <span class="n">idxa</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idxa</span><span class="p">:</span><span class="n">idxb</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="n">m</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="pimf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.pimf">[docs]</a><span class="k">def</span> <span class="nf">pimf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pi-function fuzzy membership generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Left &#39;foot&#39;, where the function begins to climb from zero.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        Left &#39;ceiling&#39;, where the function levels off at 1.</span>
+<span class="sd">    c : float</span>
+<span class="sd">        Right &#39;ceiling&#39;, where the function begins falling from 1.</span>
+<span class="sd">    d : float</span>
+<span class="sd">        Right &#39;foot&#39;, where the function reattains zero.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Pi-function.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is equivalently a product of smf and zmf.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="p">,</span> <span class="s1">&#39;a &lt;= b &lt;= c &lt;= d is required.&#39;</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">a</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">c</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">c</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">c</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">c</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">c</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">d</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="psigmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.psigmf">[docs]</a><span class="k">def</span> <span class="nf">psigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Product of two sigmoid membership functions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Data vector for independent variable.</span>
+<span class="sd">    b1 : float</span>
+<span class="sd">        Offset or bias for the first sigmoid.  This is the center value of the</span>
+<span class="sd">        sigmoid, where it equals 1/2.</span>
+<span class="sd">    c1 : float</span>
+<span class="sd">        Controls &#39;width&#39; of the first sigmoidal region about `b1` (magnitude),</span>
+<span class="sd">        and also which side of the function is open (sign). A positive value of</span>
+<span class="sd">        `c1` means the left side approaches zero while the right side</span>
+<span class="sd">        approaches one; a negative value of `c1` means the opposite.</span>
+<span class="sd">    b2 : float</span>
+<span class="sd">        Offset or bias for the second sigmoid.  This is the center value of the</span>
+<span class="sd">        sigmoid, where it equals 1/2.</span>
+<span class="sd">    c2 : float</span>
+<span class="sd">        Controls &#39;width&#39; of the second sigmoidal region about `b2` (magnitude),</span>
+<span class="sd">        and also which side of the function is open (sign). A positive value of</span>
+<span class="sd">        `c2` means the left side approaches zero while the right side</span>
+<span class="sd">        approaches one; a negative value of `c2` means the opposite.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Generated sigmoid values, defined as</span>
+
+<span class="sd">        y = f1(x) * f2(x)</span>
+
+<span class="sd">            f1(x) = 1 / (1. + exp[- c1 * (x - b1)])</span>
+<span class="sd">            f2(x) = 1 / (1. + exp[- c2 * (x - b2)])</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For a smoothed rect-like function, c2 &lt; 0 &lt; c1. For its inverse (zero in</span>
+<span class="sd">    middle, one at edges) c1 &lt; 0 &lt; c2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">wx</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a sigmoid function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wx : 2d array, (K, N)</span>
+<span class="sd">        Sum of the inner product of W and X, where W is a KxM data matrix</span>
+<span class="sd">        and X is a MxN weight matrix.</span>
+<span class="sd">    b : 1d array, length K</span>
+<span class="sd">        Bias or threshold.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sigmoid : 2d array, (K, N)</span>
+<span class="sd">        Sigmoid function result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">wx</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))))</span>
+
+
+<div class="viewcode-block" id="sigmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.sigmf">[docs]</a><span class="k">def</span> <span class="nf">sigmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The basic sigmoid membership function generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Data vector for independent variable.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        Offset or bias.  This is the center value of the sigmoid, where it</span>
+<span class="sd">        equals 1/2.</span>
+<span class="sd">    c : float</span>
+<span class="sd">        Controls &#39;width&#39; of the sigmoidal region about `b` (magnitude); also</span>
+<span class="sd">        which side of the function is open (sign). A positive value of `a`</span>
+<span class="sd">        means the left side approaches 0.0 while the right side approaches 1.;</span>
+<span class="sd">        a negative value of `c` means the opposite.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Generated sigmoid values, defined as y = 1 / (1. + exp[- c * (x - b)])</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    These are the same values, provided separately and in the opposite order</span>
+<span class="sd">    compared to the publicly available MathWorks&#39; Fuzzy Logic Toolbox</span>
+<span class="sd">    documentation. Pay close attention to above docstring!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="smf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.smf">[docs]</a><span class="k">def</span> <span class="nf">smf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    S-function fuzzy membership generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    a : float</span>
+<span class="sd">        &#39;foot&#39;, where the function begins to climb from zero.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        &#39;ceiling&#39;, where the function levels off at 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        S-function.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Named such because of its S-like shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">,</span> <span class="s1">&#39;a &lt;= b is required.&#39;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">a</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="trapmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.trapmf">[docs]</a><span class="k">def</span> <span class="nf">trapmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">abcd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trapezoidal membership function generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    abcd : 1d array, length 4</span>
+<span class="sd">        Four-element vector.  Ensure a &lt;= b &lt;= c &lt;= d.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Trapezoidal membership function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">abcd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;abcd parameter must have exactly four elements.&#39;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">abcd</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="p">,</span> <span class="s1">&#39;abcd requires the four elements </span><span class="se">\</span>
+<span class="s1">                                          a &lt;= b &lt;= c &lt;= d.&#39;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">trimf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">c</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">trimf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">])</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="trimf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.trimf">[docs]</a><span class="k">def</span> <span class="nf">trimf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">abc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Triangular membership function generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    abc : 1d array, length 3</span>
+<span class="sd">        Three-element vector controlling shape of triangular function.</span>
+<span class="sd">        Requires a &lt;= b &lt;= c.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Triangular membership function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">abc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;abc parameter must have exactly three elements.&#39;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">abc</span><span class="p">]</span>     <span class="c1"># Zero-indexing in Python</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="n">c</span><span class="p">,</span> <span class="s1">&#39;abc requires the three elements a &lt;= b &lt;= c.&#39;</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="c1"># Left side</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="c1"># Right side</span>
+    <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="n">c</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">c</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="zmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.zmf">[docs]</a><span class="k">def</span> <span class="nf">zmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Z-function fuzzy membership generator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    a : float</span>
+<span class="sd">        &#39;ceiling&#39;, where the function begins falling from 1.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        &#39;foot&#39;, where the function reattains zero.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Z-function.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Named such because of its Z-like shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">,</span> <span class="s1">&#39;a &lt;= b is required.&#39;</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">b</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

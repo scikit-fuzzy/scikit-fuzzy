@@ -1,0 +1,990 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.fuzzymath.fuzzy_ops &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.fuzzymath.fuzzy_ops</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership</span>
+<span class="sd">               functions, and their associated universe variables.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="cartadd"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.cartadd">[docs]</a><span class="k">def</span> <span class="nf">cartadd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cartesian addition of fuzzy membership vectors using the algebraic method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1D array or iterable</span>
+<span class="sd">        First fuzzy membership vector, of length M.</span>
+<span class="sd">    y : 1D array or iterable</span>
+<span class="sd">        Second fuzzy membership vector, of length N.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 2D array</span>
+<span class="sd">        Cartesian addition of ``x`` and ``y``, of shape (M, N).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure rank-1 input</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span></div>
+
+
+<div class="viewcode-block" id="cartprod"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.cartprod">[docs]</a><span class="k">def</span> <span class="nf">cartprod</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cartesian product of two fuzzy membership vectors. Uses ``min()``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1D array or iterable</span>
+<span class="sd">        First fuzzy membership vector, of length M.</span>
+<span class="sd">    y : 1D array or iterable</span>
+<span class="sd">        Second fuzzy membership vector, of length N.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 2D array</span>
+<span class="sd">        Cartesian product of ``x`` and ``y``, of shape (M, N).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure rank-1 input</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="classic_relation"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.classic_relation">[docs]</a><span class="k">def</span> <span class="nf">classic_relation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the classic relation matrix, ``R``, between two fuzzy sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1D array or iterable</span>
+<span class="sd">        First fuzzy membership vector, of length M.</span>
+<span class="sd">    b : 1D array or iterable</span>
+<span class="sd">        Second fuzzy membership vector, of length N.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    R : 2D array</span>
+<span class="sd">        Classic relation matrix between ``a`` and ``b``, shape (M, N)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The classic relation is defined as::</span>
+
+<span class="sd">      r = [a x b] U [(1 - a) x ones(1, N)],</span>
+
+<span class="sd">    where ``x`` represents a cartesian product and ``N`` is len(``b``).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">cartprod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">cartprod</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="contrast"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.contrast">[docs]</a><span class="k">def</span> <span class="nf">contrast</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General contrast booster or diffuser of normalized array-like data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : ndarray</span>
+<span class="sd">        Input array (of floats on range [0, 1] if ``normalize=False``). If</span>
+<span class="sd">        values exist outside this range, with ``normalize=True`` the image</span>
+<span class="sd">        will be normalized for calculation.</span>
+<span class="sd">    amount : float or length-2 iterable of floats</span>
+<span class="sd">        Controls the exponential contrast mechanism for values above and below</span>
+<span class="sd">        ``split`` in ``I``. If positive, the curve provides added contrast;</span>
+<span class="sd">        if negative, the curve provides reduced contrast.</span>
+
+<span class="sd">        If provided as a lenth-2 iterable of floats, they control the regions</span>
+<span class="sd">        (below, above) ``split`` separately.</span>
+<span class="sd">    split : float</span>
+<span class="sd">        Positive scalar, on range [0, 1], determining the midpoint of the</span>
+<span class="sd">        exponential contrast. Default of 0.5 is reasonable for well-exposed</span>
+<span class="sd">        images.</span>
+<span class="sd">    normalize : bool, default True</span>
+<span class="sd">        Controls normalization to the range [0, 1].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    focused : ndarray</span>
+<span class="sd">        Contrast adjusted, normalized, floating-point image on range [0, 1].</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The result of this algorithm is like applying a Curves adjustment in the</span>
+<span class="sd">    GIMP or Photoshop.</span>
+
+<span class="sd">    Algorithm for curves adjustment at a given pixel, x, is given by::</span>
+
+<span class="sd">             | split * (x/split)^below,                        0 &lt;= x &lt;= split</span>
+<span class="sd">      y(x) = |</span>
+<span class="sd">             | 1 - (1-split) * ((1-x) / (1-split))^above,   split &lt; x &lt;= 1.0</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.fuzzymath.sigmoid</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">amount_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">amount_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># One argument -&gt; Equal amount applied on either side of `split`</span>
+        <span class="n">above</span> <span class="o">=</span> <span class="n">below</span> <span class="o">=</span> <span class="n">amount_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Two arguments -&gt; Control contrast separately in light/dark regions</span>
+        <span class="n">below</span> <span class="o">=</span> <span class="n">amount_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">above</span> <span class="o">=</span> <span class="n">amount_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Normalize if required</span>
+    <span class="k">if</span> <span class="n">im</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1.</span> <span class="ow">and</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">ma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">im</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ma</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="n">focused</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="c1"># Simplified array-wise algorithm using fancy indexing rather than looping</span>
+    <span class="n">focused</span><span class="p">[</span><span class="n">im</span> <span class="o">&lt;=</span> <span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">split</span> <span class="o">*</span> <span class="p">(</span><span class="n">im</span><span class="p">[</span><span class="n">im</span> <span class="o">&lt;=</span> <span class="n">split</span><span class="p">]</span> <span class="o">/</span> <span class="n">split</span><span class="p">)</span> <span class="o">**</span> <span class="n">below</span>
+    <span class="n">focused</span><span class="p">[</span><span class="n">im</span> <span class="o">&gt;</span> <span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">split</span><span class="p">)</span> <span class="o">*</span>
+                           <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">im</span><span class="p">[</span><span class="n">im</span> <span class="o">&gt;</span> <span class="n">split</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">split</span><span class="p">))</span> <span class="o">**</span> <span class="n">above</span><span class="p">)</span>
+
+    <span class="c1"># Reapply multiplicative factor</span>
+    <span class="k">return</span> <span class="n">focused</span> <span class="o">*</span> <span class="n">ma</span></div>
+
+
+<span class="k">def</span> <span class="nf">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Operation of two fuzzy sets.</span>
+
+<span class="sd">    Operate fuzzy set ``a`` with fuzzy set ``b``,</span>
+<span class="sd">    using +, * or any other binary operator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    a : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+<span class="sd">    op: Function, pointwise binary operator on two matrices</span>
+<span class="sd">        (pointwise version of) +, -, *, /, min, max etc.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle as described in Ross, Fuzzy Logic with</span>
+<span class="sd">    Engineering Applications (2010), pp. 414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># a and x, and b and y, are formed into (MxN) matrices.  The former has</span>
+    <span class="c1"># identical rows; the latter identical identical columns.</span>
+
+    <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>       <span class="c1"># consider broadcasting rules</span>
+    <span class="n">bb</span><span class="p">,</span> <span class="n">aa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Do the operation</span>
+    <span class="n">zz</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">zz_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">zz</span><span class="p">)</span>
+    <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">zz</span><span class="p">)</span>
+
+    <span class="c1"># Array min() operation</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">zz_index</span><span class="p">]</span>
+
+    <span class="c1"># Initialize loop</span>
+    <span class="n">z</span><span class="p">,</span> <span class="n">mfz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">zz</span> <span class="o">==</span> <span class="n">zz</span><span class="p">[</span><span class="n">idx</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">z</span><span class="p">,</span> <span class="n">zz</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+        <span class="n">mfz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">mfz</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">zz</span><span class="p">):</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">mfz</span>
+
+
+<div class="viewcode-block" id="fuzzy_add"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_add">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add fuzzy set ``a`` to fuzzy set ``b``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    a : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle as described in Ross, Fuzzy Logic with</span>
+<span class="sd">    Engineering Applications (2010), pp. 414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_compare"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_compare">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_compare</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the comparison matrix, ``c``, based on the fuzzy pairwise</span>
+<span class="sd">    comparison matrix, ``q``, using Shimura&#39;s special relativity formula.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q : 2d array, (N, N)</span>
+<span class="sd">        Fuzzy pairwise comparison matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    c : 2d array, (N, N)</span>
+<span class="sd">        Comparison matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">q</span><span class="o">.</span><span class="n">T</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_div"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_div">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_div</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Divide fuzzy set ``b`` into fuzzy set ``a``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    a : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M (excluding zero array)</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable z.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle from Ross, Fuzzy Logic w/Engineering</span>
+<span class="sd">    Applications, (2010), pp.414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># a and x, and b and y, are formed into (MxN) matrices.  The former has</span>
+    <span class="c1"># identical rows; the latter identical identical columns.</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="ne">Warning</span><span class="p">(</span><span class="s1">&#39;The 0 value(s) will never be used in the calculation!&#39;</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_min"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_min">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find minimum between fuzzy set ``a`` fuzzy set ``b``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    a : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable z.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle from Ross, Fuzzy Logic w/Engineering</span>
+<span class="sd">    Applications, (2010), pp.414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_mult"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_mult">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiplies fuzzy set ``a`` and fuzzy set ``b``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    A : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable z.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle from Ross, Fuzzy Logic w/Engineering</span>
+<span class="sd">    Applications, (2010), pp.414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_sub"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_sub">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_sub</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subtract fuzzy set ``b`` from fuzzy set ``a``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable for fuzzy set ``a``.</span>
+<span class="sd">    A : 1d array, length N</span>
+<span class="sd">        Fuzzy set for universe ``x``.</span>
+<span class="sd">    y : 1d array, length M</span>
+<span class="sd">        Universe variable for fuzzy set ``b``.</span>
+<span class="sd">    b : 1d array, length M</span>
+<span class="sd">        Fuzzy set for universe ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Fuzzy membership set for variable z.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses Zadeh&#39;s Extension Principle from Ross, Fuzzy Logic w/Engineering</span>
+<span class="sd">    Applications, (2010), pp.414, Eq. 12.17.</span>
+
+<span class="sd">    If these results are unexpected and your membership functions are convex,</span>
+<span class="sd">    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics</span>
+<span class="sd">    using interval arithmetic via the restricted Dong, Shah, and Wong method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fuzzy_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="inner_product"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.inner_product">[docs]</a><span class="k">def</span> <span class="nf">inner_product</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inner product (dot product) of two fuzzy sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1d array or iterable</span>
+<span class="sd">        Fuzzy membership function.</span>
+<span class="sd">    b : 1d array or iterable</span>
+<span class="sd">        Fuzzy membership function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : float</span>
+<span class="sd">        Fuzzy inner product value, on range [0, 1]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">b</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="interp10"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.interp10">[docs]</a><span class="k">def</span> <span class="nf">interp10</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility function which conducts linear interpolation of any rank-1 array.</span>
+<span class="sd">    Result will have 10x resolution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Input array to be interpolated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : 1d array, length 10 * N + 1</span>
+<span class="sd">        Linearly interpolated output.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">L</span> <span class="o">-</span> <span class="mf">0.9</span><span class="p">:</span><span class="mf">0.1</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="maxmin_composition"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.maxmin_composition">[docs]</a><span class="k">def</span> <span class="nf">maxmin_composition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The max-min composition ``t`` of two fuzzy relation matrices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : 2d array, (M, N)</span>
+<span class="sd">        Fuzzy relation matrix #1.</span>
+<span class="sd">    r : 2d array, (N, P)</span>
+<span class="sd">        Fuzzy relation matrix #2.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    T ; 2d array, (M, P)</span>
+<span class="sd">        Max-min composition, defined by ``T = s o r``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">t</span><span class="p">[</span><span class="n">mm</span><span class="p">,</span> <span class="n">pp</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">mm</span><span class="p">,</span> <span class="p">:],</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">pp</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="maxprod_composition"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.maxprod_composition">[docs]</a><span class="k">def</span> <span class="nf">maxprod_composition</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The max-product composition ``t`` of two fuzzy relation matrices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : 2d array, (M, N)</span>
+<span class="sd">        Fuzzy relation matrix #1.</span>
+<span class="sd">    r : 2d array, (N, P)</span>
+<span class="sd">        Fuzzy relation matrix #2.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    t : 2d array, (M, P)</span>
+<span class="sd">        Max-product composition matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">t</span><span class="p">[</span><span class="n">mm</span><span class="p">,</span> <span class="n">pp</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">mm</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">pp</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="interp_membership"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.interp_membership">[docs]</a><span class="k">def</span> <span class="nf">interp_membership</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmf</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">zero_outside_x</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the degree of membership ``u(xx)`` for a given value of ``x = xx``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent discrete variable vector.</span>
+<span class="sd">    xmf : 1d array</span>
+<span class="sd">        Fuzzy membership function for ``x``.  Same length as ``x``.</span>
+<span class="sd">    xx : float or array of floats</span>
+<span class="sd">        Value(s) on universe ``x`` where the interpolated membership is</span>
+<span class="sd">        desired.</span>
+<span class="sd">    zero_outside_x : bool, optional</span>
+<span class="sd">        Defines the behavior if ``xx`` contains value(s) which are outside the</span>
+<span class="sd">        universe range as defined by ``x``.  If `True` (default), all</span>
+<span class="sd">        extrapolated values will be zero.  If `False`, the first or last value</span>
+<span class="sd">        in ``x`` will be what is returned to the left or right of the range,</span>
+<span class="sd">        respectively.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xxmf : float or array of floats</span>
+<span class="sd">        Membership function value at ``xx``, ``u(xx)``.  If ``xx`` is a single</span>
+<span class="sd">        value, this will be a single value; if it is an array or iterable the</span>
+<span class="sd">        result will be returned as a NumPy array of like shape.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For use in Fuzzy Logic, where an interpolated discrete membership function</span>
+<span class="sd">    u(x) for discrete values of x on the universe of ``x`` is given. Then,</span>
+<span class="sd">    consider a new value x = xx, which does not correspond to any discrete</span>
+<span class="sd">    values of ``x``. This function computes the membership value ``u(xx)``</span>
+<span class="sd">    corresponding to the value ``xx`` using linear interpolation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Not much beats NumPy&#39;s built-in interpolation</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">zero_outside_x</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">xmf</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">right</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="interp_universe"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.interp_universe">[docs]</a><span class="k">def</span> <span class="nf">interp_universe</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmf</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find interpolated universe value(s) for a given fuzzy membership value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent discrete variable vector.</span>
+<span class="sd">    xmf : 1d array</span>
+<span class="sd">        Fuzzy membership function for ``x``.  Same length as ``x``.</span>
+<span class="sd">    y : float</span>
+<span class="sd">        Specific fuzzy membership value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xx : list</span>
+<span class="sd">        List of discrete singleton values on universe ``x`` whose</span>
+<span class="sd">        membership function value is y, ``u(xx[i])==y``.</span>
+<span class="sd">        If there are not points xx[i] such that ``u(xx[i])==y``</span>
+<span class="sd">        it returns an empty list.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For use in Fuzzy Logic, where a membership function level ``y`` is given.</span>
+<span class="sd">    Consider there is some value (or set of values) ``xx`` for which</span>
+<span class="sd">    ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete</span>
+<span class="sd">    values on ``x``. This function computes the value (or values) of ``xx``</span>
+<span class="sd">    such that ``u(xx) == y`` using linear interpolation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Special case required or zero-level cut does not work with faster method</span>
+    <span class="k">if</span> <span class="n">y</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xmf</span> <span class="o">&gt;</span> <span class="n">y</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xmf</span> <span class="o">&gt;=</span> <span class="n">y</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+          <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+          <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+          <span class="o">/</span> <span class="p">(</span><span class="n">xmf</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+
+    <span class="c1"># The above method is fast, but duplicates point values where</span>
+    <span class="c1"># y == peak of a membership function. Ducking briefly into a set</span>
+    <span class="c1"># eliminates this. Benchmarked multiple ways; this is by far the fastest.</span>
+    <span class="c1"># Speed penalty approximately 10%, worth it.</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">tolist</span><span class="p">())]</span></div>
+
+
+<span class="k">def</span> <span class="nf">_interp_universe_fast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmf</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find interpolated universe value(s) for a given fuzzy membership value.</span>
+
+<span class="sd">    Fast version, with possible duplication.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent discrete variable vector.</span>
+<span class="sd">    xmf : 1d array</span>
+<span class="sd">        Fuzzy membership function for ``x``.  Same length as ``x``.</span>
+<span class="sd">    y : float</span>
+<span class="sd">        Specific fuzzy membership value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xx : list</span>
+<span class="sd">        List of discrete singleton values on universe ``x`` whose</span>
+<span class="sd">        membership function value is y, ``u(xx[i])==y``.</span>
+<span class="sd">        If there are not points xx[i] such that ``u(xx[i])==y``</span>
+<span class="sd">        it returns an empty list.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For use in Fuzzy Logic, where a membership function level ``y`` is given.</span>
+<span class="sd">    Consider there is some value (or set of values) ``xx`` for which</span>
+<span class="sd">    ``u(xx) == y`` is true, though ``xx`` may not correspond to any discrete</span>
+<span class="sd">    values on ``x``. This function computes the value (or values) of ``xx``</span>
+<span class="sd">    such that ``u(xx) == y`` using linear interpolation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Special case required or zero-level cut does not work with faster method</span>
+    <span class="k">if</span> <span class="n">y</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xmf</span> <span class="o">&gt;</span> <span class="n">y</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xmf</span> <span class="o">&gt;=</span> <span class="n">y</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># This method is fast, but duplicates point values where</span>
+    <span class="c1"># y == peak of a membership function.</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">xmf</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+
+
+<div class="viewcode-block" id="modus_ponens"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.modus_ponens">[docs]</a><span class="k">def</span> <span class="nf">modus_ponens</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">ap</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generalized *modus ponens* deduction to make approximate reasoning in a</span>
+<span class="sd">    rules-base system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1d array</span>
+<span class="sd">        Fuzzy set ``a`` on universe ``x``</span>
+<span class="sd">    b : 1d array</span>
+<span class="sd">        Fuzzy set ``b`` on universe ``y``</span>
+<span class="sd">    ap : 1d array</span>
+<span class="sd">        New fuzzy fact a&#39; (a prime, not transpose)</span>
+<span class="sd">    c : 1d array, OPTIONAL</span>
+<span class="sd">        Keyword argument representing fuzzy set ``c`` on universe ``y``.</span>
+<span class="sd">        Default = None, which will use ``np.ones()`` instead.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    R : 2d array</span>
+<span class="sd">        Full fuzzy relation.</span>
+<span class="sd">    bp : 1d array</span>
+<span class="sd">        Fuzzy conclusion b&#39; (b prime)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">cartprod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">cartprod</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+    <span class="n">bp</span> <span class="o">=</span> <span class="n">maxmin_composition</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">bp</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="outer_product"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.outer_product">[docs]</a><span class="k">def</span> <span class="nf">outer_product</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Outer product of two fuzzy sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1d array or iterable</span>
+<span class="sd">        Fuzzy membership function.</span>
+<span class="sd">    b : 1d array or iterable</span>
+<span class="sd">        Fuzzy membership function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : float</span>
+<span class="sd">        Fuzzy outer product value, on range [0, 1]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">b</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="relation_min"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.relation_min">[docs]</a><span class="k">def</span> <span class="nf">relation_min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine fuzzy relation matrix ``R`` using Mamdani implication for the</span>
+<span class="sd">    fuzzy antecedent ``a`` and consequent ``b`` inputs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1d array</span>
+<span class="sd">        Fuzzy antecedent variable of length M.</span>
+<span class="sd">    b : 1d array</span>
+<span class="sd">        Fuzzy consequent variable of length N.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    R : 2d array</span>
+<span class="sd">        Fuzzy relation between ``a`` and ``b``, of shape (M, N).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bb</span><span class="p">,</span> <span class="n">aa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="relation_product"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.relation_product">[docs]</a><span class="k">def</span> <span class="nf">relation_product</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the fuzzy relation matrix, ``R``, using product implication for</span>
+<span class="sd">    the fuzzy antecedent ``a`` and the fuzzy consequent ``b``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : 1d array</span>
+<span class="sd">        Fuzzy antecedent variable of length M.</span>
+<span class="sd">    b : 1d array</span>
+<span class="sd">        Fuzzy consequent variable of length N.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    R : 2d array</span>
+<span class="sd">        Fuzzy relation between ``a`` and ``b``, of shape (M, N).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bb</span><span class="p">,</span> <span class="n">aa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aa</span> <span class="o">*</span> <span class="n">bb</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_similarity"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.fuzzy_similarity">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_similarity</span><span class="p">(</span><span class="n">ai</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The fuzzy similarity between set ``ai`` and observation set ``b``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ai : 1d array</span>
+<span class="sd">        Fuzzy membership function of set ``ai``.</span>
+<span class="sd">    b : 1d array</span>
+<span class="sd">        Fuzzy membership function of set ``b``.</span>
+<span class="sd">    mode : string</span>
+<span class="sd">        Controls the method of similarity calculation.</span>
+<span class="sd">        * ``&#39;min&#39;`` : Computed by array minimum operation.</span>
+<span class="sd">        * ``&#39;avg&#39;`` : Computed by taking the array average.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    s : float</span>
+<span class="sd">        Fuzzy similarity.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">inner_product</span><span class="p">(</span><span class="n">ai</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">outer_product</span><span class="p">(</span><span class="n">ai</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">inner_product</span><span class="p">(</span><span class="n">ai</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">outer_product</span><span class="p">(</span><span class="n">ai</span><span class="p">,</span> <span class="n">b</span><span class="p">)))</span> <span class="o">/</span> <span class="mf">2.</span></div>
+
+
+<div class="viewcode-block" id="partial_dmf"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.partial_dmf">[docs]</a><span class="k">def</span> <span class="nf">partial_dmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mf_name</span><span class="p">,</span> <span class="n">mf_parameter_dict</span><span class="p">,</span> <span class="n">partial_parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the *partial derivative* of a specified membership function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : float</span>
+<span class="sd">        input variable.</span>
+<span class="sd">    mf_name : string</span>
+<span class="sd">        Membership function name as a string. The following are supported:</span>
+<span class="sd">        * ``&#39;gaussmf&#39;`` : parameters ``&#39;sigma&#39;`` or ``&#39;mean&#39;``</span>
+<span class="sd">        * ``&#39;gbellmf&#39;`` : parameters ``&#39;a&#39;``, ``&#39;b&#39;``, or ``&#39;c&#39;``</span>
+<span class="sd">        * ``&#39;sigmf&#39;`` : parameters ``&#39;b&#39;`` or ``&#39;c&#39;``</span>
+<span class="sd">    mf_parameter_dict : dict</span>
+<span class="sd">        A dictionary of ``{param : key-value, ...}`` pairs for a particular</span>
+<span class="sd">        membership function as defined above.</span>
+<span class="sd">    partial_parameter : string</span>
+<span class="sd">        Name of the parameter against which we take the partial derivative.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    d : float</span>
+<span class="sd">        Partial derivative of the membership function with respect to the</span>
+<span class="sd">        chosen parameter, at input point ``x``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Partial derivatives of fuzzy membership functions are only meaningful for</span>
+<span class="sd">    continuous functions. Triangular, trapezoidal designs have no partial</span>
+<span class="sd">    derivatives to calculate. The following</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">mf_name</span> <span class="o">==</span> <span class="s1">&#39;gaussmf&#39;</span><span class="p">:</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;sigma&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">mf_name</span> <span class="o">==</span> <span class="s1">&#39;gbellmf&#39;</span><span class="p">:</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Partial result for speed and conciseness in derived eqs below</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">c</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">a</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span><span class="o">**</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span>
+                      <span class="p">(</span><span class="n">a</span><span class="o">**</span><span class="mf">3.</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d</span><span class="o">**</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">/</span>
+                      <span class="p">((</span><span class="n">d</span><span class="o">**</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span><span class="o">**</span><span class="p">((</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span>
+                      <span class="p">(</span><span class="n">a</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">mf_name</span> <span class="o">==</span> <span class="s1">&#39;sigmf&#39;</span><span class="p">:</span>
+
+        <span class="n">b</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">mf_parameter_dict</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="c1"># Partial result for speed and conciseness</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="n">x</span><span class="p">))</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">x</span><span class="p">))</span><span class="o">**</span><span class="mf">2.</span>
+
+        <span class="k">elif</span> <span class="n">partial_parameter</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+            <span class="c1"># Partial result for speed and conciseness</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">))</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="sigmoid"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.sigmoid">[docs]</a><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">power</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Intensify grayscale values in an array using a sigmoid function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : ndarray</span>
+<span class="sd">        Input vector or image array. Should be pre-normalized to range [0, 1]</span>
+<span class="sd">    p : float</span>
+<span class="sd">        Power of the intensification (p &gt; 0). Experiment with small, decimal</span>
+<span class="sd">        values and increase as necessary.</span>
+<span class="sd">    split : float</span>
+<span class="sd">        Threshold for intensification. Values above ``split`` will be</span>
+<span class="sd">        intensified, while values below `split` will be deintensified. Note</span>
+<span class="sd">        range for ``split`` is (0, 1). Default of 0.5 is reasonable for many</span>
+<span class="sd">        well-exposed images.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : ndarray, same size as x</span>
+<span class="sd">        Output vector or image with contrast adjusted.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The sigmoid used herein is defined as::</span>
+
+<span class="sd">      y = 1 / (1 + exp(- exp(- power * (x-split))))</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.fuzzymath.contrast</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">power</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">split</span><span class="p">)))</span></div>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

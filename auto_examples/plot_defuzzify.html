@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Defuzzification &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="General examples" href="index.html" />
+        <link rel="next" title="The Tipping Problem - The Hard Way" href="plot_tipping_problem.html" />
+        <link rel="prev" title="Fuzzy Control Systems: Advanced Example" href="plot_control_system_advanced.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="defuzzification">
+<span id="example-plot-defuzzify-py"></span><h1>Defuzzification<a class="headerlink" href="#defuzzification" title="Permalink to this headline">¶</a></h1>
+<p>Fuzzy logic calculations are excellent tools, but to use them the fuzzy result
+must be converted back into a single number. This is known as defuzzification.</p>
+<p>There are several possible methods for defuzzification, exposed via
+<cite>skfuzzy.defuzz</cite>.</p>
+<img alt="../_images/plot_defuzzify_1.png" class="align-center" src="../_images/plot_defuzzify_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+
+
+<span class="c1"># Generate trapezoidal membership function on range [0, 1]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="n">mfx</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trapmf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">])</span>
+
+<span class="c1"># Defuzzify this membership function five ways</span>
+<span class="n">defuzz_centroid</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;centroid&#39;</span><span class="p">)</span>  <span class="c1"># Same as skfuzzy.centroid</span>
+<span class="n">defuzz_bisector</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;bisector&#39;</span><span class="p">)</span>
+<span class="n">defuzz_mom</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;mom&#39;</span><span class="p">)</span>
+<span class="n">defuzz_som</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;som&#39;</span><span class="p">)</span>
+<span class="n">defuzz_lom</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;lom&#39;</span><span class="p">)</span>
+
+<span class="c1"># Collect info for vertical lines</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;centroid&#39;</span><span class="p">,</span> <span class="s1">&#39;bisector&#39;</span><span class="p">,</span> <span class="s1">&#39;mean of maximum&#39;</span><span class="p">,</span> <span class="s1">&#39;min of maximum&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;max of maximum&#39;</span><span class="p">]</span>
+<span class="n">xvals</span> <span class="o">=</span> <span class="p">[</span><span class="n">defuzz_centroid</span><span class="p">,</span>
+         <span class="n">defuzz_bisector</span><span class="p">,</span>
+         <span class="n">defuzz_mom</span><span class="p">,</span>
+         <span class="n">defuzz_som</span><span class="p">,</span>
+         <span class="n">defuzz_lom</span><span class="p">]</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">]</span>
+<span class="n">ymax</span> <span class="o">=</span> <span class="p">[</span><span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xvals</span><span class="p">]</span>
+
+<span class="c1"># Display and compare defuzzification results against membership function</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">xv</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xvals</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Fuzzy membership&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Universe variable (arb)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Python source code:</strong> <a class="reference download internal" download="" href="../_downloads/a0d0c575b9087e82b50841afe5b44a36/plot_defuzzify.py"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+<p><strong>IPython Notebook:</strong> <a class="reference download internal" download="" href="../_downloads/b14db9e6309b1b7fbb328143cc2d2cd4/plot_defuzzify.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_control_system_advanced.html" title="previous chapter">Fuzzy Control Systems: Advanced Example</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_tipping_problem.html" title="next chapter">The Tipping Problem - The Hard Way</a></li>
+        </ul>
+    </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

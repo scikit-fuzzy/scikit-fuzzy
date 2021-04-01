@@ -1,0 +1,26 @@
+SciKit-Fuzzy
+============
+
+Scikit-Fuzzy is a collection of fuzzy logic algorithms intended for use in the
+`SciPy <http://scipy.org>`_ `Stack <http://www.scipy.org/stackspec.html>`_\ , written in the
+`Python <http://www.python.org>`_ computing language.
+
+This `SciKit <http://scikits.appspot.com>`_ is developed by the SciPy
+community.  Contributions are welcome!  Please join us on the mailing list
+or our persistent chatroom on Gitter.IM.
+
+Homepage and package documentation
+----------------------------------
+http://pythonhosted.org/scikit-fuzzy/
+
+Source, bugs, and development
+-----------------------------
+http://github.com/scikit-fuzzy/scikit-fuzzy
+
+Gitter.IM
+---------
+https://gitter.im/scikit-fuzzy/scikit-fuzzy
+
+Mailing List
+------------
+http://groups.google.com/group/scikit-fuzzy

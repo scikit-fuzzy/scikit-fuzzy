@@ -1,0 +1,56 @@
+
+
+.. _examples_gallery:
+
+General examples
+-------------------
+
+General-purpose and introductory examples for the scikit.
+
+
+
+
+.. toctree::
+   :hidden:
+
+   plot_cmeans
+   plot_control_system_advanced
+   plot_defuzzify
+   plot_tipping_problem
+   plot_tipping_problem_newapi
+
+
+.. figure:: images/thumb/plot_cmeans.png
+   :figclass: gallery
+   :target: ./plot_cmeans.html
+
+   :ref:`example_plot_cmeans.py`
+
+
+.. figure:: images/thumb/plot_control_system_advanced.png
+   :figclass: gallery
+   :target: ./plot_control_system_advanced.html
+
+   :ref:`example_plot_control_system_advanced.py`
+
+
+.. figure:: images/thumb/plot_defuzzify.png
+   :figclass: gallery
+   :target: ./plot_defuzzify.html
+
+   :ref:`example_plot_defuzzify.py`
+
+
+.. figure:: images/thumb/plot_tipping_problem.png
+   :figclass: gallery
+   :target: ./plot_tipping_problem.html
+
+   :ref:`example_plot_tipping_problem.py`
+
+
+.. figure:: images/thumb/plot_tipping_problem_newapi.png
+   :figclass: gallery
+   :target: ./plot_tipping_problem_newapi.html
+
+   :ref:`example_plot_tipping_problem_newapi.py`
+

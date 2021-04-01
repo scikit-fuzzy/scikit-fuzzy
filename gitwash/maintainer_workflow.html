@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Maintainer workflow &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="Git for development" href="git_development.html" />
+        <link rel="next" title="git resources" href="git_resources.html" />
+        <link rel="prev" title="Development workflow" href="development_workflow.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="maintainer-workflow">
+<span id="id1"></span><h1>Maintainer workflow<a class="headerlink" href="#maintainer-workflow" title="Permalink to this headline">¶</a></h1>
+<p>This page is for maintainers — those of us who merge our own or other
+peoples’ changes into the upstream repository.</p>
+<p>Being as how you’re a maintainer, you are completely on top of the basic stuff
+in <a class="reference internal" href="development_workflow.html#development-workflow"><span class="std std-ref">Development workflow</span></a>.</p>
+<p>The instructions in <a class="reference internal" href="set_up_fork.html#linking-to-upstream"><span class="std std-ref">Linking your repository to the upstream repo</span></a> add a remote that has read-only
+access to the upstream repo.  Being a maintainer, you’ve got read-write access.</p>
+<p>It’s good to have your upstream remote have a scary name, to remind you that
+it’s a read-write remote:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git remote add upstream-rw git@github.com:scikit-fuzzy/scikit-fuzzy.git
+git fetch upstream-rw
+</pre></div>
+</div>
+<div class="section" id="integrating-changes">
+<h2>Integrating changes<a class="headerlink" href="#integrating-changes" title="Permalink to this headline">¶</a></h2>
+<p>Let’s say you have some changes that need to go into trunk
+(<code class="docutils literal notranslate"><span class="pre">upstream-rw/master</span></code>).</p>
+<p>The changes are in some branch that you are currently on.  For example, you are
+looking at someone’s changes like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git remote add someone git://github.com/someone/scikit-fuzzy.git
+git fetch someone
+git branch cool-feature --track someone/cool-feature
+git checkout cool-feature
+</pre></div>
+</div>
+<p>So now you are on the branch with the changes to be incorporated upstream.  The
+rest of this section assumes you are on this branch.</p>
+<div class="section" id="a-few-commits">
+<h3>A few commits<a class="headerlink" href="#a-few-commits" title="Permalink to this headline">¶</a></h3>
+<p>If there are only a few commits, consider rebasing to upstream:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch upstream changes</span>
+git fetch upstream-rw
+<span class="c1"># rebase</span>
+git rebase upstream-rw/master
+</pre></div>
+</div>
+<p>Remember that, if you do a rebase, and push that, you’ll have to close any
+github pull requests manually, because github will not be able to detect the
+changes have already been merged.</p>
+</div>
+<div class="section" id="a-long-series-of-commits">
+<h3>A long series of commits<a class="headerlink" href="#a-long-series-of-commits" title="Permalink to this headline">¶</a></h3>
+<p>If there are a longer series of related commits, consider a merge instead:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git fetch upstream-rw
+git merge --no-ff upstream-rw/master
+</pre></div>
+</div>
+<p>The merge will be detected by github, and should close any related pull requests
+automatically.</p>
+<p>Note the <code class="docutils literal notranslate"><span class="pre">--no-ff</span></code> above.  This forces git to make a merge commit, rather than
+doing a fast-forward, so that these set of commits branch off trunk then rejoin
+the main history with a merge, rather than appearing to have been made directly
+on top of trunk.</p>
+</div>
+<div class="section" id="check-the-history">
+<h3>Check the history<a class="headerlink" href="#check-the-history" title="Permalink to this headline">¶</a></h3>
+<p>Now, in either case, you should check that the history is sensible and you have
+the right commits:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git log --oneline --graph
+git log -p upstream-rw/master..
+</pre></div>
+</div>
+<p>The first line above just shows the history in a compact way, with a text
+representation of the history graph. The second line shows the log of commits
+excluding those that can be reached from trunk (<code class="docutils literal notranslate"><span class="pre">upstream-rw/master</span></code>), and
+including those that can be reached from current HEAD (implied with the <code class="docutils literal notranslate"><span class="pre">..</span></code>
+at the end). So, it shows the commits unique to this branch compared to trunk.
+The <code class="docutils literal notranslate"><span class="pre">-p</span></code> option shows the diff for these commits in patch form.</p>
+</div>
+<div class="section" id="push-to-trunk">
+<h3>Push to trunk<a class="headerlink" href="#push-to-trunk" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git push upstream-rw my-new-feature:master
+</pre></div>
+</div>
+<p>This pushes the <code class="docutils literal notranslate"><span class="pre">my-new-feature</span></code> branch in this repository to the <code class="docutils literal notranslate"><span class="pre">master</span></code>
+branch in the <code class="docutils literal notranslate"><span class="pre">upstream-rw</span></code> repository.</p>
+</div>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="development_workflow.html" title="previous chapter">Development workflow</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="git_resources.html" title="next chapter">git resources</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Maintainer workflow</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#integrating-changes">Integrating changes</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#a-few-commits">A few commits</a></li>
+<li><a class="reference internal" href="#a-long-series-of-commits">A long series of commits</a></li>
+<li><a class="reference internal" href="#check-the-history">Check the history</a></li>
+<li><a class="reference internal" href="#push-to-trunk">Push to trunk</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

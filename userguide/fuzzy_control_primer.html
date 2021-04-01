@@ -1,0 +1,221 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Fuzzy Control Primer &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="User Guide" href="../user_guide.html" />
+        <link rel="next" title="How to contribute to skfuzzy" href="../contribute.html" />
+        <link rel="prev" title="Getting started" href="getting_started.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="fuzzy-control-primer">
+<h1>Fuzzy Control Primer<a class="headerlink" href="#fuzzy-control-primer" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview-and-terminology">
+<h2>Overview and Terminology<a class="headerlink" href="#overview-and-terminology" title="Permalink to this headline">¶</a></h2>
+<p><strong>Fuzzy Logic</strong> is a methodology predicated on the idea that the “truthiness”
+of something can be expressed over a continuum.  This is to say that something
+isn’t <em>true</em> or <em>false</em> but instead <em>partially true</em> or <em>partially false</em>.</p>
+<p>A <strong>fuzzy variable</strong> has a <strong>crisp value</strong> which takes on some number
+over a pre-defined domain (in fuzzy logic terms, called a <strong>universe</strong>).
+The crisp value is how we think of the variable using normal mathematics.
+For example, if my fuzzy variable was how much to tip someone, its universe
+would be 0 to 25% and it might take on a crisp value of 15%.</p>
+<p>A fuzzy variable also has several <strong>terms</strong> that are used to describe the
+variable.  The terms taken together are the <strong>fuzzy set</strong> which can be used to
+describe the “fuzzy value” of a fuzzy variable.  These terms are usually
+adjectives like “poor,” “mediocre,” and “good.”  Each term has
+a <strong>membership function</strong> that defines how a crisp value maps to the term on a
+scale of 0 to 1.  In essence, it describes “how good” something is.</p>
+<p>So, back to the tip example, a “good tip” might have a membership function
+which has non-zero values between 15% and 25%, with 25% being a “completely
+good tip” (ie, it’s membership is 1.0) and 15% being a “barely good tip”
+(ie, its membership is 0.1).</p>
+<p>A <strong>fuzzy control system</strong> links fuzzy variables using a set of <strong>rules</strong>.
+These rules are simply mappings that describe how one or more fuzzy variables
+relates to another.  These are expressed in terms of an IF-THEN statement;
+the IF part is called the <strong>antecedent</strong> and the THEN part is the
+<strong>consequent</strong>.  In the tipping example, one rule might be “IF the service
+was good THEN the tip will be good.”  The exact math related to how
+a rule is used to calculate the value of the consequent based on the value
+of the antecedent is outside the scope of this primer.</p>
+</div>
+<div class="section" id="the-tipping-problem">
+<h2>The Tipping Problem<a class="headerlink" href="#the-tipping-problem" title="Permalink to this headline">¶</a></h2>
+<p>Taking the tipping example full circle, if we were to create a controller which
+estimates the tip we should give at a restaurant, we might structure it as such:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Antecedents (Inputs)</dt><dd><ul>
+<li><dl class="simple">
+<dt><cite>service</cite></dt><dd><ul>
+<li><p>Universe (ie, crisp value range): How good was the service of the waitress, on a scale of 1 to 10?</p></li>
+<li><p>Fuzzy set (ie, fuzzy value range): poor, acceptable, amazing</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>food quality</cite></dt><dd><ul>
+<li><p>Universe: How tasty was the food, on a scale of 1 to 10?</p></li>
+<li><p>Fuzzy set: bad, decent, great</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Consequents (Outputs)</dt><dd><ul>
+<li><dl class="simple">
+<dt><cite>tip</cite></dt><dd><ul>
+<li><p>Universe: How much should we tip, on a scale of 0% to 25%</p></li>
+<li><p>Fuzzy set: low, medium, high</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Rules</dt><dd><ul>
+<li><p>IF the <em>service</em> was good  <em>or</em> the <em>food quality</em> was good, THEN the tip will be high.</p></li>
+<li><p>IF the <em>service</em> was average, THEN the tip will be medium.</p></li>
+<li><p>IF the <em>service</em> was poor <em>and</em> the <em>food quality</em> was poor THEN the tip will be low.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Usage</dt><dd><ul>
+<li><dl class="simple">
+<dt>If I tell this controller that I rated:</dt><dd><ul>
+<li><p>the service as 9.8, and</p></li>
+<li><p>the quality as 6.5,</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>it would recommend I leave:</dt><dd><ul>
+<li><p>a 20.2% tip.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>To see a worked example of the tipping problem using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code>
+library visit the <a class="reference external" href="../auto_examples/plot_tipping_problem.html">Fuzzy Control Systems example</a>.</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="getting_started.html" title="previous chapter">Getting started</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="../contribute.html" title="next chapter">How to contribute to <code class="docutils literal notranslate"><span class="pre">skfuzzy</span></code></a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Fuzzy Control Primer</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#overview-and-terminology">Overview and Terminology</a></li>
+<li><a class="reference internal" href="#the-tipping-problem">The Tipping Problem</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

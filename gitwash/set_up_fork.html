@@ -1,0 +1,171 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Set up your fork &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="Git for development" href="git_development.html" />
+        <link rel="next" title="Configure git" href="configure_git.html" />
+        <link rel="prev" title="Making your own copy (fork) of scikit-fuzzy" href="forking_hell.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="set-up-your-fork">
+<span id="set-up-fork"></span><h1>Set up your fork<a class="headerlink" href="#set-up-your-fork" title="Permalink to this headline">¶</a></h1>
+<p>First you follow the instructions for <a class="reference internal" href="forking_hell.html#forking"><span class="std std-ref">Making your own copy (fork) of scikit-fuzzy</span></a>.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:your-user-name/scikit-fuzzy.git
+<span class="nb">cd</span> scikit-fuzzy
+git remote add upstream git://github.com/scikit-fuzzy/scikit-fuzzy.git
+</pre></div>
+</div>
+</div>
+<div class="section" id="in-detail">
+<h2>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="clone-your-fork">
+<h3>Clone your fork<a class="headerlink" href="#clone-your-fork" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p>Clone your fork to the local computer with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span>
+<span class="pre">git&#64;github.com:your-user-name/scikit-fuzzy.git</span></code></p></li>
+<li><p>Investigate.  Change directory to your new repo: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">scikit-fuzzy</span></code>. Then
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">branch</span> <span class="pre">-a</span></code> to show you all branches.  You’ll get something
+like:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>* master
+remotes/origin/master
+</pre></div>
+</div>
+<p>This tells you that you are currently on the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch, and
+that you also have a <code class="docutils literal notranslate"><span class="pre">remote</span></code> connection to <code class="docutils literal notranslate"><span class="pre">origin/master</span></code>.
+What remote repository is <code class="docutils literal notranslate"><span class="pre">remote/origin</span></code>? Try <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">-v</span></code> to
+see the URLs for the remote.  They will point to your github fork.</p>
+<p>Now you want to connect to the upstream <a class="reference external" href="https://github.com/scikit-fuzzy/scikit-fuzzy">scikit-fuzzy github</a> repository, so
+you can merge in changes from trunk.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="linking-your-repository-to-the-upstream-repo">
+<span id="linking-to-upstream"></span><h3>Linking your repository to the upstream repo<a class="headerlink" href="#linking-your-repository-to-the-upstream-repo" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scikit-fuzzy
+git remote add upstream git://github.com/scikit-fuzzy/scikit-fuzzy.git
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">upstream</span></code> here is just the arbitrary name we’re using to refer to the
+main <a class="reference external" href="http://scikit-fuzzy.org">scikit-fuzzy</a> repository at <a class="reference external" href="https://github.com/scikit-fuzzy/scikit-fuzzy">scikit-fuzzy github</a>.</p>
+<p>Note that we’ve used <code class="docutils literal notranslate"><span class="pre">git://</span></code> for the URL rather than <code class="docutils literal notranslate"><span class="pre">git&#64;</span></code>.  The
+<code class="docutils literal notranslate"><span class="pre">git://</span></code> URL is read only.  This means we that we can’t accidentally
+(or deliberately) write to the upstream repo, and we are only going to
+use it to merge into our own code.</p>
+<p>Just for your own satisfaction, show yourself that you now have a new
+‘remote’, with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">-v</span> <span class="pre">show</span></code>, giving you something like:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>upstream     git://github.com/scikit-fuzzy/scikit-fuzzy.git (fetch)
+upstream     git://github.com/scikit-fuzzy/scikit-fuzzy.git (push)
+origin       git@github.com:your-user-name/scikit-fuzzy.git (fetch)
+origin       git@github.com:your-user-name/scikit-fuzzy.git (push)
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="forking_hell.html" title="previous chapter">Making your own copy (fork) of scikit-fuzzy</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="configure_git.html" title="next chapter">Configure git</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Set up your fork</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#clone-your-fork">Clone your fork</a></li>
+<li><a class="reference internal" href="#linking-your-repository-to-the-upstream-repo">Linking your repository to the upstream repo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

@@ -1,0 +1,349 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>How to contribute to skfuzzy &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link href="_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <link rel="index" title="Index" href="genindex.html" />
+        <link rel="search" title="Search" href="search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="index.html" />
+        <link rel="next" title="Working with scikit-fuzzy source code" href="gitwash/index.html" />
+        <link rel="prev" title="Fuzzy Control Primer" href="userguide/fuzzy_control_primer.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="index.html" class="logo"><img src="_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="index.html">Home</a></li>
+<li><a href="user_guide.html">User Guide</a></li>
+<li><a href="auto_examples/index.html">Example Gallery</a></li>
+<li><a href="api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="how-to-contribute-to-skfuzzy">
+<span id="howto-contribute"></span><h1>How to contribute to <code class="docutils literal notranslate"><span class="pre">skfuzzy</span></code><a class="headerlink" href="#how-to-contribute-to-skfuzzy" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>Developing Open Source is great fun!  Join us on the <a class="reference external" href="http://groups.google.com/group/scikit-fuzzy">scikit-fuzzy mailing
+list</a> and tell us which
+challenges you’d like to solve.</p>
+<ul class="simple">
+<li><p>Guidance is available for those new to scientific programming in Python.</p></li>
+<li><p>If you’re looking for something to implement, you can browse the <a class="reference external" href="https://github.com/scikit-fuzzy/scikit-fuzzy/issues?state=open">open issues
+on GitHub</a>
+or suggest a new, useful feature.</p></li>
+<li><p>The technical detail of the <a class="reference internal" href="#development-process">development process</a> is summed up below.
+Refer to the <a class="reference internal" href="gitwash/index.html"><span class="doc">gitwash</span></a> for a step-by-step tutorial.</p></li>
+</ul>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#development-process" id="id2">Development process</a></p></li>
+<li><p><a class="reference internal" href="#divergence-between-upstream-master-and-your-feature-branch" id="id3">Divergence between <code class="docutils literal notranslate"><span class="pre">upstream</span> <span class="pre">master</span></code> and your feature branch</a></p></li>
+<li><p><a class="reference internal" href="#guidelines" id="id4">Guidelines</a></p></li>
+<li><p><a class="reference internal" href="#stylistic-guidelines" id="id5">Stylistic Guidelines</a></p></li>
+<li><p><a class="reference internal" href="#test-coverage" id="id6">Test coverage</a></p></li>
+<li><p><a class="reference internal" href="#activate-travis-ci-for-your-fork-optional" id="id7">Activate Travis-CI for your fork (optional)</a></p></li>
+<li><p><a class="reference internal" href="#bugs" id="id8">Bugs</a></p></li>
+</ul>
+</div>
+<div class="section" id="development-process">
+<h2><a class="toc-backref" href="#id2">Development process</a><a class="headerlink" href="#development-process" title="Permalink to this headline">¶</a></h2>
+<p>Here’s the long and short of it:</p>
+<ol class="arabic">
+<li><p>If you are a first-time contributor:</p>
+<ul>
+<li><p>Go to <a class="reference external" href="http://github.com/scikit-fuzzy/scikit-fuzzy">https://github.com/scikit-fuzzy/scikit-fuzzy</a> and click the
+“fork” button to create your own copy of the project.</p></li>
+<li><p>Clone the project to your local computer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">your</span><span class="o">-</span><span class="n">username</span><span class="o">/</span><span class="n">scikit</span><span class="o">-</span><span class="n">fuzzy</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add the upstream repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">upstream</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">scikit</span><span class="o">-</span><span class="n">fuzzy</span><span class="o">/</span><span class="n">scikit</span><span class="o">-</span><span class="n">fuzzy</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</li>
+<li><p>Now, you have remote repositories named:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">upstream</span></code>, which refers to the <code class="docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code> repository</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">origin</span></code>, which refers to your personal fork</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Develop your contribution:</p>
+<ul>
+<li><p>Pull the latest changes from upstream:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">pull</span> <span class="n">upstream</span> <span class="n">master</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create a branch for the feature you want to work on. Since the
+branch name will appear in the merge message, use a sensible name
+such as ‘transform-speedups’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">transform</span><span class="o">-</span><span class="n">speedups</span>
+</pre></div>
+</div>
+</li>
+<li><p>Commit locally as you progress (<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> and <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span></code>)</p></li>
+</ul>
+</li>
+<li><p>To submit your contribution:</p>
+<ul>
+<li><p>Push your changes back to your fork on GitHub:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">transform</span><span class="o">-</span><span class="n">speedups</span>
+</pre></div>
+</div>
+</li>
+<li><p>Go to GitHub. The new branch will show up with a green Pull Request
+button - click it.</p></li>
+<li><p>If you want, post on the <a class="reference external" href="http://groups.google.com/group/scikit-fuzzy">mailing list</a> to explain your changes or
+to ask for review.</p></li>
+</ul>
+</li>
+</ol>
+<p>For a more detailed discussion, read these <a class="reference internal" href="gitwash/index.html"><span class="doc">detailed documents</span></a> on how to use Git with <code class="docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code>
+(<a class="reference external" href="../gitwash/index.html">../gitwash/index.html</a>).</p>
+<ol class="arabic" start="4">
+<li><p>Review process:</p>
+<ul class="simple">
+<li><p>Reviewers (the other developers and interested community members) will
+write inline and/or general comments on your Pull Request (PR) to help
+you improve its implementation, documentation and style.  Every single
+developer working on the project has their code reviewed, and we’ve come
+to see it as friendly conversation from which we all learn and the
+overall code quality benefits.  Therefore, please don’t let the review
+discourage you from contributing: its only aim is to improve the quality
+of project, not to criticize (we are, after all, very grateful for the
+time you’re donating!).</p></li>
+<li><p>To update your pull request, make your changes on your local repository
+and commit. As soon as those changes are pushed up (to the same branch as
+before) the pull request will update automatically.</p></li>
+<li><p><a class="reference external" href="http://travis-ci.org/">Travis-CI</a>, a continuous integration service,
+is triggered after each Pull Request update to build the code, run unit
+tests, measure code coverage and check coding style (PEP8) of your
+branch. The Travis tests must pass before your PR can be merged. If
+Travis fails, you can find out why by clicking on the “failed” icon (red
+cross) and inspecting the build and test log.</p></li>
+</ul>
+</li>
+<li><p>Document changes</p>
+<p>Before merging your commits, you must add a description of your changes
+to the release notes of the upcoming version in
+<code class="docutils literal notranslate"><span class="pre">doc/release/release_dev.txt</span></code>.</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To reviewers: if it is not obvious, add a short explanation of what a branch
+did to the merge message and, if closing a bug, also add “Closes #123”
+where 123 is the issue number.</p>
+</div>
+</div>
+<div class="section" id="divergence-between-upstream-master-and-your-feature-branch">
+<h2><a class="toc-backref" href="#id3">Divergence between <code class="docutils literal notranslate"><span class="pre">upstream</span> <span class="pre">master</span></code> and your feature branch</a><a class="headerlink" href="#divergence-between-upstream-master-and-your-feature-branch" title="Permalink to this headline">¶</a></h2>
+<p>Do <em>not</em> ever merge the main branch into yours. If GitHub indicates that the
+branch of your Pull Request can no longer be merged automatically, rebase
+onto master:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">pull</span> <span class="n">upstream</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">transform</span><span class="o">-</span><span class="n">speedups</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span>
+</pre></div>
+</div>
+<p>If any conflicts occur, fix the according files and continue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">add</span> <span class="n">conflict</span><span class="o">-</span><span class="n">file1</span> <span class="n">conflict</span><span class="o">-</span><span class="n">file2</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="o">--</span><span class="k">continue</span>
+</pre></div>
+</div>
+<p>However, you should only rebase your own branches and must generally not
+rebase any branch which you collaborate on with someone else.</p>
+<p>Finally, you must push your rebased branch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="n">force</span> <span class="n">origin</span> <span class="n">transform</span><span class="o">-</span><span class="n">speedups</span>
+</pre></div>
+</div>
+<p>(If you are curious, here’s a further discussion on the
+<a class="reference external" href="http://tinyurl.com/lll385">dangers of rebasing</a>.
+Also see this <a class="reference external" href="http://tinyurl.com/nqcbkj">LWN article</a>.)</p>
+</div>
+<div class="section" id="guidelines">
+<h2><a class="toc-backref" href="#id4">Guidelines</a><a class="headerlink" href="#guidelines" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>All code should have tests (see <a class="reference internal" href="#test-coverage">test coverage</a> below for more details).</p></li>
+<li><p>All code should be documented, to the same
+<a class="reference external" href="://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#docstring-standard">standard</a> as NumPy and SciPy.</p></li>
+<li><p>For new functionality, always add an example to the
+gallery.</p></li>
+<li><p>No changes are ever committed without review.  Ask on the
+<a class="reference external" href="http://groups.google.com/group/scikit-fuzzy">mailing list</a> if
+you get no response to your pull request.
+<strong>Never merge your own pull request.</strong></p></li>
+<li><p>Examples in the gallery should have a maximum figure width of 8 inches.</p></li>
+</ul>
+</div>
+<div class="section" id="stylistic-guidelines">
+<h2><a class="toc-backref" href="#id5">Stylistic Guidelines</a><a class="headerlink" href="#stylistic-guidelines" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Set up your editor to remove trailing whitespace.  Follow <a class="reference external" href="www.python.org/dev/peps/pep-0008/">PEP08</a>.  Check code with pyflakes / flake8.</p></li>
+<li><p>Use numpy data types instead of strings, e.g., <code class="docutils literal notranslate"><span class="pre">np.uint8</span></code> instead of
+<code class="docutils literal notranslate"><span class="pre">&quot;uint8&quot;</span></code>.</p></li>
+<li><p>Use the following import conventions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">cimport</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">cnp</span> <span class="c1"># in Cython code</span>
+</pre></div>
+</div>
+</li>
+<li><p>When documenting array parameters, use <code class="docutils literal notranslate"><span class="pre">image</span> <span class="pre">:</span> <span class="pre">(M,</span> <span class="pre">N)</span> <span class="pre">ndarray</span></code>
+and then refer to <code class="docutils literal notranslate"><span class="pre">M</span></code> and <code class="docutils literal notranslate"><span class="pre">N</span></code> in the docstring, if necessary.</p></li>
+<li><p>Functions should support all input image dtypes.  Use utility functions such
+as <code class="docutils literal notranslate"><span class="pre">img_as_float</span></code> to help convert to an appropriate type.  The output
+format can be whatever is most efficient.  This allows us to string together
+several functions into a pipeline, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hough</span><span class="p">(</span><span class="n">canny</span><span class="p">(</span><span class="n">my_image</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">Py_ssize_t</span></code> as data type for all indexing, shape and size variables
+in C/C++ and Cython code.</p></li>
+</ul>
+</div>
+<div class="section" id="test-coverage">
+<h2><a class="toc-backref" href="#id6">Test coverage</a><a class="headerlink" href="#test-coverage" title="Permalink to this headline">¶</a></h2>
+<p>Tests for a module should ideally cover all code in that module,
+i.e., statement coverage should be at 100%.</p>
+<p>To measure the test coverage, install
+<a class="reference external" href="http://nedbatchelder.com/code/coverage/">coverage.py</a>
+(using <code class="docutils literal notranslate"><span class="pre">easy_install</span> <span class="pre">coverage</span></code>) and then run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make coverage
+</pre></div>
+</div>
+<p>This will print a report with one line for each file in <cite>skfuzzy</cite>,
+detailing the test coverage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Name</span>                                        <span class="n">Stmts</span>   <span class="n">Miss</span>  <span class="n">Cover</span>   <span class="n">Missing</span>
+<span class="o">-------------------------------------------------------------------------</span>
+<span class="n">skfuzzy</span><span class="o">.</span><span class="n">cluster</span>                                 <span class="mi">2</span>      <span class="mi">0</span>   <span class="mi">100</span><span class="o">%</span>
+<span class="n">skfuzzy</span><span class="o">.</span><span class="n">defuzzify</span>                               <span class="mi">2</span>      <span class="mi">0</span>   <span class="mi">100</span><span class="o">%</span>
+<span class="n">skfuzzy</span><span class="o">.</span><span class="n">filters</span>                                 <span class="mi">2</span>      <span class="mi">0</span>   <span class="mi">100</span><span class="o">%</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="activate-travis-ci-for-your-fork-optional">
+<h2><a class="toc-backref" href="#id7">Activate Travis-CI for your fork (optional)</a><a class="headerlink" href="#activate-travis-ci-for-your-fork-optional" title="Permalink to this headline">¶</a></h2>
+<p>Travis-CI checks all unittests in the project to prevent breakage.</p>
+<p>Before sending a pull request, you may want to check that Travis-CI
+successfully passes all tests. To do so,</p>
+<ul class="simple">
+<li><p>Go to <a class="reference external" href="http://travis-ci.org/">Travis-CI</a> and follow the Sign In link at
+the top</p></li>
+<li><p>Go to your <a class="reference external" href="https://travis-ci.org/profile">profile page</a> and switch on
+your scikit-fuzzy fork</p></li>
+</ul>
+<p>It corresponds to steps one and two in
+<a class="reference external" href="http://about.travis-ci.org/docs/user/getting-started/">Travis-CI documentation</a>
+(Step three is already done in scikit-fuzzy).</p>
+<p>Thus, as soon as you push your code to your fork, it will trigger Travis-CI,
+and you will receive an email notification when the process is done.</p>
+<p>Every time Travis is triggered, it also calls on <a class="reference external" href="http://coveralls.io">Coveralls</a> to inspect the current test overage.</p>
+</div>
+<div class="section" id="bugs">
+<h2><a class="toc-backref" href="#id8">Bugs</a><a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
+<p>Please <a class="reference external" href="https://github.com/scikit-fuzzy/scikit-fuzzy/issues">report bugs on GitHub</a>.</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="userguide/fuzzy_control_primer.html" title="previous chapter">Fuzzy Control Primer</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="gitwash/index.html" title="next chapter">Working with <em>scikit-fuzzy</em> source code</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">How to contribute to <code class="docutils literal notranslate"><span class="pre">skfuzzy</span></code></a><ul class="nav nav-list">
+<li><a class="reference internal" href="#development-process">Development process</a></li>
+<li><a class="reference internal" href="#divergence-between-upstream-master-and-your-feature-branch">Divergence between <code class="docutils literal notranslate"><span class="pre">upstream</span> <span class="pre">master</span></code> and your feature branch</a></li>
+<li><a class="reference internal" href="#guidelines">Guidelines</a></li>
+<li><a class="reference internal" href="#stylistic-guidelines">Stylistic Guidelines</a></li>
+<li><a class="reference internal" href="#test-coverage">Test coverage</a></li>
+<li><a class="reference internal" href="#activate-travis-ci-for-your-fork-optional">Activate Travis-CI for your fork (optional)</a></li>
+<li><a class="reference internal" href="#bugs">Bugs</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

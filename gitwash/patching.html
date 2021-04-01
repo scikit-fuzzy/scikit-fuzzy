@@ -1,0 +1,242 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Making a patch &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="Working with scikit-fuzzy source code" href="index.html" />
+        <link rel="next" title="Git for development" href="git_development.html" />
+        <link rel="prev" title="Following the latest source" href="following_latest.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="making-a-patch">
+<h1>Making a patch<a class="headerlink" href="#making-a-patch" title="Permalink to this headline">¶</a></h1>
+<p>You’ve discovered a bug or something else you want to change
+in <a class="reference external" href="http://scikit-fuzzy.org">scikit-fuzzy</a> .. — excellent!</p>
+<p>You’ve worked out a way to fix it — even better!</p>
+<p>You want to tell us about it — best of all!</p>
+<p>The easiest way is to make a <em>patch</em> or set of patches.  Here
+we explain how.  Making a patch is the simplest and quickest,
+but if you’re going to be doing anything more than simple
+quick things, please consider following the
+<a class="reference internal" href="git_development.html#git-development"><span class="std std-ref">Git for development</span></a> model instead.</p>
+<div class="section" id="making-patches">
+<span id="id1"></span><h2>Making patches<a class="headerlink" href="#making-patches" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># tell git who you are</span>
+git config --global user.email you@yourdomain.example.com
+git config --global user.name <span class="s2">&quot;Your Name Comes Here&quot;</span>
+<span class="c1"># get the repository if you don&#39;t have it</span>
+git clone git://github.com/scikit-fuzzy/scikit-fuzzy.git
+<span class="c1"># make a branch for your patching</span>
+<span class="nb">cd</span> scikit-fuzzy
+git branch the-fix-im-thinking-of
+git checkout the-fix-im-thinking-of
+<span class="c1"># hack, hack, hack</span>
+<span class="c1"># Tell git about any new files you&#39;ve made</span>
+git add somewhere/tests/test_my_bug.py
+<span class="c1"># commit work in progress as you go</span>
+git commit -am <span class="s1">&#39;BF - added tests for Funny bug&#39;</span>
+<span class="c1"># hack hack, hack</span>
+git commit -am <span class="s1">&#39;BF - added fix for Funny bug&#39;</span>
+<span class="c1"># make the patch files</span>
+git format-patch -M -C master
+</pre></div>
+</div>
+<p>Then, send the generated patch files to the <a class="reference external" href="http://groups.google.com/group/scikit-fuzzy">scikit-fuzzy
+mailing list</a> — where we will thank you warmly.</p>
+</div>
+<div class="section" id="in-detail">
+<h3>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p>Tell git who you are so it can label the commits you’ve
+made:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global user.email you@yourdomain.example.com
+git config --global user.name <span class="s2">&quot;Your Name Comes Here&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>If you don’t already have one, clone a copy of the
+<a class="reference external" href="http://scikit-fuzzy.org">scikit-fuzzy</a> repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git://github.com/scikit-fuzzy/scikit-fuzzy.git
+<span class="nb">cd</span> scikit-fuzzy
+</pre></div>
+</div>
+</li>
+<li><p>Make a ‘feature branch’.  This will be where you work on
+your bug fix.  It’s nice and safe and leaves you with
+access to an unmodified copy of the code in the main
+branch:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git branch the-fix-im-thinking-of
+git checkout the-fix-im-thinking-of
+</pre></div>
+</div>
+</li>
+<li><p>Do some edits, and commit them as you go:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># hack, hack, hack</span>
+<span class="c1"># Tell git about any new files you&#39;ve made</span>
+git add somewhere/tests/test_my_bug.py
+<span class="c1"># commit work in progress as you go</span>
+git commit -am <span class="s1">&#39;BF - added tests for Funny bug&#39;</span>
+<span class="c1"># hack hack, hack</span>
+git commit -am <span class="s1">&#39;BF - added fix for Funny bug&#39;</span>
+</pre></div>
+</div>
+<p>Note the <code class="docutils literal notranslate"><span class="pre">-am</span></code> options to <code class="docutils literal notranslate"><span class="pre">commit</span></code>. The <code class="docutils literal notranslate"><span class="pre">m</span></code> flag just
+signals that you’re going to type a message on the command
+line.  The <code class="docutils literal notranslate"><span class="pre">a</span></code> flag — you can just take on faith —
+or see <a class="reference external" href="http://gitready.com/beginner/2009/01/18/the-staging-area.html">why the -a flag?</a>.</p>
+</li>
+<li><p>When you have finished, check you have committed all your
+changes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git status
+</pre></div>
+</div>
+</li>
+<li><p>Finally, make your commits into patches.  You want all the
+commits since you branched from the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git format-patch -M -C master
+</pre></div>
+</div>
+<p>You will now have several files named for the commits:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>0001-BF-added-tests-for-Funny-bug.patch
+0002-BF-added-fix-for-Funny-bug.patch
+</pre></div>
+</div>
+<p>Send these files to the <a class="reference external" href="http://groups.google.com/group/scikit-fuzzy">scikit-fuzzy mailing list</a>.</p>
+</li>
+</ol>
+<p>When you are done, to switch back to the main copy of the
+code, just return to the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git checkout master
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="moving-from-patching-to-development">
+<h2>Moving from patching to development<a class="headerlink" href="#moving-from-patching-to-development" title="Permalink to this headline">¶</a></h2>
+<p>If you find you have done some patches, and you have one or
+more feature branches, you will probably want to switch to
+development mode.  You can do this with the repository you
+have.</p>
+<p>Fork the <a class="reference external" href="http://scikit-fuzzy.org">scikit-fuzzy</a> repository on github — <a class="reference internal" href="forking_hell.html#forking"><span class="std std-ref">Making your own copy (fork) of scikit-fuzzy</span></a>.
+Then:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># checkout and refresh master branch from main repo</span>
+git checkout master
+git pull origin master
+<span class="c1"># rename pointer to main repository to &#39;upstream&#39;</span>
+git remote rename origin upstream
+<span class="c1"># point your repo to default read / write to your fork on github</span>
+git remote add origin git@github.com:your-user-name/scikit-fuzzy.git
+<span class="c1"># push up any branches you&#39;ve made and want to keep</span>
+git push origin the-fix-im-thinking-of
+</pre></div>
+</div>
+<p>Then you can, if you want, follow the
+<a class="reference internal" href="development_workflow.html#development-workflow"><span class="std std-ref">Development workflow</span></a>.</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="following_latest.html" title="previous chapter">Following the latest source</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="git_development.html" title="next chapter">Git for development</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Making a patch</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#making-patches">Making patches</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#moving-from-patching-to-development">Moving from patching to development</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

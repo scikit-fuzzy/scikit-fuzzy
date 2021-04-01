@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Configure git &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="Git for development" href="git_development.html" />
+        <link rel="next" title="Development workflow" href="development_workflow.html" />
+        <link rel="prev" title="Set up your fork" href="set_up_fork.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="configure-git">
+<span id="id1"></span><h1>Configure git<a class="headerlink" href="#configure-git" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<span id="git-config-basic"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Your personal git configurations are saved in the <code class="docutils literal notranslate"><span class="pre">.gitconfig</span></code> file in
+your home directory.</p>
+<p>Here is an example <code class="docutils literal notranslate"><span class="pre">.gitconfig</span></code> file:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[user]
+        name = Your Name
+        email = you@yourdomain.example.com
+
+[alias]
+        ci = commit -a
+        co = checkout
+        st = status
+        stat = status
+        br = branch
+        wdiff = diff --color-words
+
+[core]
+        editor = vim
+
+[merge]
+        summary = true
+</pre></div>
+</div>
+<p>You can edit this file directly or you can use the <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">config</span> <span class="pre">--global</span></code>
+command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global user.name <span class="s2">&quot;Your Name&quot;</span>
+git config --global user.email you@yourdomain.example.com
+git config --global alias.ci <span class="s2">&quot;commit -a&quot;</span>
+git config --global alias.co checkout
+git config --global alias.st <span class="s2">&quot;status -a&quot;</span>
+git config --global alias.stat <span class="s2">&quot;status -a&quot;</span>
+git config --global alias.br branch
+git config --global alias.wdiff <span class="s2">&quot;diff --color-words&quot;</span>
+git config --global core.editor vim
+git config --global merge.summary <span class="nb">true</span>
+</pre></div>
+</div>
+<p>To set up on another computer, you can copy your <code class="docutils literal notranslate"><span class="pre">~/.gitconfig</span></code> file,
+or run the commands above.</p>
+</div>
+<div class="section" id="in-detail">
+<h2>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-name-and-user-email">
+<h3>user.name and user.email<a class="headerlink" href="#user-name-and-user-email" title="Permalink to this headline">¶</a></h3>
+<p>It is good practice to tell <a class="reference external" href="https://git-scm.com/">git</a> who you are, for labeling any changes
+you make to the code.  The simplest way to do this is from the command
+line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global user.name <span class="s2">&quot;Your Name&quot;</span>
+git config --global user.email you@yourdomain.example.com
+</pre></div>
+</div>
+<p>This will write the settings into your git configuration file,  which
+should now contain a user section with your name and email:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[user]
+      name = Your Name
+      email = you@yourdomain.example.com
+</pre></div>
+</div>
+<p>Of course you’ll need to replace <code class="docutils literal notranslate"><span class="pre">Your</span> <span class="pre">Name</span></code> and <code class="docutils literal notranslate"><span class="pre">you&#64;yourdomain.example.com</span></code>
+with your actual name and email address.</p>
+</div>
+<div class="section" id="aliases">
+<h3>Aliases<a class="headerlink" href="#aliases" title="Permalink to this headline">¶</a></h3>
+<p>You might well benefit from some aliases to common commands.</p>
+<p>For example, you might well want to be able to shorten <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span></code>
+to <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">co</span></code>.  Or you may want to alias <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">diff</span> <span class="pre">--color-words</span></code>
+(which gives a nicely formatted output of the diff) to <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">wdiff</span></code></p>
+<p>The following <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">config</span> <span class="pre">--global</span></code> commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global alias.ci <span class="s2">&quot;commit -a&quot;</span>
+git config --global alias.co checkout
+git config --global alias.st <span class="s2">&quot;status -a&quot;</span>
+git config --global alias.stat <span class="s2">&quot;status -a&quot;</span>
+git config --global alias.br branch
+git config --global alias.wdiff <span class="s2">&quot;diff --color-words&quot;</span>
+</pre></div>
+</div>
+<p>will create an <code class="docutils literal notranslate"><span class="pre">alias</span></code> section in your <code class="docutils literal notranslate"><span class="pre">.gitconfig</span></code> file with contents
+like this:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[alias]
+        ci = commit -a
+        co = checkout
+        st = status -a
+        stat = status -a
+        br = branch
+        wdiff = diff --color-words
+</pre></div>
+</div>
+</div>
+<div class="section" id="editor">
+<h3>Editor<a class="headerlink" href="#editor" title="Permalink to this headline">¶</a></h3>
+<p>You may also want to make sure that your editor of choice is used</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global core.editor vim
+</pre></div>
+</div>
+</div>
+<div class="section" id="merging">
+<h3>Merging<a class="headerlink" href="#merging" title="Permalink to this headline">¶</a></h3>
+<p>To enforce summaries when doing merges (<code class="docutils literal notranslate"><span class="pre">~/.gitconfig</span></code> file again):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[merge]
+   log = true
+</pre></div>
+</div>
+<p>Or from the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git config --global merge.log <span class="nb">true</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fancy-log-output">
+<span id="fancy-log"></span><h3>Fancy log output<a class="headerlink" href="#fancy-log-output" title="Permalink to this headline">¶</a></h3>
+<p>This is a very nice alias to get a fancy log output; it should go in the
+<code class="docutils literal notranslate"><span class="pre">alias</span></code> section of your <code class="docutils literal notranslate"><span class="pre">.gitconfig</span></code> file:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>lg = log --graph --pretty=format:&#39;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)[%an]%Creset&#39; --abbrev-commit --date=relative
+</pre></div>
+</div>
+<p>You use the alias with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git lg
+</pre></div>
+</div>
+<p>and it gives graph / text output something like this (but with color!):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>* 6d8e1ee - (HEAD, origin/my-fancy-feature, my-fancy-feature) NF - a fancy file (45 minutes ago) [Matthew Brett]
+*   d304a73 - (origin/placeholder, placeholder) Merge pull request #48 from hhuuggoo/master (2 weeks ago) [Jonathan Terhorst]
+|\
+| * 4aff2a8 - fixed bug 35, and added a test in test_bugfixes (2 weeks ago) [Hugo]
+|/
+* a7ff2e5 - Added notes on discussion/proposal made during Data Array Summit. (2 weeks ago) [Corran Webster]
+* 68f6752 - Initial implimentation of AxisIndexer - uses &#39;index_by&#39; which needs to be changed to a call on an Axes object - this is all very sketchy right now. (2 weeks ago) [Corr
+*   376adbd - Merge pull request #46 from terhorst/master (2 weeks ago) [Jonathan Terhorst]
+|\
+| * b605216 - updated joshu example to current api (3 weeks ago) [Jonathan Terhorst]
+| * 2e991e8 - add testing for outer ufunc (3 weeks ago) [Jonathan Terhorst]
+| * 7beda5a - prevent axis from throwing an exception if testing equality with non-axis object (3 weeks ago) [Jonathan Terhorst]
+| * 65af65e - convert unit testing code to assertions (3 weeks ago) [Jonathan Terhorst]
+| *   956fbab - Merge remote-tracking branch &#39;upstream/master&#39; (3 weeks ago) [Jonathan Terhorst]
+| |\
+| |/
+</pre></div>
+</div>
+<p>Thanks to Yury V. Zaytsev for posting it.</p>
+</div>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="set_up_fork.html" title="previous chapter">Set up your fork</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="development_workflow.html" title="next chapter">Development workflow</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Configure git</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#user-name-and-user-email">user.name and user.email</a></li>
+<li><a class="reference internal" href="#aliases">Aliases</a></li>
+<li><a class="reference internal" href="#editor">Editor</a></li>
+<li><a class="reference internal" href="#merging">Merging</a></li>
+<li><a class="reference internal" href="#fancy-log-output">Fancy log output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

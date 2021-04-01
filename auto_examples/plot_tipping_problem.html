@@ -1,0 +1,328 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>The Tipping Problem - The Hard Way &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="General examples" href="index.html" />
+        <link rel="next" title="Fuzzy Control Systems: The Tipping Problem" href="plot_tipping_problem_newapi.html" />
+        <link rel="prev" title="Defuzzification" href="plot_defuzzify.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="the-tipping-problem-the-hard-way">
+<span id="example-plot-tipping-problem-py"></span><h1>The Tipping Problem - The Hard Way<a class="headerlink" href="#the-tipping-problem-the-hard-way" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>Note: This method computes everything by hand, step by step. For most people,
+the new API for fuzzy systems will be preferable. The same problem is solved
+with the new API <a class="reference external" href="./plot_tipping_problem_newapi.html">in this example</a>.</p>
+</div></blockquote>
+<p>The ‘tipping problem’ is commonly used to illustrate the power of fuzzy logic
+principles to generate complex behavior from a compact, intuitive set of
+expert rules.</p>
+<div class="section" id="input-variables">
+<h2>Input variables<a class="headerlink" href="#input-variables" title="Permalink to this headline">¶</a></h2>
+<p>A number of variables play into the decision about how much to tip while
+dining. Consider two of them:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">quality</span></code> : Quality of the food</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service</span></code> : Quality of the service</p></li>
+</ul>
+</div>
+<div class="section" id="output-variable">
+<h2>Output variable<a class="headerlink" href="#output-variable" title="Permalink to this headline">¶</a></h2>
+<p>The output variable is simply the tip amount, in percentage points:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tip</span></code> : Percent of bill to add as tip</p></li>
+</ul>
+<p>For the purposes of discussion, let’s say we need ‘high’, ‘medium’, and ‘low’
+membership functions for both input variables and our output variable. These
+are defined in scikit-fuzzy as follows</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># Generate universe variables</span>
+<span class="c1">#   * Quality and service on subjective ranges [0, 10]</span>
+<span class="c1">#   * Tip has a range of [0, 25] in units of percentage points</span>
+<span class="n">x_qual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">x_serv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">x_tip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Generate fuzzy membership functions</span>
+<span class="n">qual_lo</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="n">qual_md</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">qual_hi</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">serv_lo</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="n">serv_md</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">serv_hi</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">tip_lo</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">])</span>
+<span class="n">tip_md</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">25</span><span class="p">])</span>
+<span class="n">tip_hi</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">])</span>
+
+<span class="c1"># Visualize these universes and membership functions</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax0</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_lo</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Bad&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_md</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Decent&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_hi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Great&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Food quality&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_lo</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Poor&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_md</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Acceptable&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_hi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Amazing&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Service quality&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_lo</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Low&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_md</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Medium&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_hi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;High&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Tip amount&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Turn off top/right axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax0</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_bottom</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_tipping_problem_1.png" src="../_images/plot_tipping_problem_1.png" />
+</div>
+<div class="section" id="fuzzy-rules">
+<h2>Fuzzy rules<a class="headerlink" href="#fuzzy-rules" title="Permalink to this headline">¶</a></h2>
+<p>Now, to make these triangles useful, we define the <em>fuzzy relationship</em>
+between input and output variables. For the purposes of our example, consider
+three simple rules:</p>
+<ol class="arabic simple">
+<li><p>If the food is bad OR the service is poor, then the tip will be low</p></li>
+<li><p>If the service is acceptable, then the tip will be medium</p></li>
+<li><p>If the food is great OR the service is amazing, then the tip will be high.</p></li>
+</ol>
+<p>Most people would agree on these rules, but the rules are fuzzy. Mapping the
+imprecise rules into a defined, actionable tip is a challenge. This is the
+kind of task at which fuzzy logic excels.</p>
+</div>
+<div class="section" id="rule-application">
+<h2>Rule application<a class="headerlink" href="#rule-application" title="Permalink to this headline">¶</a></h2>
+<p>What would the tip be in the following circumstance:</p>
+<ul class="simple">
+<li><p>Food <em>quality</em> was <strong>6.5</strong></p></li>
+<li><p><em>Service</em> was <strong>9.8</strong></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We need the activation of our fuzzy membership functions at these values.</span>
+<span class="c1"># The exact values 6.5 and 9.8 do not exist on our universes...</span>
+<span class="c1"># This is what fuzz.interp_membership exists for!</span>
+<span class="n">qual_level_lo</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_lo</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+<span class="n">qual_level_md</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_md</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+<span class="n">qual_level_hi</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_qual</span><span class="p">,</span> <span class="n">qual_hi</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+
+<span class="n">serv_level_lo</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_lo</span><span class="p">,</span> <span class="mf">9.8</span><span class="p">)</span>
+<span class="n">serv_level_md</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_md</span><span class="p">,</span> <span class="mf">9.8</span><span class="p">)</span>
+<span class="n">serv_level_hi</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_serv</span><span class="p">,</span> <span class="n">serv_hi</span><span class="p">,</span> <span class="mf">9.8</span><span class="p">)</span>
+
+<span class="c1"># Now we take our rules and apply them. Rule 1 concerns bad food OR service.</span>
+<span class="c1"># The OR operator means we take the maximum of these two.</span>
+<span class="n">active_rule1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">qual_level_lo</span><span class="p">,</span> <span class="n">serv_level_lo</span><span class="p">)</span>
+
+<span class="c1"># Now we apply this by clipping the top off the corresponding output</span>
+<span class="c1"># membership function with `np.fmin`</span>
+<span class="n">tip_activation_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">active_rule1</span><span class="p">,</span> <span class="n">tip_lo</span><span class="p">)</span>  <span class="c1"># removed entirely to 0</span>
+
+<span class="c1"># For rule 2 we connect acceptable service to medium tipping</span>
+<span class="n">tip_activation_md</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">serv_level_md</span><span class="p">,</span> <span class="n">tip_md</span><span class="p">)</span>
+
+<span class="c1"># For rule 3 we connect high service OR high food with high tipping</span>
+<span class="n">active_rule3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">qual_level_hi</span><span class="p">,</span> <span class="n">serv_level_hi</span><span class="p">)</span>
+<span class="n">tip_activation_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">active_rule3</span><span class="p">,</span> <span class="n">tip_hi</span><span class="p">)</span>
+<span class="n">tip0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x_tip</span><span class="p">)</span>
+
+<span class="c1"># Visualize this</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax0</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">ax0</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip0</span><span class="p">,</span> <span class="n">tip_activation_lo</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_lo</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip0</span><span class="p">,</span> <span class="n">tip_activation_md</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_md</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip0</span><span class="p">,</span> <span class="n">tip_activation_hi</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_hi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Output membership activity&#39;</span><span class="p">)</span>
+
+<span class="c1"># Turn off top/right axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax0</span><span class="p">,):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_bottom</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_tipping_problem_2.png" src="../_images/plot_tipping_problem_2.png" />
+</div>
+<div class="section" id="rule-aggregation">
+<h2>Rule aggregation<a class="headerlink" href="#rule-aggregation" title="Permalink to this headline">¶</a></h2>
+<p>With the <em>activity</em> of each output membership function known, all output
+membership functions must be combined. This is typically done using a
+maximum operator. This step is also known as <em>aggregation</em>.</p>
+</div>
+<div class="section" id="defuzzification">
+<h2>Defuzzification<a class="headerlink" href="#defuzzification" title="Permalink to this headline">¶</a></h2>
+<p>Finally, to get a real world answer, we return to <em>crisp</em> logic from the
+world of fuzzy membership functions. For the purposes of this example
+the centroid method will be used.</p>
+</div>
+<div class="section" id="the-result-is-a-tip-of-19-84">
+<h2>The result is a tip of <strong>19.84%</strong>.<a class="headerlink" href="#the-result-is-a-tip-of-19-84" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Aggregate all three output membership functions together</span>
+<span class="n">aggregated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">tip_activation_lo</span><span class="p">,</span>
+                     <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">tip_activation_md</span><span class="p">,</span> <span class="n">tip_activation_hi</span><span class="p">))</span>
+
+<span class="c1"># Calculate defuzzified result</span>
+<span class="n">tip</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">defuzz</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">aggregated</span><span class="p">,</span> <span class="s1">&#39;centroid&#39;</span><span class="p">)</span>
+<span class="n">tip_activation</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">interp_membership</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">aggregated</span><span class="p">,</span> <span class="n">tip</span><span class="p">)</span>  <span class="c1"># for plot</span>
+
+<span class="c1"># Visualize this</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax0</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_lo</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_md</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip_hi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x_tip</span><span class="p">,</span> <span class="n">tip0</span><span class="p">,</span> <span class="n">aggregated</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;Orange&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">tip</span><span class="p">,</span> <span class="n">tip</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tip_activation</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Aggregated membership and result (line)&#39;</span><span class="p">)</span>
+
+<span class="c1"># Turn off top/right axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax0</span><span class="p">,):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_bottom</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_tipping_problem_3.png" src="../_images/plot_tipping_problem_3.png" />
+</div>
+<div class="section" id="final-thoughts">
+<h2>Final thoughts<a class="headerlink" href="#final-thoughts" title="Permalink to this headline">¶</a></h2>
+<p>The power of fuzzy systems is allowing complicated, intuitive behavior based
+on a sparse system of rules with minimal overhead. Note our membership
+function universes were coarse, only defined at the integers, but
+<code class="docutils literal notranslate"><span class="pre">fuzz.interp_membership</span></code> allowed the effective resolution to increase on
+demand. This system can respond to arbitrarily small changes in inputs,
+and the processing burden is minimal.</p>
+<p><strong>Python source code:</strong> <a class="reference download internal" download="" href="../_downloads/21e8083ff79e930c45a5b390e2856c6a/plot_tipping_problem.py"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+<p><strong>IPython Notebook:</strong> <a class="reference download internal" download="" href="../_downloads/32bc9a350d105ab8730471aae5c8fa2d/plot_tipping_problem.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_defuzzify.html" title="previous chapter">Defuzzification</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_tipping_problem_newapi.html" title="next chapter">Fuzzy Control Systems: The Tipping Problem</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">The Tipping Problem - The Hard Way</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#input-variables">Input variables</a></li>
+<li><a class="reference internal" href="#output-variable">Output variable</a></li>
+<li><a class="reference internal" href="#fuzzy-rules">Fuzzy rules</a></li>
+<li><a class="reference internal" href="#rule-application">Rule application</a></li>
+<li><a class="reference internal" href="#rule-aggregation">Rule aggregation</a></li>
+<li><a class="reference internal" href="#defuzzification">Defuzzification</a></li>
+<li><a class="reference internal" href="#the-result-is-a-tip-of-19-84">The result is a tip of <strong>19.84%</strong>.</a></li>
+<li><a class="reference internal" href="#final-thoughts">Final thoughts</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

@@ -1,0 +1,288 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Fuzzy c-means clustering &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="General examples" href="index.html" />
+        <link rel="next" title="Fuzzy Control Systems: Advanced Example" href="plot_control_system_advanced.html" />
+        <link rel="prev" title="General examples" href="index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="fuzzy-c-means-clustering">
+<span id="example-plot-cmeans-py"></span><h1>Fuzzy c-means clustering<a class="headerlink" href="#fuzzy-c-means-clustering" title="Permalink to this headline">¶</a></h1>
+<p>Fuzzy logic principles can be used to cluster multidimensional data, assigning
+each point a <em>membership</em> in each cluster center from 0 to 100 percent. This
+can be very powerful compared to traditional hard-thresholded clustering where
+every point is assigned a crisp, exact label.</p>
+<p>Fuzzy c-means clustering is accomplished via <code class="docutils literal notranslate"><span class="pre">skfuzzy.cmeans</span></code>, and the
+output from this function can be repurposed to classify new data according to
+the calculated clusters (also known as <em>prediction</em>) via
+<code class="docutils literal notranslate"><span class="pre">skfuzzy.cmeans_predict</span></code></p>
+<div class="section" id="data-generation-and-setup">
+<h2>Data generation and setup<a class="headerlink" href="#data-generation-and-setup" title="Permalink to this headline">¶</a></h2>
+<p>In this example we will first undertake necessary imports, then define some
+test data to work with.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;Brown&#39;</span><span class="p">,</span> <span class="s1">&#39;ForestGreen&#39;</span><span class="p">]</span>
+
+<span class="c1"># Define three cluster centers</span>
+<span class="n">centers</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>
+
+<span class="c1"># Define three cluster sigmas in x and y, respectively</span>
+<span class="n">sigmas</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span>
+          <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+          <span class="p">[</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">]]</span>
+
+<span class="c1"># Generate test data</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>  <span class="c1"># Set seed for reproducibility</span>
+<span class="n">xpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">((</span><span class="n">xmu</span><span class="p">,</span> <span class="n">ymu</span><span class="p">),</span> <span class="p">(</span><span class="n">xsigma</span><span class="p">,</span> <span class="n">ysigma</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">)):</span>
+    <span class="n">xpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">xpts</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="o">*</span> <span class="n">xsigma</span> <span class="o">+</span> <span class="n">xmu</span><span class="p">))</span>
+    <span class="n">ypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">ypts</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="o">*</span> <span class="n">ysigma</span> <span class="o">+</span> <span class="n">ymu</span><span class="p">))</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">labels</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span><span class="p">))</span>
+
+<span class="c1"># Visualize the test data</span>
+<span class="n">fig0</span><span class="p">,</span> <span class="n">ax0</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">ax0</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xpts</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">],</span> <span class="n">ypts</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+<span class="n">ax0</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Test data: 200 points x3 clusters.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_cmeans_1.png" src="../_images/plot_cmeans_1.png" />
+</div>
+<div class="section" id="clustering">
+<h2>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h2>
+<p>Above is our test data. We see three distinct blobs. However, what would happen
+if we didn’t know how many clusters we should expect? Perhaps if the data were
+not so clearly clustered?</p>
+<p>Let’s try clustering our data several times, with between 2 and 9 clusters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up the loop and plot</span>
+<span class="n">fig1</span><span class="p">,</span> <span class="n">axes1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">alldata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xpts</span><span class="p">,</span> <span class="n">ypts</span><span class="p">))</span>
+<span class="n">fpcs</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">ncenters</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="n">cntr</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fpc</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">cmeans</span><span class="p">(</span>
+        <span class="n">alldata</span><span class="p">,</span> <span class="n">ncenters</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Store fpc values for later</span>
+    <span class="n">fpcs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fpc</span><span class="p">)</span>
+
+    <span class="c1"># Plot assigned clusters, for each data point in training set</span>
+    <span class="n">cluster_membership</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncenters</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xpts</span><span class="p">[</span><span class="n">cluster_membership</span> <span class="o">==</span> <span class="n">j</span><span class="p">],</span>
+                <span class="n">ypts</span><span class="p">[</span><span class="n">cluster_membership</span> <span class="o">==</span> <span class="n">j</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+    <span class="c1"># Mark the center of each fuzzy cluster</span>
+    <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">cntr</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;rs&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Centers = </span><span class="si">{0}</span><span class="s1">; FPC = </span><span class="si">{1:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ncenters</span><span class="p">,</span> <span class="n">fpc</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">fig1</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_cmeans_2.png" src="../_images/plot_cmeans_2.png" />
+</div>
+<div class="section" id="the-fuzzy-partition-coefficient-fpc">
+<h2>The fuzzy partition coefficient (FPC)<a class="headerlink" href="#the-fuzzy-partition-coefficient-fpc" title="Permalink to this headline">¶</a></h2>
+<p>The FPC is defined on the range from 0 to 1, with 1 being best. It is a metric
+which tells us how cleanly our data is described by a certain model. Next we
+will cluster our set of data - which we know has three clusters - several
+times, with between 2 and 9 clusters. We will then show the results of the
+clustering, and plot the fuzzy partition coefficient. When the FPC is
+maximized, our data is described best.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">11</span><span class="p">],</span> <span class="n">fpcs</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Number of centers&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Fuzzy partition coefficient&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_cmeans_3.png" src="../_images/plot_cmeans_3.png" />
+<p>As we can see, the ideal number of centers is 3. This isn’t news for our
+contrived example, but having the FPC available can be very useful when the
+structure of your data is unclear.</p>
+<p>Note that we started with <em>two</em> centers, not one; clustering a dataset with
+only one cluster center is the trivial solution and will by definition return
+FPC == 1.</p>
+</div>
+</div>
+<div class="section" id="classifying-new-data">
+<h1>Classifying New Data<a class="headerlink" href="#classifying-new-data" title="Permalink to this headline">¶</a></h1>
+<p>Now that we can cluster data, the next step is often fitting new points into
+an existing model. This is known as prediction. It requires both an existing
+model and new data to be classified.</p>
+<div class="section" id="building-the-model">
+<h2>Building the model<a class="headerlink" href="#building-the-model" title="Permalink to this headline">¶</a></h2>
+<p>We know our best model has three cluster centers. We’ll rebuild a 3-cluster
+model for use in prediction, generate new uniform data, and predict which
+cluster to which each new data point belongs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Regenerate fuzzy model with 3 cluster centers - note that center ordering</span>
+<span class="c1"># is random in this clustering algorithm, so the centers may change places</span>
+<span class="n">cntr</span><span class="p">,</span> <span class="n">u_orig</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">cmeans</span><span class="p">(</span>
+    <span class="n">alldata</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Show 3-cluster model</span>
+<span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Trained model&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">alldata</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">u_orig</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">j</span><span class="p">],</span>
+             <span class="n">alldata</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">u_orig</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">j</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span>
+             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;series &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_cmeans_4.png" src="../_images/plot_cmeans_4.png" />
+</div>
+<div class="section" id="prediction">
+<h2>Prediction<a class="headerlink" href="#prediction" title="Permalink to this headline">¶</a></h2>
+<p>Finally, we generate uniformly sampled data over this field and classify it
+via <code class="docutils literal notranslate"><span class="pre">cmeans_predict</span></code>, incorporating it into the pre-existing model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate uniformly sampled data spread across the range [0, 10] in x and y</span>
+<span class="n">newdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="mi">10</span>
+
+<span class="c1"># Predict new cluster membership with `cmeans_predict` as well as</span>
+<span class="c1"># `cntr` from the 3-cluster model</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fpc</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">cmeans_predict</span><span class="p">(</span>
+    <span class="n">newdata</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cntr</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Plot the classified uniform data. Note for visualization the maximum</span>
+<span class="c1"># membership value has been taken at each point (i.e. these are hardened,</span>
+<span class="c1"># not fuzzy results visualized) but the full fuzzy result is the output</span>
+<span class="c1"># from cmeans_predict.</span>
+<span class="n">cluster_membership</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Hardening for visualization</span>
+
+<span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Random points classified according to known centers&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">newdata</span><span class="p">[</span><span class="n">cluster_membership</span> <span class="o">==</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="n">newdata</span><span class="p">[</span><span class="n">cluster_membership</span> <span class="o">==</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span>
+             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;series &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_cmeans_5.png" src="../_images/plot_cmeans_5.png" />
+<p><strong>Python source code:</strong> <a class="reference download internal" download="" href="../_downloads/8bf6c8d84567764afcddc69638ac5090/plot_cmeans.py"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+<p><strong>IPython Notebook:</strong> <a class="reference download internal" download="" href="../_downloads/d87ebfd18ffaf4cb3182634aced8d24a/plot_cmeans.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>
+(generated using <code class="docutils literal notranslate"><span class="pre">skimage</span></code> 0.4.2)</p>
+</div>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="index.html" title="previous chapter">General examples</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="plot_control_system_advanced.html" title="next chapter">Fuzzy Control Systems: Advanced Example</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Fuzzy c-means clustering</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#data-generation-and-setup">Data generation and setup</a></li>
+<li><a class="reference internal" href="#clustering">Clustering</a></li>
+<li><a class="reference internal" href="#the-fuzzy-partition-coefficient-fpc">The fuzzy partition coefficient (FPC)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classifying-new-data">Classifying New Data</a><ul class="nav nav-list">
+<li><a class="reference internal" href="#building-the-model">Building the model</a></li>
+<li><a class="reference internal" href="#prediction">Prediction</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

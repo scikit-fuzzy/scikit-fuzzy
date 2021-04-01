@@ -1,0 +1,165 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Getting started &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link href="../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../genindex.html" />
+        <link rel="search" title="Search" href="../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../index.html" />
+        <link rel="up" title="User Guide" href="../user_guide.html" />
+        <link rel="next" title="Fuzzy Control Primer" href="fuzzy_control_primer.html" />
+        <link rel="prev" title="User Guide" href="../user_guide.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../index.html" class="logo"><img src="../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../index.html">Home</a></li>
+<li><a href="../user_guide.html">User Guide</a></li>
+<li><a href="../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <div class="section" id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code> is an fuzzy logic Python package that works with
+<a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.20)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> arrays. The package is imported as <code class="docutils literal notranslate"><span class="pre">skfuzzy</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">skfuzzy</span>
+</pre></div>
+</div>
+<p>though the recommended import statement uses an alias:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+</pre></div>
+</div>
+<p>Most functions of <code class="docutils literal notranslate"><span class="pre">skfuzzy</span></code> are brought into the base package namespace.
+You can introspect the functions available in <code class="docutils literal notranslate"><span class="pre">fuzz</span></code> when using IPython by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="n">fuzz</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>and pressing the <strong>Tab</strong> key.</p>
+</div>
+<div class="section" id="finding-your-way-around">
+<h1>Finding your way around<a class="headerlink" href="#finding-your-way-around" title="Permalink to this headline">¶</a></h1>
+<p>A list of submodules and functions is found on the <a class="reference external" href="../api/index.html">API reference</a> webpage.</p>
+<p>Within <code class="xref py py-mod docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code>, universe variables and fuzzy membership functions are
+represented by <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.20)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> arrays. Generation of membership functions is
+as simple as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">skfuzzy</span> <span class="k">as</span> <span class="nn">fuzz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mfx</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">trimf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mfx</span>
+<span class="go">array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  0.8,  0.6,  0.4,  0.2,  0. ])</span>
+</pre></div>
+</div>
+<p>While most functions are available in the base namespace, the package is
+factored with a logical grouping of functions in submodules. If the base
+namespace appears overwhelming, we recommend exploring them individually.
+These include</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.membership</span></code></dt><dd><p>Fuzzy membership function generation</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.defuzzify</span></code></dt><dd><p>Defuzzification algorithms to return crisp results from fuzzy sets</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.fuzzymath</span></code></dt><dd><p>The core of <code class="xref py py-mod docutils literal notranslate"><span class="pre">scikit-fuzzy</span></code>, containing the majority of the most common
+fuzzy logic operations.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.intervals</span></code></dt><dd><p>Interval mathematics. The restricted Dong, Shah, &amp; Wong (DSW) methods for
+fuzzy set math live here.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.image</span></code></dt><dd><p>Limited fuzzy logic image processing operations.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.cluster</span></code></dt><dd><p>Fuzzy c-means clustering.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fuzz.filters</span></code></dt><dd><p>Fuzzy Inference Ruled by Else-action (FIRE) filters in 1D and 2D.</p>
+</dd>
+</dl>
+</div>
+
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+    <h4 class="sidebar-box-heading">Previous topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="../user_guide.html" title="previous chapter">User Guide</a></li>
+        </ul>
+    </div>
+    <h4 class="sidebar-box-heading">Next topic</h4>
+    <div class="well sidebar-box">
+        <ul class="nav nav-list">
+            <li><a href="fuzzy_control_primer.html" title="next chapter">Fuzzy Control Primer</a></li>
+        </ul>
+    </div>
+        <h4 class="sidebar-box-heading">Contents</h4>
+        <div class="well sidebar-box toc">
+            <ul class="nav nav-list">
+<li><a class="reference internal" href="#">Getting started</a></li>
+<li><a class="reference internal" href="#finding-your-way-around">Finding your way around</a></li>
+</ul>
+
+        </div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

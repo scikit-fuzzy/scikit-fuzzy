@@ -1,0 +1,31 @@
+.. _example_plot_defuzzify.py:
+
+
+===============
+Defuzzification
+===============
+
+Fuzzy logic calculations are excellent tools, but to use them the fuzzy result
+must be converted back into a single number. This is known as defuzzification.
+
+There are several possible methods for defuzzification, exposed via
+`skfuzzy.defuzz`.
+
+
+.. image:: images/plot_defuzzify_1.png
+    :align: center
+
+
+.. literalinclude:: plot_defuzzify.py
+    :lines: 13-
+
+
+
+**Python source code:** :download:`download <plot_defuzzify.py>`
+(generated using ``skimage`` |version|)
+
+
+
+**IPython Notebook:** :download:`download <./notebook/plot_defuzzify.ipynb>`
+(generated using ``skimage`` |version|)
+

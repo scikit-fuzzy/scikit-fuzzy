@@ -1,0 +1,399 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.cluster._cmeans &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.cluster._cmeans</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">cmeans.py : Fuzzy C-means clustering algorithm.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">cdist</span>
+
+<span class="kn">from</span> <span class="nn">.normalize_columns</span> <span class="kn">import</span> <span class="n">normalize_columns</span><span class="p">,</span> <span class="n">normalize_power_columns</span>
+
+
+<span class="k">def</span> <span class="nf">_cmeans0</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">u_old</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Single step in generic fuzzy c-means clustering algorithm.</span>
+
+<span class="sd">    Modified from Ross, Fuzzy Logic w/Engineering Applications (2010),</span>
+<span class="sd">    pages 352-353, equations 10.28 - 10.35.</span>
+
+<span class="sd">    Parameters inherited from cmeans()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalizing, then eliminating any potential zero values.</span>
+    <span class="n">u_old</span> <span class="o">=</span> <span class="n">normalize_columns</span><span class="p">(</span><span class="n">u_old</span><span class="p">)</span>
+    <span class="n">u_old</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">u_old</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">um</span> <span class="o">=</span> <span class="n">u_old</span> <span class="o">**</span> <span class="n">m</span>
+
+    <span class="c1"># Calculate cluster centers</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">cntr</span> <span class="o">=</span> <span class="n">um</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">um</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">_distance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cntr</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">jm</span> <span class="o">=</span> <span class="p">(</span><span class="n">um</span> <span class="o">*</span> <span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">normalize_power_columns</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">/</span> <span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">cntr</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">d</span>
+
+
+<span class="k">def</span> <span class="nf">_distance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Euclidean distance from each point to each cluster center.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : 2d array (N x Q)</span>
+<span class="sd">        Data to be analyzed. There are N data points.</span>
+<span class="sd">    centers : 2d array (C x Q)</span>
+<span class="sd">        Cluster centers. There are C clusters, with Q features.</span>
+<span class="sd">    metric: string</span>
+<span class="sd">        By default is set to euclidean. Passes any option accepted by</span>
+<span class="sd">        ``scipy.spatial.distance.cdist``.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dist : 2d array (C x N)</span>
+<span class="sd">        Euclidean distance from each point, to each cluster center.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.spatial.distance.cdist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cdist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span> <span class="nf">_fp_coeff</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fuzzy partition coefficient `fpc` relative to fuzzy c-partitioned</span>
+<span class="sd">    matrix `u`. Measures &#39;fuzziness&#39; in partitioned clustering.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    u : 2d array (C, N)</span>
+<span class="sd">        Fuzzy c-partitioned matrix; N = number of data points and C = number</span>
+<span class="sd">        of clusters.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fpc : float</span>
+<span class="sd">        Fuzzy partition coefficient.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="cmeans"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.cmeans">[docs]</a><span class="k">def</span> <span class="nf">cmeans</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">,</span>
+           <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+           <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fuzzy c-means clustering algorithm [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : 2d array, size (S, N)</span>
+<span class="sd">        Data to be clustered.  N is the number of data sets; S is the number</span>
+<span class="sd">        of features within each sample vector.</span>
+<span class="sd">    c : int</span>
+<span class="sd">        Desired number of clusters or classes.</span>
+<span class="sd">    m : float</span>
+<span class="sd">        Array exponentiation applied to the membership function u_old at each</span>
+<span class="sd">        iteration, where U_new = u_old ** m.</span>
+<span class="sd">    error : float</span>
+<span class="sd">        Stopping criterion; stop early if the norm of (u[p] - u[p-1]) &lt; error.</span>
+<span class="sd">    maxiter : int</span>
+<span class="sd">        Maximum number of iterations allowed.</span>
+<span class="sd">    metric: string</span>
+<span class="sd">        By default is set to euclidean. Passes any option accepted by</span>
+<span class="sd">        ``scipy.spatial.distance.cdist``.</span>
+<span class="sd">    init : 2d array, size (c, N)</span>
+<span class="sd">        Initial fuzzy c-partitioned matrix. If none provided, algorithm is</span>
+<span class="sd">        randomly initialized.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        If provided, sets random seed of init. No effect if init is</span>
+<span class="sd">        provided. Mainly for debug/testing purposes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cntr : 2d array, size (c, S)</span>
+<span class="sd">        Cluster centers.  Data for each center along each feature provided</span>
+<span class="sd">        for every cluster (of the `c` requested clusters).</span>
+<span class="sd">    u : 2d array, (c, N)</span>
+<span class="sd">        Final fuzzy c-partitioned matrix.</span>
+<span class="sd">    u0 : 2d array, (c, N)</span>
+<span class="sd">        Initial guess at fuzzy c-partitioned matrix (either provided init or</span>
+<span class="sd">        random guess used if init was not provided).</span>
+<span class="sd">    d : 2d array, (c, N)</span>
+<span class="sd">        Final Euclidian distance matrix.</span>
+<span class="sd">    jm : 1d array, length P</span>
+<span class="sd">        Objective function history.</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Number of iterations run.</span>
+<span class="sd">    fpc : float</span>
+<span class="sd">        Final fuzzy partition coefficient.</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The algorithm implemented is from Ross et al. [1]_.</span>
+
+<span class="sd">    Fuzzy C-Means has a known problem with high dimensionality datasets, where</span>
+<span class="sd">    the majority of cluster centers are pulled into the overall center of</span>
+<span class="sd">    gravity. If you are clustering data with very high dimensionality and</span>
+<span class="sd">    encounter this issue, another clustering method may be required. For more</span>
+<span class="sd">    information and the theory behind this, see Winkler et al. [2]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.</span>
+<span class="sd">           Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</span>
+
+<span class="sd">    .. [2] Winkler, R., Klawonn, F., &amp; Kruse, R. Fuzzy c-means in high</span>
+<span class="sd">           dimensional spaces. 2012. Contemporary Theory and Pragmatic</span>
+<span class="sd">           Approaches in Fuzzy Computing Utilization, 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Setup u0</span>
+    <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">u0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">u0</span> <span class="o">=</span> <span class="n">normalize_columns</span><span class="p">(</span><span class="n">u0</span><span class="p">)</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="n">u0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">u0</span> <span class="o">=</span> <span class="n">init</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="c1"># Initialize loop parameters</span>
+    <span class="n">jm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Main cmeans loop</span>
+    <span class="k">while</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">maxiter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">u2</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">[</span><span class="n">cntr</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">Jjm</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cmeans0</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">u2</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+        <span class="n">jm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">jm</span><span class="p">,</span> <span class="n">Jjm</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Stopping rule</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="c1"># Final calculations</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u2</span><span class="p">)</span>
+    <span class="n">fpc</span> <span class="o">=</span> <span class="n">_fp_coeff</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cntr</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fpc</span></div>
+
+
+<div class="viewcode-block" id="cmeans_predict"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.cmeans_predict">[docs]</a><span class="k">def</span> <span class="nf">cmeans_predict</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">cntr_trained</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">,</span>
+                   <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                   <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prediction of new data in given a trained fuzzy c-means framework [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    test_data : 2d array, size (S, N)</span>
+<span class="sd">        New, independent data set to be predicted based on trained c-means</span>
+<span class="sd">        from ``cmeans``. N is the number of data sets; S is the number of</span>
+<span class="sd">        features within each sample vector.</span>
+<span class="sd">    cntr_trained : 2d array, size (c, S)</span>
+<span class="sd">        Location of trained centers from prior training c-means.</span>
+<span class="sd">    m : float</span>
+<span class="sd">        Array exponentiation applied to the membership function u_old at each</span>
+<span class="sd">        iteration, where U_new = u_old ** m.</span>
+<span class="sd">    error : float</span>
+<span class="sd">        Stopping criterion; stop early if the norm of (u[p] - u[p-1]) &lt; error.</span>
+<span class="sd">    maxiter : int</span>
+<span class="sd">        Maximum number of iterations allowed.</span>
+<span class="sd">    metric: string</span>
+<span class="sd">        By default is set to euclidean. Passes any option accepted by</span>
+<span class="sd">        ``scipy.spatial.distance.cdist``.</span>
+<span class="sd">    init : 2d array, size (c, N)</span>
+<span class="sd">        Initial fuzzy c-partitioned matrix. If none provided, algorithm is</span>
+<span class="sd">        randomly initialized.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        If provided, sets random seed of init. No effect if init is</span>
+<span class="sd">        provided. Mainly for debug/testing purposes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : 2d array, (c, N)</span>
+<span class="sd">        Final fuzzy c-partitioned matrix.</span>
+<span class="sd">    u0 : 2d array, (c, N)</span>
+<span class="sd">        Initial guess at fuzzy c-partitioned matrix (either provided init or</span>
+<span class="sd">        random guess used if init was not provided).</span>
+<span class="sd">    d : 2d array, (c, N)</span>
+<span class="sd">        Final Euclidian distance matrix.</span>
+<span class="sd">    jm : 1d array, length P</span>
+<span class="sd">        Objective function history.</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Number of iterations run.</span>
+<span class="sd">    fpc : float</span>
+<span class="sd">        Final fuzzy partition coefficient.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Ross et al. [1]_ did not include a prediction algorithm to go along with</span>
+<span class="sd">    fuzzy c-means. This prediction algorithm works by repeating the clustering</span>
+<span class="sd">    with fixed centers, then efficiently finds the fuzzy membership at all</span>
+<span class="sd">    points.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Ross, Timothy J. Fuzzy Logic With Engineering Applications, 3rd ed.</span>
+<span class="sd">           Wiley. 2010. ISBN 978-0-470-74376-8 pp 352-353, eq 10.28 - 10.35.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cntr_trained</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Setup u0</span>
+    <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">u0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">u0</span> <span class="o">=</span> <span class="n">normalize_columns</span><span class="p">(</span><span class="n">u0</span><span class="p">)</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="n">u0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">u0</span> <span class="o">=</span> <span class="n">init</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="c1"># Initialize loop parameters</span>
+    <span class="n">jm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Main cmeans loop</span>
+    <span class="k">while</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">maxiter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">u2</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">Jjm</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cmeans_predict0</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">cntr_trained</span><span class="p">,</span> <span class="n">u2</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span>
+                                       <span class="n">metric</span><span class="p">)</span>
+        <span class="n">jm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">jm</span><span class="p">,</span> <span class="n">Jjm</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Stopping rule</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="c1"># Final calculations</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u2</span><span class="p">)</span>
+    <span class="n">fpc</span> <span class="o">=</span> <span class="n">_fp_coeff</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fpc</span></div>
+
+
+<span class="k">def</span> <span class="nf">_cmeans_predict0</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">cntr</span><span class="p">,</span> <span class="n">u_old</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Single step in fuzzy c-means prediction algorithm. Clustering algorithm</span>
+<span class="sd">    modified from Ross, Fuzzy Logic w/Engineering Applications (2010)</span>
+<span class="sd">    p.352-353, equations 10.28 - 10.35, but this method to generate fuzzy</span>
+<span class="sd">    predictions was independently derived by Josh Warner.</span>
+
+<span class="sd">    Parameters inherited from cmeans()</span>
+
+<span class="sd">    Very similar to initial clustering, except `cntr` is not updated, thus</span>
+<span class="sd">    the new test data are forced into known (trained) clusters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalizing, then eliminating any potential zero values.</span>
+    <span class="n">u_old</span> <span class="o">=</span> <span class="n">normalize_columns</span><span class="p">(</span><span class="n">u_old</span><span class="p">)</span>
+    <span class="n">u_old</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">u_old</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">um</span> <span class="o">=</span> <span class="n">u_old</span> <span class="o">**</span> <span class="n">m</span>
+    <span class="n">test_data</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># For prediction, we do not recalculate cluster centers. The test_data is</span>
+    <span class="c1"># forced to conform to the prior clustering.</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">_distance</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">cntr</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">jm</span> <span class="o">=</span> <span class="p">(</span><span class="n">um</span> <span class="o">*</span> <span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">normalize_power_columns</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">/</span> <span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">jm</span><span class="p">,</span> <span class="n">d</span>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

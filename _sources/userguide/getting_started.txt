@@ -1,0 +1,66 @@
+Getting started
+---------------
+
+``scikit-fuzzy`` is an fuzzy logic Python package that works with
+:mod:`numpy` arrays. The package is imported as ``skfuzzy``: ::
+
+    >>> import skfuzzy
+
+though the recommended import statement uses an alias: ::
+
+    >>> import skfuzzy as fuzz
+
+Most functions of ``skfuzzy`` are brought into the base package namespace.
+You can introspect the functions available in ``fuzz`` when using IPython by::
+
+    [1] import skfuzzy as fuzz
+    [2] fuzz.
+
+and pressing the :strong:`Tab` key.
+
+Finding your way around
+-----------------------
+
+A list of submodules and functions is found on the `API reference
+<../api/index.html>`_ webpage.
+
+Within :mod:`scikit-fuzzy`, universe variables and fuzzy membership functions are
+represented by :mod:`numpy` arrays. Generation of membership functions is
+as simple as: ::
+
+    >>> import numpy as np
+    >>> import skfuzzy as fuzz
+    >>> x = np.arange(11)
+    >>> mfx = fuzz.trimf(x, [0, 5, 10])
+    >>> x
+    array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10])
+    >>> mfx
+    array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  0.8,  0.6,  0.4,  0.2,  0. ])
+
+While most functions are available in the base namespace, the package is
+factored with a logical grouping of functions in submodules. If the base
+namespace appears overwhelming, we recommend exploring them individually.
+These include
+
+``fuzz.membership``
+  Fuzzy membership function generation
+
+``fuzz.defuzzify``
+  Defuzzification algorithms to return crisp results from fuzzy sets
+
+``fuzz.fuzzymath``
+  The core of :mod:`scikit-fuzzy`, containing the majority of the most common
+  fuzzy logic operations.
+
+``fuzz.intervals``
+  Interval mathematics. The restricted Dong, Shah, & Wong (DSW) methods for
+  fuzzy set math live here.
+
+``fuzz.image``
+  Limited fuzzy logic image processing operations.
+
+``fuzz.cluster``
+  Fuzzy c-means clustering.
+
+``fuzz.filters``
+  Fuzzy Inference Ruled by Else-action (FIRE) filters in 1D and 2D.

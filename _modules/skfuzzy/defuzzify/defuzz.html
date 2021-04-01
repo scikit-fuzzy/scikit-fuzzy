@@ -1,0 +1,549 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.defuzzify.defuzz &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.defuzzify.defuzz</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">defuzz.py : Various methods for defuzzification and lambda-cuts, to convert</span>
+<span class="sd">            &#39;fuzzy&#39; systems back into &#39;crisp&#39; values for decisions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">EmptyMembershipError</span><span class="p">,</span> <span class="n">InconsistentMFDataError</span>
+<span class="kn">from</span> <span class="nn">..image.arraypad</span> <span class="kn">import</span> <span class="n">pad</span>
+
+
+<div class="viewcode-block" id="arglcut"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.arglcut">[docs]</a><span class="k">def</span> <span class="nf">arglcut</span><span class="p">(</span><span class="n">ms</span><span class="p">,</span> <span class="n">lambdacut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the subset of indices `mi` of the elements in an N-point</span>
+<span class="sd">    resultant fuzzy membership sequence `ms` that have a grade of membership</span>
+<span class="sd">    &gt;= lambdacut.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ms : 1d array</span>
+<span class="sd">        Fuzzy membership sequence.</span>
+<span class="sd">    lambdacut : float</span>
+<span class="sd">        Value used for lambda cutting.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lidx : 1d array</span>
+<span class="sd">        Indices corresponding to the lambda-cut subset of `ms`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a convenience function for `np.nonzero(lambdacut &lt;= ms)` and only</span>
+<span class="sd">    half of the indexing operation that can be more concisely accomplished</span>
+<span class="sd">    via::</span>
+
+<span class="sd">      ms[lambdacut &lt;= ms]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">lambdacut</span> <span class="o">&lt;=</span> <span class="n">ms</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="centroid"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.centroid">[docs]</a><span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defuzzification using centroid (`center of gravity`) method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length M</span>
+<span class="sd">        Independent variable</span>
+<span class="sd">    mfx : 1d array, length M</span>
+<span class="sd">        Fuzzy membership function</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : 1d array, length M</span>
+<span class="sd">        Defuzzified result</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.dcentroid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    As we suppose linearity between each pair of points of x, we can calculate</span>
+<span class="sd">    the exact area of the figure (a triangle or a rectangle).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">sum_moment_area</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">sum_area</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># If the membership function is a singleton fuzzy set:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">mfx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">mfx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+    <span class="c1"># else return the sum of moment*area/sum of area</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># if y1 == y2 == 0.0 or x1==x2: --&gt; rectangle of zero height or width</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">x1</span> <span class="o">==</span> <span class="n">x2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span><span class="p">:</span>  <span class="c1"># rectangle</span>
+                <span class="n">moment</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span><span class="p">)</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y1</span>
+            <span class="k">elif</span> <span class="n">y1</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># triangle, height y2</span>
+                <span class="n">moment</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="n">x1</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y2</span>
+            <span class="k">elif</span> <span class="n">y2</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># triangle, height y1</span>
+                <span class="n">moment</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="n">x1</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">moment</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y1</span><span class="p">))</span>
+                          <span class="o">/</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span>
+
+            <span class="n">sum_moment_area</span> <span class="o">+=</span> <span class="n">moment</span> <span class="o">*</span> <span class="n">area</span>
+            <span class="n">sum_area</span> <span class="o">+=</span> <span class="n">area</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">sum_moment_area</span>
+            <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">sum_area</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="dcentroid"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dcentroid">[docs]</a><span class="k">def</span> <span class="nf">dcentroid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defuzzification using a differential centroidal method about `x0`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array or iterable</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mfx : 1d array or iterable</span>
+<span class="sd">        Fuzzy membership function.</span>
+<span class="sd">    x0 : float</span>
+<span class="sd">        Central value to calculate differential centroid about.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : 1d array</span>
+<span class="sd">        Defuzzified result.</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.centroid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">x0</span>
+    <span class="k">return</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">centroid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">bisector</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defuzzification using bisector, or division of the area in two equal parts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length M</span>
+<span class="sd">        Independent variable</span>
+<span class="sd">    mfx : 1d array, length M</span>
+<span class="sd">        Fuzzy membership function</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : 1d array, length M</span>
+<span class="sd">        Defuzzified result</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.defuzzify.defuzz</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    As we suppose linearity between each pair of points of x, we can calculate</span>
+<span class="sd">    the exact area of the figure (a triangle or a rectangle).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">sum_area</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">accum_area</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># If the membership function is a singleton fuzzy set:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># else return the sum of moment*area/sum of area</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># if y1 == y2 == 0.0 or x1==x2: --&gt; rectangle of zero height or width</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span> <span class="o">==</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">x1</span> <span class="o">==</span> <span class="n">x2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span><span class="p">:</span>  <span class="c1"># rectangle</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y1</span>
+            <span class="k">elif</span> <span class="n">y1</span> <span class="o">==</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c1"># triangle, height y2</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y2</span>
+            <span class="k">elif</span> <span class="n">y2</span> <span class="o">==</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c1"># triangle, height y1</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span>
+            <span class="n">sum_area</span> <span class="o">+=</span> <span class="n">area</span>
+            <span class="n">accum_area</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_area</span>
+
+    <span class="c1"># index to the figure which cointains the x point that divide the area of</span>
+    <span class="c1"># the whole fuzzy set in two</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">accum_area</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">sum_area</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># subarea will be the area in the left part of the bisection for this set</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">subarea</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">subarea</span> <span class="o">=</span> <span class="n">accum_area</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># We are interested only in the subarea inside the figure in which the</span>
+    <span class="c1"># bisection is present.</span>
+    <span class="n">subarea</span> <span class="o">=</span> <span class="n">sum_area</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">-</span> <span class="n">subarea</span>
+
+    <span class="n">x2minusx1</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span>
+    <span class="k">if</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span><span class="p">:</span>  <span class="c1"># rectangle</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">subarea</span> <span class="o">/</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">x1</span>
+    <span class="k">elif</span> <span class="n">y1</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># triangle, height y2</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">subarea</span> <span class="o">*</span> <span class="n">x2minusx1</span> <span class="o">/</span> <span class="n">y2</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">y2</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># triangle, height y1</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x2minusx1</span> <span class="o">*</span> <span class="n">x2minusx1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">subarea</span> <span class="o">*</span> <span class="n">x2minusx1</span> <span class="o">/</span> <span class="n">y1</span><span class="p">))</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="n">x2minusx1</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">m</span> <span class="o">*</span> <span class="n">subarea</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span>
+
+
+<div class="viewcode-block" id="defuzz"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.defuzz">[docs]</a><span class="k">def</span> <span class="nf">defuzz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defuzzification of a membership function, returning a defuzzified value</span>
+<span class="sd">    of the function at x, using various defuzzification methods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array or iterable, length N</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mfx : 1d array of iterable, length N</span>
+<span class="sd">        Fuzzy membership function.</span>
+<span class="sd">    mode : string</span>
+<span class="sd">        Controls which defuzzification method will be used.</span>
+<span class="sd">        * &#39;centroid&#39;: Centroid of area</span>
+<span class="sd">        * &#39;bisector&#39;: bisector of area</span>
+<span class="sd">        * &#39;mom&#39;     : mean of maximum</span>
+<span class="sd">        * &#39;som&#39;     : min of maximum</span>
+<span class="sd">        * &#39;lom&#39;     : max of maximum</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : float or int</span>
+<span class="sd">        Defuzzified result.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    - EmptyMembershipError : When the membership function area is empty.</span>
+<span class="sd">    - InconsistentMFDataError : When the length of the &#39;x&#39; and the fuzzy</span>
+<span class="sd">        membership function arrays are not equal.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skfuzzy.defuzzify.centroid, skfuzzy.defuzzify.dcentroid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">mfx</span> <span class="o">=</span> <span class="n">mfx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mfx</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">InconsistentMFDataError</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s1">&#39;centroid&#39;</span> <span class="ow">in</span> <span class="n">mode</span> <span class="ow">or</span> <span class="s1">&#39;bisector&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mfx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Approximation of total area</span>
+            <span class="k">raise</span> <span class="n">EmptyMembershipError</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s1">&#39;centroid&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">centroid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="s1">&#39;bisector&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">bisector</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="s1">&#39;mom&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mfx</span> <span class="o">==</span> <span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+
+    <span class="k">elif</span> <span class="s1">&#39;som&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mfx</span> <span class="o">==</span> <span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+
+    <span class="k">elif</span> <span class="s1">&#39;lom&#39;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mfx</span> <span class="o">==</span> <span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input for `mode`, </span><span class="si">{}</span><span class="s2">, was incorrect.&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_interp_universe</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmf</span><span class="p">,</span> <span class="n">mf_val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the universe variable corresponding to membership `mf_val`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent discrete variable vector.</span>
+<span class="sd">    xmf : 1d array</span>
+<span class="sd">        Fuzzy membership function for x.  Same length as x.</span>
+<span class="sd">    mf_val : float</span>
+<span class="sd">        Discrete singleton value on membership function mfx.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x_interp : float</span>
+<span class="sd">        Universe variable value corresponding to `mf_val`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">slope</span> <span class="o">=</span> <span class="p">(</span><span class="n">xmf</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">x_interp</span> <span class="o">=</span> <span class="p">(</span><span class="n">mf_val</span> <span class="o">-</span> <span class="n">xmf</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">slope</span>
+
+    <span class="k">return</span> <span class="n">x_interp</span>
+
+
+<div class="viewcode-block" id="lambda_cut_series"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.lambda_cut_series">[docs]</a><span class="k">def</span> <span class="nf">lambda_cut_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine a series of lambda-cuts in a sweep from 0+ to 1.0 in n steps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Universe function for fuzzy membership function mfx.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership function for x.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of steps.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 2d array, (n, 3)</span>
+<span class="sd">        Lambda cut intevals.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">mfx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mfx</span><span class="p">)</span>
+
+    <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">mfx</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">lambda_cuts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">mfx</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">z</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_cuts</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_support</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">xx</span> <span class="o">=</span> <span class="n">_lcutinterval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">lambda_cuts</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">xx</span>
+
+    <span class="k">return</span> <span class="n">z</span></div>
+
+
+<span class="k">def</span> <span class="nf">_lcutinterval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">lambdacut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine upper &amp; lower interval limits of the lambda-cut for membership</span>
+<span class="sd">    function u(x) [here mfx].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership function for x.</span>
+<span class="sd">    lambdacut : float</span>
+<span class="sd">        Value used for lambda-cut.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Lambda-cut output.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Membership function mfx must be convex and monotonic in rise or fall.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">lambdacut</span> <span class="o">-</span> <span class="mf">1e-6</span> <span class="o">&lt;=</span> <span class="n">mfx</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">z</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+
+<div class="viewcode-block" id="lambda_cut"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.lambda_cut">[docs]</a><span class="k">def</span> <span class="nf">lambda_cut</span><span class="p">(</span><span class="n">ms</span><span class="p">,</span> <span class="n">lcut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The crisp (binary) lambda-cut set of the membership sequence `ms`</span>
+<span class="sd">    with membership &gt;= `lcut`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ms : 1d array</span>
+<span class="sd">        Fuzzy membership set.</span>
+<span class="sd">    lcut : float</span>
+<span class="sd">        Value used for lambda-cut, on range [0, 1.0].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mlambda : 1d array</span>
+<span class="sd">        Lambda-cut set of `ms`: ones if ms[i] &gt;= lcut, zeros otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">lcut</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ms</span> <span class="o">&gt;=</span> <span class="n">lcut</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ms</span> <span class="o">&gt;</span> <span class="n">lcut</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="lambda_cut_boundaries"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.lambda_cut_boundaries">[docs]</a><span class="k">def</span> <span class="nf">lambda_cut_boundaries</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">lambdacut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find exact boundaries where `mfx` crosses `lambdacut` using interpolation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array, length N</span>
+<span class="sd">        Universe variable</span>
+<span class="sd">    mfx : 1d array, length N</span>
+<span class="sd">        Fuzzy membership function</span>
+<span class="sd">    lambdacut : float</span>
+<span class="sd">        Floating point value on range [0, 1].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    boundaries : 1d array</span>
+<span class="sd">        Floating point values of `x` where `mfx` crosses `lambdacut`.</span>
+<span class="sd">        Calculated using linear interpolation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The values returned by this function can be thought of as intersections</span>
+<span class="sd">    between a hypothetical horizontal line at ``lambdacut`` and the membership</span>
+<span class="sd">    function ``mfx``. This function assumes the end values of ``mfx`` continue</span>
+<span class="sd">    on forever in positive and negative directions. This means there will NOT</span>
+<span class="sd">    be crossings found exactly at the bounds of ``x`` unless the value of</span>
+<span class="sd">    ``mfx`` at the boundary is exactly ``lambdacut``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Pad binary set two values by extension</span>
+    <span class="n">mfxx</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">mfx</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;edge&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Find binary lambda cut set</span>
+    <span class="n">lcutset</span> <span class="o">=</span> <span class="n">lambda_cut</span><span class="p">(</span><span class="n">mfxx</span><span class="p">,</span> <span class="n">lambdacut</span><span class="p">)</span>
+
+    <span class="c1"># Detect crossings with convolution, cutting off one padded value</span>
+    <span class="n">crossings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">lcutset</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">argcrossings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">crossings</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Calculate exact crossing points, removing the last padded value</span>
+    <span class="n">boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cross</span> <span class="ow">in</span> <span class="n">argcrossings</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">cross</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cross</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">cross</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">_interp_universe</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">mfx</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">lambdacut</span><span class="p">))</span>
+
+    <span class="c1"># Eliminate degenerate points at peaks with np.unique</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">boundaries</span><span class="p">])</span></div>
+
+
+<span class="k">def</span> <span class="nf">_support</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine lower &amp; upper limits of the support interval.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Independent variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership function for x; must be convex, continuous,</span>
+<span class="sd">        and monotonic (rise XOR fall).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array, length 2</span>
+<span class="sd">        Interval representing lower &amp; upper limits of the support interval.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">apex</span> <span class="o">=</span> <span class="n">mfx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">mfx</span> <span class="o">==</span> <span class="n">apex</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">mfxx</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">xx</span><span class="p">[</span><span class="n">mfxx</span> <span class="o">==</span> <span class="n">mfxx</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">mfxx</span> <span class="o">=</span> <span class="n">mfx</span><span class="p">[</span><span class="n">m</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">z</span><span class="p">,</span> <span class="n">xx</span><span class="p">[</span><span class="n">mfxx</span> <span class="o">==</span> <span class="n">mfxx</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>

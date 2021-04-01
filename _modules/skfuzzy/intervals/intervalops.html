@@ -1,0 +1,477 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>skfuzzy.intervals.intervalops &mdash; skfuzzy v0.4.2 docs</title>
+    
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link href="../../../_static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../../_static/css/custom.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../../../_static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <link rel="index" title="Index" href="../../../genindex.html" />
+        <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="top" title="skfuzzy v0.4.2 docs" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="shortcut icon" href="../../../_static/favicon.ico">
+</head>
+<body class="container">
+    <a href="../../../index.html" class="logo"><img src="../../../_static/img/logo.png" alt=""></a>
+    <div class="clearfix"></div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li><a href="../../../index.html">Home</a></li>
+<li><a href="../../../user_guide.html">User Guide</a></li>
+<li><a href="../../../auto_examples/index.html">Example Gallery</a></li>
+<li><a href="../../../api/index.html">API Documentation</a></li>
+<li><a href="https://github.com/scikit-fuzzy/scikit-fuzzy">
+    <img src="../../../_static/GitHub-Mark-32px.png"
+        style="height: 15px; width: 15px;
+               display: inline; float: none;
+               padding-bottom: 3px;">
+    Source</a>
+</li>
+            </ul>
+            <form class="navbar-form pull-right" action="../../../search.html" method="get">
+                <input type="text" class="search span3" name="q" placeholder="Search documentation ...">
+                <input type="hidden" name="check_keywords" value="yes" >
+                <input type="hidden" name="area" value="default" >
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            
+  <h1>Source code for skfuzzy.intervals.intervalops</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">intervalops.py : Functions for proper mathematical treatment of intervals.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..defuzzify</span> <span class="kn">import</span> <span class="n">lambda_cut_series</span>
+
+
+<div class="viewcode-block" id="addval"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.addval">[docs]</a><span class="k">def</span> <span class="nf">addval</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">interval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add intervals interval1 and interval2.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    interval1 : 2-element iterable</span>
+<span class="sd">        First interval set.</span>
+<span class="sd">    interval2 : 2-element iterable</span>
+<span class="sd">        Second interval set.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Z : 2-element array</span>
+<span class="sd">        Sum of interval1 and interval2, defined as::</span>
+
+<span class="sd">          Z = interval1 + interval2 = [a + c, b + d]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval2</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">interval1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">interval2</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interval1</span> <span class="o">+</span> <span class="n">interval2</span></div>
+
+
+<div class="viewcode-block" id="divval"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.divval">[docs]</a><span class="k">def</span> <span class="nf">divval</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">interval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Divide ``interval2`` into ``interval1``, by inversion and multiplication.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    interval1 : 2-element iterable</span>
+<span class="sd">        First interval set.</span>
+<span class="sd">    interval2 : 2-element iterable</span>
+<span class="sd">        Second interval set.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 2-element array</span>
+<span class="sd">        Interval result of interval1 / interval2.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval2</span><span class="p">)</span>
+
+    <span class="c1"># Invert interval2 and multiply</span>
+    <span class="n">interval2</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">interval2</span>
+    <span class="k">return</span> <span class="n">multval</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">interval2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dsw_add"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dsw_add">[docs]</a><span class="k">def</span> <span class="nf">dsw_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add two fuzzy variables together using the restricted DSW method [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Universe for first fuzzy variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``x``. Must be convex.</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Universe for second fuzzy variable.</span>
+<span class="sd">    mfy : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``y``. Must be convex.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of lambda-cuts to use; a higher number will have greater</span>
+<span class="sd">        resolution toward the limit imposed by input sets ``x`` and ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output universe variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Output fuzzy membership on universe ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership</span>
+<span class="sd">    functions. The ``dsw_*`` functions return results similar to Matplotlib&#39;s</span>
+<span class="sd">    ``fuzarith`` function.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and</span>
+<span class="sd">           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Restricted DSW w/n lambda cuts</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+    <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Compute F = x + y</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+        <span class="n">ff</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">addval</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">y</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+    <span class="c1"># Arrange for output or plotting</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># No need for transposes; rank-1 arrays have no transpose in Python</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="dsw_div"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dsw_div">[docs]</a><span class="k">def</span> <span class="nf">dsw_div</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Divide one fuzzy variable by another using the restricted DSW method [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Universe for first fuzzy variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``x``. Must be convex.</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Universe for second fuzzy variable.</span>
+<span class="sd">    mfy : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``y``. Must be convex.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of lambda-cuts to use; a higher number will have greater</span>
+<span class="sd">        resolution toward the limit imposed by input sets ``x`` and ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output universe variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Output fuzzy membership on universe ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership</span>
+<span class="sd">    functions. The ``dsw_*`` functions return results similar to Matplotlib&#39;s</span>
+<span class="sd">    ``fuzarith`` function.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and</span>
+<span class="sd">           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Restricted DSW w/n lambda cuts</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+    <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Compute F = x / y</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+        <span class="n">ff</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">divval</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">y</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+    <span class="c1"># Arrange for output or plotting</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># No need for transposes; rank-1 arrays have no transpose in Python</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="dsw_mult"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dsw_mult">[docs]</a><span class="k">def</span> <span class="nf">dsw_mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiply two fuzzy variables using the restricted DSW method [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Universe for first fuzzy variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``x``. Must be convex.</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Universe for second fuzzy variable.</span>
+<span class="sd">    mfy : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``y``. Must be convex.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of lambda-cuts to use; a higher number will have greater</span>
+<span class="sd">        resolution toward the limit imposed by input sets ``x`` and ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output universe variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Output fuzzy membership on universe ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership</span>
+<span class="sd">    functions. The ``dsw_*`` functions return results similar to Matplotlib&#39;s</span>
+<span class="sd">    ``fuzarith`` function.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and</span>
+<span class="sd">           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Restricted DSW w/n lambda cuts</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+    <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Compute F = x * y</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+        <span class="n">ff</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">multval</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">y</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+    <span class="c1"># Arrange for output or plotting</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># No need for transposes; rank-1 arrays have no transpose in Python</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="dsw_sub"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.dsw_sub">[docs]</a><span class="k">def</span> <span class="nf">dsw_sub</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subtract a fuzzy variable from another by the restricted DSW method [1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : 1d array</span>
+<span class="sd">        Universe for first fuzzy variable.</span>
+<span class="sd">    mfx : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``x``. Must be convex.</span>
+<span class="sd">    y : 1d array</span>
+<span class="sd">        Universe for second fuzzy variable, which will be subtracted from</span>
+<span class="sd">        ``x``.</span>
+<span class="sd">    mfy : 1d array</span>
+<span class="sd">        Fuzzy membership for universe ``y``. Must be convex.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of lambda-cuts to use; a higher number will have greater</span>
+<span class="sd">        resolution toward the limit imposed by input sets ``x`` and ``y``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array</span>
+<span class="sd">        Output universe variable.</span>
+<span class="sd">    mfz : 1d array</span>
+<span class="sd">        Output fuzzy membership on universe ``z``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Dong, Shah, and Wong (DSW) method requires convex fuzzy membership</span>
+<span class="sd">    functions. The ``dsw_*`` functions return results similar to Matplotlib&#39;s</span>
+<span class="sd">    ``fuzarith`` function.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and</span>
+<span class="sd">           decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Restricted DSW w/n lambda cuts</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mfx</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">lambda_cut_series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mfy</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+    <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Compute F = x - y</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+        <span class="n">ff</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">subval</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">y</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+    <span class="c1"># Arrange for output or plotting</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">n1</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ff</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># No need for transposes; rank-1 arrays have no transpose in Python</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="multval"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.multval">[docs]</a><span class="k">def</span> <span class="nf">multval</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">interval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiply intervals interval1 and interval2.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    interval1 : 1d array, length 2</span>
+<span class="sd">        First interval.</span>
+<span class="sd">    interval2 : 1d array, length 2</span>
+<span class="sd">        Second interval.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array, length 2</span>
+<span class="sd">        Interval resulting from multiplication of interval1 and interval2.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval2</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">crosses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">interval1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">interval1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">interval1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">interval1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">crosses</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">crosses</span><span class="o">.</span><span class="n">max</span><span class="p">()]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interval1</span> <span class="o">*</span> <span class="n">interval2</span></div>
+
+
+<div class="viewcode-block" id="scaleval"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.scaleval">[docs]</a><span class="k">def</span> <span class="nf">scaleval</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">interval</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiply scalar q with interval ``interval``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q : float</span>
+<span class="sd">        Scalar to multiply interval with.</span>
+<span class="sd">    interval : 1d array, length 2</span>
+<span class="sd">        Interval. Must have exactly two elements.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : 1d array, length 2</span>
+<span class="sd">        New interval; z = q x interval.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle array</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">q</span> <span class="o">*</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span> <span class="o">*</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                     <span class="nb">max</span><span class="p">(</span><span class="n">q</span> <span class="o">*</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span> <span class="o">*</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">q</span> <span class="o">*</span> <span class="n">interval</span></div>
+
+
+<div class="viewcode-block" id="subval"><a class="viewcode-back" href="../../../api/index.html#skfuzzy.subval">[docs]</a><span class="k">def</span> <span class="nf">subval</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">interval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subtract interval interval2 from interval interval1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    interval1 : 1d array, length 2</span>
+<span class="sd">        First interval.</span>
+<span class="sd">    interval2 : 1d array, length 2</span>
+<span class="sd">        Second interval.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Z : 1d array, length 2</span>
+<span class="sd">        Resultant subtracted interval.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Handle arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">interval2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">interval2</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">interval1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">interval1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">interval2</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">interval1</span> <span class="o">-</span> <span class="n">interval2</span></div>
+</pre></div>
+
+        </div>
+        <div class="span3"><h4 class="sidebar-box-heading">Navigation</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li><a href="../../../index.html">Documentation Home</a></li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    <div class="well footer">
+        <small>
+            &copy; Copyright the scikit-fuzzy development team.
+            Created using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> and <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+            Thanks to <a href="http://scikit-image.org">scikit-image</a> team's template.
+        </small>
+    </div>
+</body>
+</html>
