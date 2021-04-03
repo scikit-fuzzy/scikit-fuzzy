@@ -2,5 +2,7 @@
 # Additional dependencies necessary to run package tests           #
 ####################################################################
 -r DEPENDS.txt
+coveralls
+flake8
 nose
 pytest
