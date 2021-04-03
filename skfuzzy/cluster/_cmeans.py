@@ -92,7 +92,7 @@ def cmeans(data, c, m, error, maxiter,
     Parameters
     ----------
     data : 2d array, size (S, N)
-        Data to be clustered.  N is the number of data sets; S is the number
+        Data to be clustered.  N is the number of data samples; S is the number
         of features within each sample vector.
     c : int
         Desired number of clusters or classes.
