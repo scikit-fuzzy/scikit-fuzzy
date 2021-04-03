@@ -70,11 +70,11 @@ For a more detailed discussion, read these :doc:`detailed documents
      and commit. As soon as those changes are pushed up (to the same branch as
      before) the pull request will update automatically.
 
-   * `Travis-CI <http://travis-ci.org/>`__, a continuous integration service,
+   * `GitHub Actions <https://github.com/features/actions>`__, a continuous integration service,
      is triggered after each Pull Request update to build the code, run unit
      tests, measure code coverage and check coding style (PEP8) of your
-     branch. The Travis tests must pass before your PR can be merged. If
-     Travis fails, you can find out why by clicking on the "failed" icon (red
+     branch. The GitHub Actions tests must pass before your PR can be merged. If
+     a build fails, you can find out why by clicking on the "failed" icon (red
      cross) and inspecting the build and test log.
 
 5. Document changes
@@ -184,29 +184,28 @@ detailing the test coverage::
   ...
 
 
-Activate Travis-CI for your fork (optional)
--------------------------------------------
+Activate GitHub Actions for your fork (optional)
+------------------------------------------------
 
-Travis-CI checks all unittests in the project to prevent breakage.
+GitHub Actions check all unittests in the project to prevent breakage.
 
-Before sending a pull request, you may want to check that Travis-CI
+Before sending a pull request, you may want to check that GitHub Actions
 successfully passes all tests. To do so,
 
-* Go to `Travis-CI <http://travis-ci.org/>`__ and follow the Sign In link at
-  the top
+* Go to 'Actions' tab in Settings of your fork repository and enable GitHub Actiona
 
-* Go to your `profile page <https://travis-ci.org/profile>`__ and switch on
-  your scikit-fuzzy fork
+* Actions will be triggered automatically on events defined in workflows, and you
+  see the build history in 'Actions' section of your repo
 
-It corresponds to steps one and two in
-`Travis-CI documentation <http://about.travis-ci.org/docs/user/getting-started/>`__
-(Step three is already done in scikit-fuzzy).
+You can find more about GitHub actions `in the official documentation
+<https://docs.github.com/en/actions>`_
 
-Thus, as soon as you push your code to your fork, it will trigger Travis-CI,
-and you will receive an email notification when the process is done.
+Thus, as soon as you push your code to your fork, it will trigger GitHub Actions.
+You can set up notifications for GitHub Actions builds in your personal settings
+under 'Notifications'.
 
-Every time Travis is triggered, it also calls on `Coveralls
-<http://coveralls.io>`_ to inspect the current test overage.
+Every time GitHub Actions workflow is triggered, it also calls on `Coveralls
+<http://coveralls.io>`_ to inspect the current test coverage.
 
 
 Bugs
