@@ -44,7 +44,6 @@ jobs:
       - name: Build docs
         if: matrix.os == 'ubuntu-latest'
         run: |
-          pip install "decorator>=4.3,<5"
           make -C docs/ html
 
       - name: Deploy docs
