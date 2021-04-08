@@ -5,6 +5,7 @@ import numpy.testing as tst
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
 from pytest import approx, raises
+from distutils.version import StrictVersion
 
 try:
     from numpy.testing.decorators import skipif
@@ -134,7 +135,7 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@skipif(float(networkx.__version__) >= 2.0)
+@skipif(StrictVersion(networkx.__version__) >= StrictVersion("2.0"))
 @nose.with_setup(setup_rule_order)
 def test_rule_order():
     # Make sure rules are exposed in the order needed to solve them
@@ -153,7 +154,7 @@ def test_rule_order():
 
 
 # The assert_raises decorator does not work in Python 2.6
-@skipif(float(networkx.__version__) >= 2.0)
+@skipif(StrictVersion(networkx.__version__) >= StrictVersion("2.0"))
 @nose.with_setup(setup_rule_order)
 def test_unresolvable_rule_order():
     # Make sure we don't get suck in an infinite loop when the user
