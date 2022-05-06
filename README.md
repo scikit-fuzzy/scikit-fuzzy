@@ -21,7 +21,7 @@ https://github.com/scikit-fuzzy/scikit-fuzzy
 Documentation
 -------------
 
-The documentation of the library can be found here: https://scikit-fuzzy.github.io/scikit-fuzzy
+The documentation of the library can be found here: https://scikit-fuzzy.github.io
 
 Online Discussion & Mailing List
 --------------------------------
@@ -36,7 +36,8 @@ Installation
 ------------
 
 Scikit-Fuzzy depends on
-
+  
+  * Matplotlib >= 3.1
   * NumPy >= 1.6
   * SciPy >= 0.9
   * NetworkX >= 1.9

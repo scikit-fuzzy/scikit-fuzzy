@@ -1,0 +1,63 @@
+name: Build, test and deploy
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  PYTHONWARNINGS: all
+
+jobs:
+  main:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2.2.1
+        with:
+          python-version: ${{ matrix.python }}
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('DEPENDS.txt') }}-${{ hashFiles('DEPENDS-tests.txt') }}-${{ hashFiles('DEPENDS-docs.txt') }}
+          restore-keys: ${{ runner.os }}-pip-${{ hashFiles('DEPENDS.txt') }}-
+
+      - name: Install dependencies
+        run: |
+          pip install -r DEPENDS.txt -r DEPENDS-tests.txt -r DEPENDS-docs.txt
+
+      - name: Build package
+        run: |
+          tools/header.py "Dependency versions"
+          tools/build_versions.py
+          python setup.py build_ext --inplace
+          pip install -e .
+
+      - name: Run tests
+        run: |
+          nosetests -v --exe --with-coverage --cover-package=skfuzzy skfuzzy
+          flake8 --exclude=test_* skfuzzy docs/examples
+      - name: Build docs
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          make -C docs/ html
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@v3
+        if: |
+          github.repository == 'scikit-fuzzy/scikit-fuzzy' &&
+          github.ref == 'ref/head/master' &&
+          matrix.os == 'ubuntu-latest' &&
+          matrix.python == 3.9
+        with:
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
+          external_repository: 'scikit-fuzzy/scikit-fuzzy.github.io'
+          publish_branch: 'main'
+          publish_dir: 'docs/build/html'
+          enable_jekyll: false
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
