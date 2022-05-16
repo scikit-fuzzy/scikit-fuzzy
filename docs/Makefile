@@ -106,7 +106,7 @@ doctest:
 
 gitwash:
 	git submodule update --init --remote --recursive
-	$(PYTHON) tools/gitwash/gitwash_dumper.py source scikit-fuzzy \
+	$(PYTHON) ./tools/gitwash/gitwash_dumper.py ./source scikit-fuzzy \
 	--project-url=http://scikit-fuzzy.org \
 	--project-ml-url=http://groups.google.com/group/scikit-fuzzy \
 	--repo-name=scikit-fuzzy \
