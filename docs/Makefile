@@ -105,7 +105,7 @@ doctest:
 	      "results in build/doctest/output.txt."
 
 gitwash:
-	git submodule update --init --recursive
+	git submodule update --init --remote --recursive
 	$(PYTHON) tools/gitwash/gitwash_dumper.py source scikit-fuzzy \
 	--project-url=http://scikit-fuzzy.org \
 	--project-ml-url=http://groups.google.com/group/scikit-fuzzy \
