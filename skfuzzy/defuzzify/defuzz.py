@@ -178,7 +178,7 @@ def bisector(x, mfx):
             sum_area += area
             accum_area[i - 1] = sum_area
 
-    # index to the figure which cointains the x point that divide the area of
+    # index to the figure which contains the x point that divide the area of
     # the whole fuzzy set in two
     index = np.nonzero(np.array(accum_area) >= sum_area / 2.)[0][0]
 
