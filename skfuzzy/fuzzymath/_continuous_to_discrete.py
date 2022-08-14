@@ -30,7 +30,7 @@ def continuous_to_discrete(a, b, sampling_rate):
 
     phi = scipy.linalg.expm(a * sampling_rate)
 
-    a_pinv = scipy.linalg.pinv2(a)
+    a_pinv = scipy.linalg.pinv(a)
 
     gamma = np.dot(np.dot(a_pinv, phi - np.eye(a.shape[0])), b)
 
