@@ -109,6 +109,7 @@ gitwash:
 	$(PYTHON) tools/gitwash/gitwash_dumper.py source scikit-fuzzy \
 	--project-url=https://scikit-fuzzy.github.io/scikit-fuzzy/ \
 	--project-ml-url=http://groups.google.com/group/scikit-fuzzy \
+	--gitwash-url=https://github.com/matthew-brett/gitwash.git \
 	--repo-name=scikit-fuzzy \
 	--github-user=scikit-fuzzy \
 	--source-suffix=.txt
