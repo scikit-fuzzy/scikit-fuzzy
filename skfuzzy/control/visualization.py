@@ -1,7 +1,12 @@
 """
 visualization.py : Visualize fuzzy control systems.
 """
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib.pyplot as plt
+    matplotlib_present = True
+except ImportError:
+    matplotlib_present = False
 import networkx as nx
 import numpy as np
 
@@ -31,6 +36,9 @@ class FuzzyVariableVisualizer(object):
         ----------
         fuzzy_var : FuzzyVariable or Term to plot
         """
+        if not matplotlib_present:
+            raise ImportError("`FuzzyVariableVisualizer` can only be used "
+                              "with `matplotlib` present in the system.")
         from .fuzzyvariable import FuzzyVariable, Term
 
         # self.term allows us to know if this is a Term quickly, later
@@ -167,7 +175,11 @@ class ControlSystemVisualizer(object):
         -------
 
         """
-        self.ctrl = control_system
+        if not matplotlib_present:
+            raise ImportError("`ControlSystemVisualizer` can only be used "
+                              "with `matplotlib` present in the system.")
+
+            self.ctrl = control_system
 
         self.fig, self.ax = plt.subplots()
 
