@@ -7,13 +7,7 @@ import skfuzzy.control as ctrl
 from pytest import approx, raises
 from distutils.version import StrictVersion
 
-try:
-    from numpy.testing.decorators import skipif
-except AttributeError:
-    from numpy.testing.dec import skipif
-except ModuleNotFoundError:
-    from numpy.testing import dec
-    skipif = dec.skipif
+from _skipclass import skipif
 
 from skfuzzy.control import EmptyMembershipError
 
