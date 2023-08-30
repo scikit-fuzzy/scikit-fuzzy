@@ -272,7 +272,7 @@ def fuzzy_compare(q):
         Comparison matrix.
 
     """
-    return q.T / np.fmax(q, q.T).astype(np.float)
+    return q.T / np.fmax(q, q.T).astype(float)
 
 
 def fuzzy_div(x, a, y, b):
