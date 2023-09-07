@@ -7,13 +7,6 @@ import numpy as np
 from numpy.testing import (assert_array_equal, assert_raises, assert_allclose,
                            TestCase)
 
-try:
-    from numpy.testing.decorators import skipif
-except AttributeError:
-    from numpy.testing.dec import skipif
-except ModuleNotFoundError:
-    from numpy.testing import dec
-    skipif = dec.skipif
 from _skipclass import skipclassif
 
 from skfuzzy.image import pad

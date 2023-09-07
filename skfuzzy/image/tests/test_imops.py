@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 import skfuzzy.image
-from numpy.testing import (assert_allclose, TestCase, run_module_suite)
+from numpy.testing import (assert_allclose, TestCase)
 from skfuzzy.image import defocus_local_means, view_as_windows, pad
 
 
@@ -35,7 +35,3 @@ class TestDefocusLocalMeans(TestCase):
             (3, 3))[:, :, [1, 1, 0, 2], [0, 2, 1, 1]].mean(axis=2)
 
         assert_allclose(result, expected)
-
-
-if __name__ == "__main__":
-    run_module_suite()
