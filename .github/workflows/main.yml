@@ -11,16 +11,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python: [3.6, 3.7, 3.8, 3.9]
+        python: [3.8, 3.9, "3.10", 3.11]  # , 3.12]  # Matplotlib is not yet Py3.12 compatible
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v2.2.1
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('DEPENDS.txt') }}-${{ hashFiles('DEPENDS-tests.txt') }}-${{ hashFiles('DEPENDS-docs.txt') }}
@@ -35,7 +36,7 @@ jobs:
           tools/header.py "Dependency versions"
           tools/build_versions.py
           python setup.py build_ext --inplace
-          pip install -e .
+          pip install --editable .
 
       - name: Run tests
         run: |
