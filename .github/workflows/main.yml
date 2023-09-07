@@ -53,7 +53,7 @@ jobs:
           github.repository == 'scikit-fuzzy/scikit-fuzzy' &&
           github.ref == 'ref/head/master' &&
           matrix.os == 'ubuntu-latest' &&
-          matrix.python == 3.x
+          matrix.python == 3.9
         with:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
           external_repository: 'scikit-fuzzy/scikit-fuzzy.github.io'
