@@ -13,8 +13,8 @@ from .shape import view_as_blocks, view_as_windows
 from .metrics import nmse
 
 import numpy as np
-from distutils.version import LooseVersion
-if LooseVersion(np.__version__) > LooseVersion("1.8"):
+from packaging import version
+if version.parse(np.__version__) > version.parse("1.8"):
     from numpy import pad
 else:
     from .arraypad import pad
