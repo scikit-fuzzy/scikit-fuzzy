@@ -1,13 +1,10 @@
 import networkx
-import nose
 import numpy as np
 import numpy.testing as tst
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
-from pytest import approx, raises
-from distutils.version import StrictVersion
-
-from _skipclass import skipif
+import pytest
+from packaging.version import Version
 
 from skfuzzy.control import EmptyMembershipError
 
@@ -61,6 +58,7 @@ def test_tipping_problem():
     tst.assert_allclose(tip_sim.output['tip'], 19.8578, atol=1e-2, rtol=1e-2)
 
 
+@pytest.fixture
 def setup_rule_order():
     global a, b, c, d
     a = ctrl.Antecedent(np.linspace(0, 10, 11), 'a')
@@ -129,9 +127,8 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@skipif(StrictVersion(networkx.__version__) >= StrictVersion("2.0"))
-@nose.with_setup(setup_rule_order)
-def test_rule_order():
+@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
+def test_rule_order(setup_rule_order):
     # Make sure rules are exposed in the order needed to solve them
     # correctly
     global a, b, c, d
@@ -147,10 +144,8 @@ def test_rule_order():
                                               [r1.label, r2.label, r3.label]))
 
 
-# The assert_raises decorator does not work in Python 2.6
-@skipif(StrictVersion(networkx.__version__) >= StrictVersion("2.0"))
-@nose.with_setup(setup_rule_order)
-def test_unresolvable_rule_order():
+@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
+def test_unresolvable_rule_order(setup_rule_order):
     # Make sure we don't get suck in an infinite loop when the user
     # gives an unresolvable rule order
     global a, b, c, d
@@ -165,8 +160,7 @@ def test_unresolvable_rule_order():
         list(ctrl_sys.rules)
 
 
-@nose.with_setup(setup_rule_order)
-def test_bad_rules():
+def test_bad_rules(setup_rule_order):
     global a
 
     not_rules = ['me', 192238, 42, dict()]
@@ -198,13 +192,13 @@ def test_lenient_simulation():
     assert set(sim.output.keys()) == {"y1", "y2"}
     # print("- sim.output['y1']:", sim.output["y1"])
     # print("- sim.output['y2']:", sim.output["y2"])
-    assert sim.output["y1"] == approx(8.333333)
-    assert sim.output["y2"] == approx(8.333333)
+    assert sim.output["y1"] == pytest.approx(8.333333)
+    assert sim.output["y2"] == pytest.approx(8.333333)
 
     sim = ctrl.ControlSystemSimulation(sys, lenient=False)
     sim.input["x1"] = 10
     sim.input["x2"] = 0
-    with raises(EmptyMembershipError):
+    with pytest.raises(EmptyMembershipError):
         sim.compute()
 
     sim = ctrl.ControlSystemSimulation(sys, lenient=True)
@@ -212,7 +206,7 @@ def test_lenient_simulation():
     sim.input["x2"] = 0
     sim.compute()
     assert set(sim.output.keys()) == {"y2"}
-    assert sim.output["y2"] == approx(8.333333)
+    assert sim.output["y2"] == pytest.approx(8.333333)
 
 
 def test_cached_lenient_simulation():

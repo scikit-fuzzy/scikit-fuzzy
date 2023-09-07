@@ -4,5 +4,5 @@
 -r DEPENDS.txt
 coveralls
 flake8
-nose
+packaging
 pytest

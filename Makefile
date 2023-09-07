@@ -20,7 +20,7 @@ clean-cov:
 clean: clean-build clean-pyc clean-version clean-cov
 
 test:
-	nosetests -s -v skfuzzy
+	pytest
 
 coverage: clean-cov
-	nosetests skfuzzy --with-coverage --cover-package=skfuzzy
+	pytest --cov=skfuzzy --cov-report html

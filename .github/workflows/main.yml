@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python: [3.8, 3.9] # Nose limited to 3.9, Matplotlib is not yet Py3.12 compatible
+        os: [ubuntu-latest]  # , windows-latest]  # Windows passes even when pytests fail
+        python: [3.8, 3.9, "3.10", 3.11]  # , 3.12]  # Matplotlib is not yet Py3.12 compatible
 
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install --upgrade pip setuptools wheel
           pip install -r DEPENDS.txt -r DEPENDS-tests.txt -r DEPENDS-docs.txt
 
       - name: Build package
@@ -41,7 +42,8 @@ jobs:
 
       - name: Run tests
         run: |
-          nosetests -v --exe --with-coverage --cover-package=skfuzzy skfuzzy
+          pytest
+          # pytest --doctest-modules  # TODO: Fix four failing doctests
           flake8 --exclude=test_* skfuzzy docs/examples
       - name: Build docs
         if: matrix.os == 'ubuntu-latest'

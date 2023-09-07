@@ -1,12 +1,13 @@
 from collections import OrderedDict
 
-import nose
+import pytest
 import numpy as np
 import numpy.testing as tst
 
 from skfuzzy.control import Antecedent, Consequent
 
 
+@pytest.fixture
 def setup():
     global ant
     global con
@@ -83,8 +84,7 @@ def test_instantiate_consequent_different_defuzzify_method():
     assert con.defuzzify_method == defuzzify_method
 
 
-@nose.with_setup(setup)
-def test_automf3():
+def test_automf3(setup):
     global ant  # universe: [0, 1, 2, 3, 4, 5]
     global con  # universe: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -129,8 +129,7 @@ def test_automf3():
     assert list(con.terms.keys()) == alt_label3[::-1]
 
 
-@nose.with_setup(setup)
-def test_automf5():
+def test_automf5(setup):
     global ant  # universe: [0, 1, 2, 3, 4, 5]
     global con  # universe: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -179,8 +178,7 @@ def test_automf5():
     assert list(con.terms.keys()) == alt_label5[::-1]
 
 
-@nose.with_setup(setup)
-def test_automf7():
+def test_automf7(setup):
     global ant  # universe: [0, 1, 2, 3, 4, 5]
     global con  # universe: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -235,8 +233,7 @@ def test_automf7():
     assert list(con.terms.keys()) == alt_label7[::-1]
 
 
-@nose.with_setup(setup)
-def test_automf_bad():
+def test_automf_bad(setup):
     global ant
     global con
 
@@ -246,8 +243,7 @@ def test_automf_bad():
     tst.assert_raises(ValueError, con.automf, np.pi)
 
 
-@nose.with_setup(setup)
-def test_bad_set_active():
+def test_bad_set_active(setup):
     global ant
     global con
 
@@ -286,8 +282,7 @@ def test_add_mf():
     tst.assert_equal(con.terms['high'].mf, mf1)
 
 
-@nose.with_setup(setup)
-def test_add_bad_mf():
+def test_add_bad_mf(setup):
     global ant
     global con
 
