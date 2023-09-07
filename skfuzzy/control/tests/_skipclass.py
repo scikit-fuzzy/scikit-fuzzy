@@ -82,9 +82,9 @@ def skipif(skip_condition, msg=None):
 
         # Allow for both boolean or callable skip conditions.
         if isinstance(skip_condition, collections.abc.Callable):
-            skip_val = lambda: skip_condition()
+            skip_val = lambda: skip_condition()  # noqa: E731
         else:
-            skip_val = lambda: skip_condition
+            skip_val = lambda: skip_condition    # noqa: E731
 
         def get_msg(func, msg=None):
             """Skip message with information about function being skipped."""

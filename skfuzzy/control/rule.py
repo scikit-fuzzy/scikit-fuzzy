@@ -249,7 +249,7 @@ class Rule(object):
                            dir(self.antecedent) if
                            not attr.startswith("__")]
         for method in antecedent_attr:
-            if type(method) == Term:
+            if isinstance(method, Term):
                 active_label = method.label
                 nodes.append(method.parent.label)
                 colors.append([method.parent.label, 'green'])
