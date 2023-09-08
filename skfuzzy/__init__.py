@@ -70,51 +70,6 @@ from importlib import util as importlib_utils  # noqa: E402
 pkg_dir = osp.abspath(osp.dirname(__file__))
 data_dir = osp.join(pkg_dir, 'data')
 
-try:
-    importlib_utils.find_spec('nose')
-except ImportError:
-    def _test(doctest=False, verbose=False):
-        """This would run all unit tests, but nose couldn't be
-        imported so the test suite can not run.
-        """
-        raise ImportError("Could not load nose. Unit tests not available.")
-else:
-    def _test(doctest=False, verbose=False):
-        """Run all unit tests."""
-        import nose
-        import warnings
-        args = ['', pkg_dir, '--exe', '--ignore-files=^_test']
-        if verbose:
-            args.extend(['-v', '-s'])
-        if doctest:
-            args.extend([r"--with-doctest",
-                         r"--ignore-files=^\.",
-                         r"--ignore-files=^setup\.py$$",
-                         r"--ignore-files=test"])
-            # Make sure warnings do not break the doc tests
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                success = nose.run('skfuzzy', argv=args)
-        else:
-            success = nose.run('skfuzzy', argv=args)
-        # Return sys.exit code
-        if success:
-            return 0
-        else:
-            return 1
-
-
-# do not use `test` as function name as this leads to a recursion problem with
-# the nose test suite
-test = _test
-test_verbose = functools.partial(test, verbose=True)
-test_verbose.__doc__ = test.__doc__
-doctest = functools.partial(test, doctest=True)
-doctest.__doc__ = doctest.__doc__
-doctest_verbose = functools.partial(test, doctest=True, verbose=True)
-doctest_verbose.__doc__ = doctest.__doc__
-
-
 # Logic for checking for improper install and importing while in the source
 # tree when package has not been installed inplace.
 # Code adapted from scikit-learn's __check_build module.

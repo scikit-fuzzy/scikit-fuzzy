@@ -1,8 +1,9 @@
-import nose
+import pytest
 import numpy as np
 import skfuzzy as fuzz
 
 
+@pytest.fixture
 def setup():
     global features, x_corr, y_corr
 
@@ -24,8 +25,7 @@ def setup():
     features = np.c_[xpts, ypts].T
 
 
-@nose.with_setup(setup)
-def test_fuzzy_cmeans_centers():
+def test_fuzzy_cmeans_centers(setup):
     """
     Test fuzzy c-means ability to find cluster centers.
 
@@ -52,8 +52,7 @@ def test_fuzzy_cmeans_centers():
     np.testing.assert_array_equal(cntr1, cntr2)
 
 
-@nose.with_setup(setup)
-def test_fuzzy_cmeans_fpc():
+def test_fuzzy_cmeans_fpc(setup):
     """
     Test utility of fuzzy partition coefficient.
 
@@ -79,8 +78,7 @@ def test_fuzzy_cmeans_fpc():
     assert test == expected
 
 
-@nose.with_setup(setup)
-def test_fuzzy_cmeans_predict():
+def test_fuzzy_cmeans_predict(setup):
     """
     Test ability to classify new data.
 
@@ -125,8 +123,7 @@ def test_fuzzy_cmeans_predict():
     np.testing.assert_array_equal(cluster, U.argmax(axis=0))
 
 
-@nose.with_setup(setup)
-def test_fuzzy_cmeans_predict_numerically():
+def test_fuzzy_cmeans_predict_numerically(setup):
     """
     Test ability to classify new data in a numerically safe manner.
 
