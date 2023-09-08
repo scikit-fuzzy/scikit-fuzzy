@@ -4,8 +4,6 @@
 branch = True
 source = skfuzzy
 include = */skfuzzy/*
-omit =
-    */setup.py
 
 [report]
 exclude_lines =

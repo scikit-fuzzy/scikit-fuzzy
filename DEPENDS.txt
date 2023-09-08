@@ -3,6 +3,7 @@
 #################################
 # The current requirements to install and run the package
 
+build
 matplotlib>=3.1.0
 networkx>=1.9.0
 numpy>=1.6.0

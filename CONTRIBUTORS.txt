@@ -6,7 +6,7 @@
   Original toolbox written for Matlab, predating MathWorks' Fuzzy Logic Toolbox
 
 - The scikit-image team
-  Basis for overall package structure, .travis.yml, and setup.py
+  Basis for overall package structure
 
 - Zachary Kelm
   Cleanroom reimplementation of continuous- to discrete-time conversion
