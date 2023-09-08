@@ -9,14 +9,10 @@ from numpy.testing import (assert_array_equal, assert_raises, assert_allclose,
 
 import pytest
 
-# from _skipclass import skipclassif
-
 from skfuzzy.image import pad
 
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestConditionalShortcuts(TestCase):
     def test_zero_padding_shortcuts(self):
@@ -61,8 +57,6 @@ class TestConditionalShortcuts(TestCase):
                                pad(test, pad_amt, mode=mode, stat_length=30))
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestStatistic(TestCase):
     def test_check_mean_stat_length(self):
@@ -358,8 +352,6 @@ class TestStatistic(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestConstant(TestCase):
     def test_check_constant(self):
@@ -493,8 +485,6 @@ class TestConstant(TestCase):
         assert_allclose(test, expected)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestLinearRamp(TestCase):
     def test_check_simple(self):
@@ -537,8 +527,6 @@ class TestLinearRamp(TestCase):
         assert_allclose(test, expected)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestReflect(TestCase):
     def test_check_simple(self):
@@ -650,8 +638,6 @@ class TestReflect(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestSymmetric(TestCase):
     def test_check_simple(self):
@@ -787,8 +773,6 @@ class TestSymmetric(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestWrap(TestCase):
     def test_check_simple(self):
@@ -886,8 +870,6 @@ class TestWrap(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-##             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestStatLen(TestCase):
     def test_check_simple(self):
@@ -912,8 +894,6 @@ class TestStatLen(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestEdge(TestCase):
     def test_check_simple(self):
@@ -936,8 +916,6 @@ class TestEdge(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestZeroPadWidth(TestCase):
     def test_zero_pad_width(self):
@@ -947,8 +925,6 @@ class TestZeroPadWidth(TestCase):
             assert_array_equal(arr, pad(arr, pad_width, mode='constant'))
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestLegacyVectorFunction(TestCase):
     def test_legacy_vector_functionality(self):
@@ -972,8 +948,6 @@ class TestLegacyVectorFunction(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TestNdarrayPadWidth(TestCase):
     def test_check_simple(self):
@@ -996,8 +970,6 @@ class TestNdarrayPadWidth(TestCase):
         assert_array_equal(a, b)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class ValueError1(TestCase):
     def test_check_simple(self):
@@ -1022,8 +994,6 @@ class ValueError1(TestCase):
                       **kwargs)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class ValueError2(TestCase):
     def test_check_negative_pad_amount(self):
@@ -1034,8 +1004,6 @@ class ValueError2(TestCase):
                       **kwargs)
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class ValueError3(TestCase):
     def test_check_kwarg_not_allowed(self):
@@ -1065,8 +1033,6 @@ class ValueError3(TestCase):
                       mode='constant')
 
 
-#@skipclassif(Version(np.__version__) > Version("1.8"),
-#             "NumPy's inbuilt pad used instead")
 @pytest.mark.skipif(Version(np.__version__) > Version("1.8"), reason="NumPy's inbuilt pad used instead")
 class TypeError1(TestCase):
     def test_float(self):
