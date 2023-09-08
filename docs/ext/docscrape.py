@@ -6,7 +6,6 @@ import inspect
 import textwrap
 import re
 import pydoc
-from io import BytesIO
 from warnings import warn
 
 
@@ -427,7 +426,7 @@ class FunctionDoc(NumpyDocString):
                 argspec = inspect.formatargspec(*argspec)
                 argspec = argspec.replace('*','\*')
                 signature = '%s%s' % (func_name, argspec)
-            except TypeError as e:
+            except TypeError:
                 signature = '%s()' % func_name
             self['Signature'] = signature
 
@@ -443,7 +442,7 @@ class FunctionDoc(NumpyDocString):
         out = ''
 
         func, func_name = self.get_func()
-        signature = self['Signature'].replace('*', '\*')
+        self['Signature'].replace('*', '\*')
 
         roles = {'func': 'function',
                  'meth': 'method'}

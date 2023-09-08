@@ -71,7 +71,6 @@ import shutil
 import token
 import tokenize
 import traceback
-import itertools
 
 import numpy as np
 import matplotlib

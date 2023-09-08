@@ -1,11 +1,10 @@
 # test_terms
 
-from inspect import isfunction, ismethod
 import numpy as np
 
 
 from skfuzzy.control import (
-    ControlSystem, ControlSystemSimulation, Antecedent, Consequent, Rule,
+    Antecedent,
 )
 # from skfuzzy.control.controlsystem import CrispValueCalculator
 from skfuzzy.control.term import TermAggregate, FuzzyAggregationMethods

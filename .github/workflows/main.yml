@@ -44,7 +44,7 @@ jobs:
         run: |
           pytest
           # pytest --doctest-modules  # TODO: Fix four failing doctests
-          flake8 --exclude=test_* skfuzzy docs/examples
+          ruff --format=github .
       - name: Build docs
         if: matrix.os == 'ubuntu-latest'
         run: |

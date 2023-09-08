@@ -3,6 +3,6 @@
 ####################################################################
 -r DEPENDS.txt
 coveralls
-flake8
 packaging
 pytest
+ruff
