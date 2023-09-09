@@ -6,7 +6,7 @@ import scipy as sp
 from PIL import Image
 
 for m in (np, sp, Image, networkx):
-    if not m is None:
+    if m is not None:
         if m is Image:
             # Pillow 6.0.0 and above have removed the 'VERSION' attribute
             # https://bitbucket.org/rptlab/reportlab/issues/176/incompatibility-with-pillow-600

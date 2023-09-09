@@ -515,7 +515,7 @@ def run_code(code, code_path, ns=None, function_name=None):
                 if function_name is not None:
                     exec(function_name + "()", ns)
 
-        except (Exception, SystemExit) as err:
+        except (Exception, SystemExit):
             raise PlotError(traceback.format_exc())
         finally:
             os.chdir(pwd)
@@ -641,7 +641,7 @@ def render_figures(code, code_path, output_dir, output_base, context,
             for format, dpi in formats:
                 try:
                     figman.canvas.figure.savefig(img.filename(format), dpi=dpi)
-                except Exception as err:
+                except Exception:
                     raise PlotError(traceback.format_exc())
                 img.formats.append(format)
 

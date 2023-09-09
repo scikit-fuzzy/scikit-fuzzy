@@ -16,7 +16,7 @@ It will:
 
 """
 
-import os, re, pydoc
+import re, pydoc
 from docscrape_sphinx import get_doc_object, SphinxDocString
 import inspect
 
