@@ -37,7 +37,7 @@ jobs:
         run: |
           tools/header.py "Dependency versions"
           tools/build_versions.py
-          python setup.py build_ext --inplace
+          # python setup.py build_ext --inplace
           pip install --editable .
 
       - name: Run tests

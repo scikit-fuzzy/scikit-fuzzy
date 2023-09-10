@@ -3,7 +3,7 @@ all: clean inplace test
 	find skfuzzy -name "*.pyc" | xargs rm -f
 
 inplace:
-	python setup.py build_src --inplace build_ext --inplace
+	build .
 
 clean-pyc:
 	find skfuzzy -name "*.pyc" | xargs rm -f

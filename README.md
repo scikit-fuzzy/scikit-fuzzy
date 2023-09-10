@@ -53,11 +53,11 @@ which will also work to upgrade existing installations to the latest release.
 If you prefer to install from source or develop this package, you can fork and
 clone this repository then install SciKit-Fuzzy by running
 
-	$ python setup.py install
+	$ pip install -e .
 
 or develop locally by running
 
-	$ python setup.py develop
+	$ pip install -e ".[develop]"
 
 If you prefer, you can use SciKit-Fuzzy without installing by simply exporting
 this path to your PYTHONPATH variable.
