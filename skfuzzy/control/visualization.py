@@ -240,8 +240,7 @@ class ControlSystemVisualizer(object):
                 else:
                     c_nodes.append(c_node)
                     c_colors.append(c_color)
-            for node in graph:
-                colors.append(c_colors[c_nodes.index(node)])
+            colors += [c_colors[c_nodes.index(node)]for node in graph]
             nx.draw_networkx(graph, node_color=colors)
         except ValueError:
             nx.draw(self.ctrl.graph, ax=self.ax)

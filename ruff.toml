@@ -1,4 +1,6 @@
-line-length=126
+ignore = ["W605"]
+line-length = 126
+select = ["C4", "E", "F", "PERF", "W"]
 
 [per-file-ignores]
 "docs/ext/docscrape_sphinx.py" = ["E401"]

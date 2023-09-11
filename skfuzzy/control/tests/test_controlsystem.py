@@ -163,7 +163,7 @@ def test_unresolvable_rule_order(setup_rule_order):
 def test_bad_rules(setup_rule_order):
     global a
 
-    not_rules = ['me', 192238, 42, dict()]
+    not_rules = ['me', 192238, 42, {}]
     tst.assert_raises(ValueError, ctrl.ControlSystem, not_rules)
 
     testsystem = ctrl.ControlSystem()

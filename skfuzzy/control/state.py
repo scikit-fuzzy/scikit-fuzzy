@@ -56,7 +56,7 @@ class StatePerSimulation(object):
         except KeyError:
             if isinstance(self.default, dict) and len(self.default) == 0:
                 # Create a new empty dictionary and remember it
-                result = dict()
+                result = {}
                 self._sim_data[key_id] = result
                 return result
             else:

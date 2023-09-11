@@ -372,7 +372,7 @@ def write_example(src_name, src_dir, rst_dir, cfg):
         example_rst = rst_link
         example_rst += eval(content)
         example_rst += ''.join(rst_blocks)
-        code_info = dict(src_name=src_name, code_start=end)
+        code_info = {'src_name': src_name, 'code_start': end}
         example_rst += LITERALINCLUDE.format(**code_info)
 
     example_rst += CODE_LINK.format(src_name)
