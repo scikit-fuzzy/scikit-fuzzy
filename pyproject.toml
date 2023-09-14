@@ -62,7 +62,17 @@ mkpkg = [
 ]
 
 [tool.ruff]
-line-length=126
+select = [
+  "C9",     # McCabe cyclomatic complexity
+  "E",      # pycodestyle errors
+  "F",      # Pyflakes
+  "W",      # pycodestyle warnings
+]
+line-length = 126
+target-version = "py38"
+
+[tool.ruff.mccabe]
+max-complexity = 35
 
 [tool.ruff.per-file-ignores]
 "docs/ext/docscrape_sphinx.py" = ["E401"]
