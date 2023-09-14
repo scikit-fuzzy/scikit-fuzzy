@@ -45,7 +45,7 @@ Scikit-Fuzzy depends on
 and is available on PyPi! The latest stable release can always be obtained
 and installed simply by running
 
-    $ pip install -U scikit-fuzzy
+    $ pip install --upgrade scikit-fuzzy
 
 which will also work to upgrade existing installations to the latest release.
 
@@ -53,11 +53,11 @@ which will also work to upgrade existing installations to the latest release.
 If you prefer to install from source or develop this package, you can fork and
 clone this repository then install SciKit-Fuzzy by running
 
-	$ pip install -e .
+	$ pip install --editable .
 
 or develop locally by running
 
-	$ pip install -e ".[develop]"
+	$ pip install --editable ".[develop]"
 
 If you prefer, you can use SciKit-Fuzzy without installing by simply exporting
 this path to your PYTHONPATH variable.

@@ -73,8 +73,8 @@ import tokenize
 import traceback
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from skimage import io
@@ -134,6 +134,7 @@ GALLERY_IMAGE_TEMPLATE = """
 
 class Path(str):
     """Path object for manipulating directory and file paths."""
+    __slots__ = ()
 
     def __new__(self, path):
         return str.__new__(self, path)
@@ -361,7 +362,7 @@ def write_example(src_name, src_dir, rst_dir, cfg):
 
     has_inline_plots = any(cfg.plot2rst_plot_tag in b[2] for b in blocks)
     if has_inline_plots:
-        example_rst = ''.join([rst_link, rst])
+        example_rst = f'{rst_link}{rst}'
     else:
         # print first block of text, display all plots, then display code.
         first_text_block = [b for b in blocks if b[0] == 'text'][0]
@@ -625,7 +626,7 @@ def save_all_figures(image_path):
     """
     figure_list = []
     image_dir, image_fmt_str = image_path.psplit()
-    fig_mngr = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
+    fig_mngr = mpl._pylab_helpers.Gcf.get_all_fig_managers()
     for fig_num in (m.num for m in fig_mngr):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.

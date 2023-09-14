@@ -251,11 +251,11 @@ def defuzz(x, mfx, mode):
     mfx = mfx.ravel()
     n = len(x)
     if n != len(mfx):
-        raise InconsistentMFDataError()
+        raise InconsistentMFDataError
 
     if 'centroid' in mode or 'bisector' in mode:
         if mfx.sum() == 0:  # Approximation of total area
-            raise EmptyMembershipError()
+            raise EmptyMembershipError
 
         if 'centroid' in mode:
             return centroid(x, mfx)
