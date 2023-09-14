@@ -249,7 +249,7 @@ class _InputAcceptor(object):
         for antecedent in antecedents:
             try:
                 inputs[antecedent.label] = antecedent.input['current']
-            except AttributeError:
+            except AttributeError:  # noqa: PERF203
                 # No system ID yet, because no assigned values
                 inputs[antecedent.label] = None
 
@@ -632,11 +632,11 @@ class CrispValueCalculator(object):
                              .format(self.var.label))
 
         if isinstance(value, str):
-            for label, term in self.var.terms.items():
+            for term in self.var.terms.values():
                 term.membership_value[self.sim] = \
                     1 if term.label == value else 0
         else:
-            for label, term in self.var.terms.items():
+            for term in self.var.terms.values():
                 term.membership_value[self.sim] = \
                     interp_membership(self.var.universe, term.mf, value)
 

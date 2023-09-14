@@ -975,21 +975,21 @@ class ValueError1(TestCase):
     def test_check_simple(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(3,))
+        kwargs = {"mode": 'mean', "stat_length": (3,)}
         assert_raises(ValueError, pad, arr, ((2, 3), (3, 2), (4, 5)),
                       **kwargs)
 
     def test_check_negative_stat_length(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(-3,))
+        kwargs = {"mode": 'mean', "stat_length": (-3,)}
         assert_raises(ValueError, pad, arr, ((2, 3), (3, 2)),
                       **kwargs)
 
     def test_check_negative_pad_width(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(3,))
+        kwargs = {"mode": 'mean', "stat_length": (3,)}
         assert_raises(ValueError, pad, arr, ((-2, 3), (3, 2)),
                       **kwargs)
 
@@ -999,7 +999,7 @@ class ValueError2(TestCase):
     def test_check_negative_pad_amount(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(3,))
+        kwargs = {"mode": 'mean', "stat_length": (3,)}
         assert_raises(ValueError, pad, arr, ((-2, 3), (3, 2)),
                       **kwargs)
 
@@ -1060,7 +1060,7 @@ class TypeError1(TestCase):
     def test_check_wrong_pad_amount(self):
         arr = np.arange(30)
         arr = np.reshape(arr, (6, 5))
-        kwargs = dict(mode='mean', stat_length=(3,))
+        kwargs = {"mode": 'mean', "stat_length": (3,)}
         assert_raises(TypeError, pad, arr, ((2, 3, 4), (3, 2)),
                       **kwargs)
 

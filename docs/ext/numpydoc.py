@@ -23,8 +23,8 @@ import inspect
 def mangle_docstrings(app, what, name, obj, options, lines,
                       reference_offset=[0]):
 
-    cfg = dict(use_plots=app.config.numpydoc_use_plots,
-               show_class_members=app.config.numpydoc_show_class_members)
+    cfg = {'use_plots': app.config.numpydoc_use_plots,
+               'show_class_members': app.config.numpydoc_show_class_members}
 
     if what == 'module':
         # Strip top title
@@ -38,9 +38,9 @@ def mangle_docstrings(app, what, name, obj, options, lines,
     if app.config.numpydoc_edit_link and hasattr(obj, '__name__') and \
            obj.__name__:
         if hasattr(obj, '__module__'):
-            v = dict(full_name=u"%s.%s" % (obj.__module__, obj.__name__))
+            v = {'full_name': u"%s.%s" % (obj.__module__, obj.__name__)}
         else:
-            v = dict(full_name=obj.__name__)
+            v = {'full_name': obj.__name__}
         lines += [u'', u'.. htmlonly::', '']
         lines += [u'    %s' % x for x in
                   (app.config.numpydoc_edit_link % v).split("\n")]
