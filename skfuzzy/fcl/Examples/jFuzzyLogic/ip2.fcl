@@ -1,0 +1,59 @@
+FUNCTION_BLOCK ipPhi0    // control block fOR the angle
+
+VAR_OUTPUT           
+    fORce : REAL;
+END_VAR
+
+VAR_INPUT           
+    phi    : REAL;
+    dphidt : REAL;
+END_VAR
+
+FUZZIFY phi            
+    TERM Z   :=  TRIAN -5 0 5;
+    TERM PS  :=  TRIAN  0 5 10;
+    TERM NS  :=  TRIAN -10 -5 0;
+    TERM PB  :=  (5,0)  (10,1) (60,1) (70,0);
+    TERM NB  :=  (-70,0) (-60,1) (-10, 1) (-5,0);
+  RANGE := (-70.0 .. 70.0); // Added range for phi
+    
+  RANGE := (-70.0 .. 70.0); // Added range for phi
+END_FUZZIFY
+
+FUZZIFY dphidt            
+    TERM Z    := TRIAN -8 0 8;
+    TERM PS   := TRIAN  0  8 200 ;
+    TERM NS   := TRIAN  -200 -8 0 ;
+    TERM PB   := (8,0) (200,1) (500,1) ;
+    TERM NB   := (-500,1) (-200,1) (-8,0);
+  RANGE := (-500.0 .. 500.0); // Added range for dphidt
+END_FUZZIFY
+
+DEFUZZIFY fORce          
+    TERM Z   :=  TRIAN -20 0 20;
+    TERM PS  :=  TRIAN  30 50 70;
+    TERM NS  :=  TRIAN  -70 -50 -30;
+    TERM PB  :=  TRIAN  190 200 210;
+    TERM NB  :=  TRIAN  -210 -200 -190;
+
+    METHOD : COG;        // Use 'Center Of Gravity' defuzzification method
+    DEFAULT := 0;          // Default value is 0 (if no rule activates defuzzifier)
+  RANGE := (-210.0 .. 210.0); // Added range for fORce
+END_DEFUZZIFY
+
+RULEBLOCK No1
+    AND : MIN;     
+    ACT : MIN;     
+    ACCU : MAX;    
+
+    RULE 1 : IF phi IS PS  AND (dphidt IS PS OR dphidt IS Z) THEN fORce IS PS;
+    RULE 2 : IF phi IS PS  AND dphidt IS PB  THEN fORce IS PB ;
+    RULE 3 : IF phi IS NS  AND (dphidt IS NS OR dphidt IS Z) THEN fORce IS NS;
+    RULE 4 : IF phi IS NS  AND dphidt IS NB  THEN fORce IS NB ;
+    RULE 5 : IF phi IS PB  AND (dphidt IS NOT NB) AND (dphidt IS NOT NS)  THEN fORce IS PB ;
+    RULE 6 : IF phi IS NB  AND (dphidt IS NOT PB) AND (dphidt IS NOT PS)  THEN fORce IS NB ;
+    RULE 7 : IF phi IS Z   AND dphidt IS Z THEN fORce IS Z;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

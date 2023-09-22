@@ -1,0 +1,35 @@
+FUNCTION_BLOCK Zzz
+
+VAR_INPUT
+	temperature : REAL; // RANGE := ( 100 .. 150 );
+END_VAR
+
+VAR_OUTPUT
+	out : REAL;
+END_VAR
+
+FUZZIFY temperature
+	TERM low := SIGM -4 125;
+	TERM high := SIGM 4 125;
+  RANGE := (100.0 .. 150.0); // Added range for temperature
+END_FUZZIFY
+
+DEFUZZIFY out
+	TERM low := (0,0) (5,1) (10,0);
+	TERM mid := (10,0) (15,1) (20,0);
+	TERM high := (20,0) (25,1) (30,0);
+	METHOD : COG;
+	DEFAULT := 0;
+  RANGE := (0.0 .. 30.0); // Added range for out
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;
+	ACT : MIN;
+	ACCU : MAX;
+
+	RULE 1 : IF temperature IS low THEN out IS low;
+	RULE 2 : IF temperature IS high THEN out IS high;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

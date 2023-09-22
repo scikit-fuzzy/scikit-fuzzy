@@ -1,0 +1,62 @@
+FUNCTION_BLOCK Libcfuz  // Block definition (there may be more than one block per file)
+
+VAR_INPUT              // Define input variables
+   Age : REAL;
+   Lactation : REAL;
+END_VAR
+
+VAR_OUTPUT             // Define output variable
+   rISk : REAL;
+END_VAR
+
+FUZZIFY Age            // Fuzzify input variable 'Age': {'young', 'mature' , 'old'}
+   TERM young := (0, 1)(10,1) (30, 1) (40, 0) ; 
+   TERM mature:= (30, 0) (40,1) (60,1) (70,0);
+   TERM old := (60, 0) (70, 1) (90,1);
+  RANGE := (0.0 .. 90.0); // Added range for Age
+END_FUZZIFY
+
+FUZZIFY Lactation           // Fuzzify input variable 'Lactation': { 'low', 'medium','full' }
+   TERM low := (0, 1) (2,1) (6, 1) (10,0);
+   TERM medium := (6,0) (10,1) (16,1) (20,0);
+   TERM full := (16,0) (20,1) (24,0);
+  RANGE := (0.0 .. 24.0); // Added range for Lactation
+END_FUZZIFY
+
+DEFUZZIFY rISk          // Defzzzify output variable 'rISk' : {'verylow',low', 'medium', 'high','veryhigh' }
+   TERM verylow := (0,1) (5,1) (10,0);
+   TERM low := (5,0) (10,1) (25,1) (30,0);
+   TERM medium := (25,0) (30,1) (45,1) (50,0);
+   TERM high := (45,0) (50,1) (75,1) (80,0);
+   TERM veryhigh := (75,0) (80,1) (95,1) (100,0);
+   METHOD : COG;       // Use 'Center Of Gravity' defuzzification method
+   DEFAULT := 0;       // Default value IS 0 (if no rule activates defuzzifier)
+  RANGE := (0.0 .. 100.0); // Added range for rISk
+END_DEFUZZIFY
+
+RULEBLOCK No1
+   ACCU : MAX;         // Use 'max' accumulation method
+   AND : MIN;          // Use 'min' for 'and' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+   ACT : MIN;          // Use 'min' activation method
+
+		RULE 1 : IF Age IS old AND Lactation IS low THEN rISk IS veryhigh;
+		RULE 2 : IF Age IS old THEN rISk IS high;
+		RULE 3 : IF Age IS old AND Lactation IS full THEN rISk IS low;
+		/* In thIS it picks Rule2 When given the in put it should pick Rule3 with the given input */
+		RULE 4 : IF Age IS young THEN rISk IS low;
+		RULE 5 : IF Age IS mature THEN rISk IS veryhigh;
+		RULE 6 : IF Lactation IS medium THEN rISk IS medium;
+		RULE 7 : IF Lactation IS full THEN rISk IS low;
+		RULE 8 : IF Lactation IS low THEN rISk IS veryhigh;
+		RULE 9 : IF Age IS young AND Lactation IS medium THEN rISk IS low; 
+		RULE 10 : IF Age IS young AND Lactation IS full THEN rISk IS verylow;
+		RULE 11 : IF Age IS mature AND Lactation IS low  THEN rISk IS veryhigh;
+		RULE 12 : IF Age IS mature AND Lactation IS medium THEN rISk IS high;
+		RULE 13 : IF Age IS mature AND Lactation IS full THEN rISk IS low ;
+		RULE 14: IF Age IS old AND Lactation IS low THEN rISk IS high;
+		RULE 15: IF Age IS old AND Lactation IS medium THEN rISk IS medium;
+		RULE 16: IF Age IS old AND Lactation IS full THEN rISk IS low; 
+		RULE 17 : IF Age IS young AND Lactation IS low  THEN rISk IS medium;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

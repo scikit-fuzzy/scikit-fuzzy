@@ -1,0 +1,42 @@
+
+FUNCTION_BLOCK testDeMorgan1	
+
+VAR_INPUT
+	x1 : REAL;
+	x2 : REAL;
+END_VAR
+
+VAR_OUTPUT
+	y : REAL;
+END_VAR
+
+FUZZIFY x1			
+	TERM value := (0, 1) (1, 0) ; 
+  RANGE := (0.0 .. 1.0); // Added range for x1
+END_FUZZIFY
+
+FUZZIFY x2			
+	TERM value2 := (0, 1) (1, 0) ; 
+  RANGE := (0.0 .. 1.0); // Added range for x2
+END_FUZZIFY
+
+DEFUZZIFY y
+	TERM value := (0, 1) (1, 0) ; 
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+  RANGE := (0.0 .. 1.0); // Added range for y
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : NIPMIN;			// Use 'NIPMIN' for 'and' (also implicit use 'NIPMAX' for 'or' to fulfill DeMorgan's Law)
+	ACT : MIN;			// Use 'min' activation method
+	ACCU : MAX;			// Use 'max' accumulation method
+
+	RULE 1 : IF NOT(x1 IS value OR x2 IS value2) THEN y IS value;
+	RULE 2 : IF NOT(x1 IS value) AND NOT(x2 IS value2) THEN y IS value;
+	
+	RULE 3 : IF NOT(x1 IS value AND x2 IS value2) THEN y IS value;
+	RULE 4 : IF NOT(x1 IS value) OR NOT(x2 IS value2) THEN y IS value;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

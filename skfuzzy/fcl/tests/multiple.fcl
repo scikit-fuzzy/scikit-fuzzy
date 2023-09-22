@@ -1,0 +1,68 @@
+// This is a simple example to test rules with the same consequent terms.
+
+// A system with rules 1, 2 and 3 below should be the same
+// as a system with the single rule 123.
+
+
+// An entire system (variables + rules) lives in a function-block:
+FUNCTION_BLOCK test_multiple_rules_same_consequent_term
+
+// Input variables are (x1, x2), output is y
+
+FUZZIFY x1
+    RANGE := (0 .. 2.1) WITH 0.01   // Hacked the FCL syntax a bit here
+    TERM label0 := Triangle 0.2 0.2 0.6
+    TERM label1 := Triangle 0.2 0.6 1.0
+    TERM label2 := Triangle 0.6 1.0 1.4
+    TERM label3 := Triangle 1.0 1.4 1.8
+    TERM label4 := Triangle 1.4 1.8 1.8
+END_FUZZIFY
+
+FUZZIFY x2
+    RANGE := (0 .. 2.1) WITH 0.01
+    TERM label0 := Triangle 0.0 0.0 0.45
+    TERM label1 := Triangle 0.0 0.45 0.9
+    TERM label2 := Triangle 0.45 0.9 1.35
+    TERM label3 := Triangle 0.9 1.35 1.8
+    TERM label4 := Triangle 1.35 1.8 1.8
+END_FUZZIFY
+
+DEFUZZIFY y
+    RANGE := (0 .. 2.1) WITH 0.01
+    TERM label0 := Triangle 0.3 0.3 0.725
+    TERM label1 := Triangle 0.3 0.725 1.15
+    TERM label2 := Triangle 0.725 1.15 1.575
+    TERM label3 := Triangle 1.15 1.575 2.0
+    TERM label4 := Triangle 1.575 2.0 2.0
+    // You could set other options here, e.g. defuzzification method.
+END_DEFUZZIFY
+
+
+// Rule-blocks are sets of rules, with an optional name.
+// These are mostly useful for global options (e.g. accumulation etc.)
+// but here I just use blocks to break up the rules into separate lists.
+
+
+RULEBLOCK  // Name of rule-block is optional
+  RULE 1: IF x1 is label0 AND x2 is label2 THEN y is label0
+  RULE 2: IF x1 is label1 AND x2 is label0 THEN y is label0
+  RULE 3: IF x1 is label1 AND x2 is label2 THEN y is label0
+END_RULEBLOCK
+
+// If you give a block name it will be prefixed to the rule names.
+RULEBLOCK extra  // ... so these rule names will be prefixed with "extra."
+  RULE 123:
+     IF x1 is label0 AND x2 is label2
+        OR x1 is label1 AND x2 is label0
+        OR x1 is label1 AND x2 is label2
+     THEN y is label0
+END_RULEBLOCK
+
+RULEBLOCK  // Can have as many rule-blocks as you like
+  RULE 4: IF x1 is label2 AND x2 is label1 THEN y is label2
+  RULE 5: IF x1 is label2 AND x2 is label3 THEN y is label3
+  RULE 6: IF x1 is label4 AND x2 is label4 THEN y is label4
+END_RULEBLOCK
+
+
+END_FUNCTION_BLOCK

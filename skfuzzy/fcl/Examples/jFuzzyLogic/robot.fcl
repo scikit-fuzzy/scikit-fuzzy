@@ -1,0 +1,135 @@
+/*
+	Robot controller.
+	
+	References:	
+		"Learning Weighted LinguIStic Rules to Control an Autonomous Robot"
+		, M. Mucientes, R. Alcala , J. Alcala-Fdez, J. Casillas
+	
+									Pablo Cingolani 
+									pcingola@users.sourceforge.net
+*/
+
+FUNCTION_BLOCK robot
+
+VAR_INPUT
+	rd : REAL;			// Right dIStance
+	dq : REAL;			// DIStance quotient
+	o  : REAL;			// Orientation. Note: I cannot use 'or' (like the reference paper) because it IS a reserved word in FCL
+	v  : REAL;			// Velocity
+END_VAR
+
+VAR_OUTPUT
+	la : REAL;			// Linear acceleration
+	av : REAL;			// Angular velocity
+END_VAR
+
+FUZZIFY rd
+	TERM L  := TRIAN 0 0 1;
+	TERM M  := TRIAN 0 1 2;
+	TERM H  := TRIAN 1 2 3;
+	TERM VH := TRIAN 2 3 3;
+  RANGE := (0.0 .. 3.0) WITH 0.1; // Added range for rd
+END_FUZZIFY
+
+FUZZIFY dq
+	TERM L := TRIAN 0 0 2;
+	TERM H := TRIAN 0 2 2;
+  RANGE := (0.0 .. 2.0) WITH 0.1; // Added range for dq
+END_FUZZIFY
+
+FUZZIFY o
+	TERM HL := TRIAN -45 -45 -22.5;
+	TERM LL := TRIAN -45 -22.5 0;
+	TERM Z  := TRIAN -22.5 0 22.5;
+	TERM LR := TRIAN 0 22.5 45;
+	TERM HR := TRIAN 22.5 45 45;
+  RANGE := (-45.0 .. 45.0) WITH 0.1; // Added range for o
+END_FUZZIFY
+
+FUZZIFY v
+	TERM L := TRIAN 0 0 1;
+	TERM H := TRIAN 0 1 1;
+  RANGE := (0.0 .. 1.0) WITH 0.1; // Added range for v
+END_FUZZIFY
+
+DEFUZZIFY la
+	TERM VHB := TRIAN -1 -1 -0.75;
+	TERM HB  := TRIAN -1 -0.75 -0.5;
+	TERM MB  := TRIAN -0.75 -0.5 -0.25;
+	TERM SB  := TRIAN -0.5 -0.25 0;
+	TERM Z   := TRIAN -0.25 0 0.25;
+	TERM SA  := TRIAN 0 0.25 0.5;
+	TERM MA  := TRIAN 0.25 0.5 0.75;
+	TERM HA  := TRIAN 0.5 0.75 1;
+	TERM VHA := TRIAN 0.75 1 1;
+	
+	METHOD : COG;
+	DEFAULT := 0;
+  RANGE := (-1.0 .. 1.0) WITH 0.01; // Added range for la
+END_DEFUZZIFY
+
+DEFUZZIFY av
+	TERM VHR := TRIAN -1 -1 -0.55;
+	TERM HR  := TRIAN -1 -0.75 -0.5;
+	TERM MR  := TRIAN -0.75 -0.5 -0.25;
+	TERM SR  := TRIAN -0.5 -0.25 0;
+	TERM Z   := TRIAN -0.25 0 0.25;
+	TERM SL  := TRIAN 0 0.25 0.5;
+	TERM ML  := TRIAN 0.25 0.5 0.75;
+	TERM HL  := TRIAN 0.5 0.75 1;
+	TERM VHL := TRIAN 0.75 1 1;
+	
+	METHOD : COG;
+	DEFAULT := 0;
+  RANGE := (-1.0 .. 1.0) WITH 0.01; // Added range for av
+END_DEFUZZIFY
+
+RULEBLOCK rules
+	AND  : MIN;			// Use 'min' for 'AND' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+	ACT  : MIN;			// Use 'min' activation method
+	ACCU : MAX;			// Use 'max' accumulation method
+
+    RULE  1:    IF rd IS  L AND dq IS L AND o IS LL AND v IS L THEN la IS VHB , av IS VHR WITH 0.4610;
+    RULE  2:    IF rd IS  L AND dq IS L AND o IS LL AND v IS H THEN la IS VHB , av IS VHR WITH 0.4896;
+    RULE  3:    IF rd IS  L AND dq IS L AND o IS  Z AND v IS L THEN la IS   Z , av IS  MR WITH 0.6664;
+    RULE  4:    IF rd IS  L AND dq IS L AND o IS  Z AND v IS H THEN la IS  HB , av IS  SR WITH 0.5435;
+    RULE  5:    IF rd IS  L AND dq IS H AND o IS LL AND v IS L THEN la IS  MA , av IS  HR WITH 0.7276;
+    RULE  6:    IF rd IS  L AND dq IS H AND o IS  Z AND v IS L THEN la IS  MA , av IS  HL WITH 0.4845;
+    RULE  7:    IF rd IS  L AND dq IS H AND o IS  Z AND v IS H THEN la IS  HB , av IS  ML WITH 0.5023;
+    RULE  8:    IF rd IS  L AND dq IS H AND o IS LR AND v IS H THEN la IS VHB , av IS VHL WITH 0.7363;
+    RULE  9:    IF rd IS  L AND dq IS H AND o IS HR AND v IS L THEN la IS VHB , av IS VHL WITH 0.9441;
+    RULE 10:    IF rd IS  M AND dq IS L AND o IS  Z AND v IS H THEN la IS  SA , av IS  HR WITH 0.3402;
+    RULE 11:    IF rd IS  M AND dq IS L AND o IS LR AND v IS H THEN la IS   Z , av IS VHL WITH 0.4244;
+    RULE 12:    IF rd IS  M AND dq IS L AND o IS HR AND v IS L THEN la IS  SA , av IS  HL WITH 0.5472;
+    RULE 13:    IF rd IS  M AND dq IS L AND o IS HR AND v IS H THEN la IS  MB , av IS VHL WITH 0.4369;
+    RULE 14:    IF rd IS  M AND dq IS H AND o IS HL AND v IS L THEN la IS   Z , av IS VHR WITH 0.1770;
+    RULE 15:    IF rd IS  M AND dq IS H AND o IS HL AND v IS H THEN la IS VHB , av IS VHR WITH 0.4526;
+    RULE 16:    IF rd IS  M AND dq IS H AND o IS LL AND v IS H THEN la IS  SA , av IS VHR WITH 0.2548;
+    RULE 17:    IF rd IS  M AND dq IS H AND o IS  Z AND v IS L THEN la IS  HA , av IS   Z WITH 0.2084;
+    RULE 18:    IF rd IS  M AND dq IS H AND o IS LR AND v IS L THEN la IS  HA , av IS VHL WITH 0.6242;
+    RULE 19:    IF rd IS  M AND dq IS H AND o IS LR AND v IS H THEN la IS  SA , av IS VHL WITH 0.3779;
+    RULE 20:    IF rd IS  M AND dq IS H AND o IS HR AND v IS L THEN la IS   Z , av IS VHL WITH 0.6931;
+    RULE 21:    IF rd IS  M AND dq IS H AND o IS HR AND v IS H THEN la IS VHB , av IS VHL WITH 0.7580;
+    RULE 22:    IF rd IS  H AND dq IS L AND o IS  Z AND v IS L THEN la IS  HA , av IS VHR WITH 0.5758;
+    RULE 23:    IF rd IS  H AND dq IS L AND o IS LR AND v IS H THEN la IS  SA , av IS  MR WITH 0.2513;
+    RULE 24:    IF rd IS  H AND dq IS L AND o IS HR AND v IS L THEN la IS  HA , av IS VHL WITH 0.5471;
+    RULE 25:    IF rd IS  H AND dq IS L AND o IS HR AND v IS H THEN la IS  SA , av IS  HL WITH 0.5595;
+    RULE 26:    IF rd IS  H AND dq IS H AND o IS HL AND v IS L THEN la IS VHB , av IS VHR WITH 0.9999;
+    RULE 27:    IF rd IS  H AND dq IS H AND o IS HL AND v IS H THEN la IS VHB , av IS VHR WITH 0.9563;
+    RULE 28:    IF rd IS  H AND dq IS H AND o IS LL AND v IS L THEN la IS  HA , av IS VHR WITH 0.9506;
+    RULE 29:    IF rd IS  H AND dq IS H AND o IS  Z AND v IS L THEN la IS  HA , av IS VHR WITH 0.4529;
+    RULE 30:    IF rd IS  H AND dq IS H AND o IS  Z AND v IS H THEN la IS  SA , av IS VHR WITH 0.2210;
+    RULE 31:    IF rd IS  H AND dq IS H AND o IS LR AND v IS L THEN la IS  HA , av IS  MR WITH 0.3612;
+    RULE 32:    IF rd IS  H AND dq IS H AND o IS LR AND v IS H THEN la IS  SA , av IS  MR WITH 0.2122;
+    RULE 33:    IF rd IS  H AND dq IS H AND o IS HR AND v IS L THEN la IS  HA , av IS  HL WITH 0.7878;
+    RULE 34:    IF rd IS  H AND dq IS H AND o IS HR AND v IS H THEN la IS  SA , av IS VHL WITH 0.3859;
+    RULE 35:    IF rd IS VH AND dq IS L AND o IS LR AND v IS L THEN la IS  HA , av IS VHR WITH 0.5530;
+    RULE 36:    IF rd IS VH AND dq IS L AND o IS HR AND v IS L THEN la IS  HA , av IS  HR WITH 0.4223;
+    RULE 37:    IF rd IS VH AND dq IS L AND o IS HR AND v IS H THEN la IS  SA , av IS  HR WITH 0.3854;
+    RULE 38:    IF rd IS VH AND dq IS H AND o IS LL AND v IS L THEN la IS  HA , av IS VHR WITH 0.0936;
+    RULE 39:    IF rd IS VH AND dq IS H AND o IS LR AND v IS L THEN la IS  HA , av IS VHR WITH 0.7325;
+    RULE 40:    IF rd IS VH AND dq IS H AND o IS LR AND v IS H THEN la IS  SA , av IS VHR WITH 0.5631;
+    RULE 41:    IF rd IS VH AND dq IS H AND o IS HR AND v IS L THEN la IS  HA , av IS  HR WITH 0.5146;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

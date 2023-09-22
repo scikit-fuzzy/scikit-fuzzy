@@ -1,0 +1,34 @@
+//Code automatically generated with fuzzylite 6.0.
+
+FUNCTION_BLOCK ObstacleAvoidance
+
+VAR_INPUT
+  obstacle: REAL;
+END_VAR
+
+VAR_OUTPUT
+  mSteer: REAL;
+END_VAR
+
+FUZZIFY obstacle
+  RANGE := (0.000 .. 1.000);
+  TERM left := Ramp 1.000 0.000;
+  TERM right := Ramp 0.000 1.000;
+END_FUZZIFY
+
+DEFUZZIFY mSteer
+  RANGE := (0.000 .. 1.000);
+  TERM left := Ramp 1.000 0.000;
+  TERM right := Ramp 0.000 1.000;
+  METHOD : COG;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+RULEBLOCK mamdani
+  ACT : PROD;
+  RULE 1 : if obstacle is left then mSteer is right
+  RULE 2 : if obstacle is right then mSteer is left
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

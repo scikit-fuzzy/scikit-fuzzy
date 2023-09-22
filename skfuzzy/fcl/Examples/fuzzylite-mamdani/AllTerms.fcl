@@ -1,0 +1,90 @@
+//Code automatically generated with fuzzylite 6.0.
+
+FUNCTION_BLOCK AllTerms
+
+VAR_INPUT
+  AllInputTerms: REAL;
+END_VAR
+
+VAR_OUTPUT
+  AllOutputTerms: REAL;
+END_VAR
+
+FUZZIFY AllInputTerms
+  RANGE := (0.000 .. 6.500);
+  TERM A := Sigmoid 0.500 -20.000;
+  TERM B := ZShape 0.000 1.000;
+  TERM C := Ramp 1.000 0.000;
+  TERM D := Triangle 0.500 1.000 1.500;
+  TERM E := Trapezoid 1.000 1.250 1.750 2.000;
+  TERM F := Concave 0.850 0.250;
+  TERM G := Rectangle 1.750 2.250;
+  TERM H := (2.000, 0.000) (2.250, 1.000) (2.500, 0.500) (2.750, 1.000) (3.000, 0.000);
+  TERM I := Gaussian 3.000 0.200;
+  TERM J := Cosine 3.250 0.650;
+  TERM K := GaussianProduct 3.500 0.100 3.300 0.300;
+  TERM L := Spike 3.640 1.040;
+  TERM M := Bell 4.000 0.250 3.000;
+  TERM N := PiShape 4.000 4.500 4.500 5.000;
+  TERM O := Concave 5.650 6.250;
+  TERM P := SigmoidDifference 4.750 10.000 30.000 5.250;
+  TERM Q := SigmoidProduct 5.250 20.000 -10.000 5.750;
+  TERM R := Ramp 5.500 6.500;
+  TERM S := SShape 5.500 6.500;
+  TERM T := Sigmoid 6.000 20.000;
+END_FUZZIFY
+
+DEFUZZIFY AllOutputTerms
+  RANGE := (0.000 .. 6.500);
+  TERM A := Sigmoid 0.500 -20.000;
+  TERM B := ZShape 0.000 1.000;
+  TERM C := Ramp 1.000 0.000;
+  TERM D := Triangle 0.500 1.000 1.500;
+  TERM E := Trapezoid 1.000 1.250 1.750 2.000;
+  TERM F := Concave 0.850 0.250;
+  TERM G := Rectangle 1.750 2.250;
+  TERM H := (2.000, 0.000) (2.250, 1.000) (2.500, 0.500) (2.750, 1.000) (3.000, 0.000);
+  TERM I := Gaussian 3.000 0.200;
+  TERM J := Cosine 3.250 0.650;
+  TERM K := GaussianProduct 3.500 0.100 3.300 0.300;
+  TERM L := Spike 3.640 1.040;
+  TERM M := Bell 4.000 0.250 3.000;
+  TERM N := PiShape 4.000 4.500 4.500 5.000;
+  TERM O := Concave 5.650 6.250;
+  TERM P := SigmoidDifference 4.750 10.000 30.000 5.250;
+  TERM Q := SigmoidProduct 5.250 20.000 -10.000 5.750;
+  TERM R := Ramp 5.500 6.500;
+  TERM S := SShape 5.500 6.500;
+  TERM T := Sigmoid 6.000 20.000;
+  METHOD : COG;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+RULEBLOCK 
+  AND : MIN;
+  OR : MAX;
+  ACT : MIN;
+  RULE 1 : if AllInputTerms is A then AllOutputTerms is T
+  RULE 2 : if AllInputTerms is B then AllOutputTerms is S
+  RULE 3 : if AllInputTerms is C then AllOutputTerms is R
+  RULE 4 : if AllInputTerms is D then AllOutputTerms is Q
+  RULE 5 : if AllInputTerms is E then AllOutputTerms is P
+  RULE 6 : if AllInputTerms is F then AllOutputTerms is O
+  RULE 7 : if AllInputTerms is G then AllOutputTerms is N
+  RULE 8 : if AllInputTerms is H then AllOutputTerms is M
+  RULE 9 : if AllInputTerms is I then AllOutputTerms is L
+  RULE 10 : if AllInputTerms is J then AllOutputTerms is K
+  RULE 11 : if AllInputTerms is K then AllOutputTerms is J
+  RULE 12 : if AllInputTerms is L then AllOutputTerms is I
+  RULE 13 : if AllInputTerms is M then AllOutputTerms is H
+  RULE 14 : if AllInputTerms is N then AllOutputTerms is G
+  RULE 15 : if AllInputTerms is O then AllOutputTerms is F
+  RULE 16 : if AllInputTerms is P then AllOutputTerms is E
+  RULE 17 : if AllInputTerms is Q then AllOutputTerms is D
+  RULE 18 : if AllInputTerms is R then AllOutputTerms is C
+  RULE 19 : if AllInputTerms is S then AllOutputTerms is B
+  RULE 20 : if AllInputTerms is T then AllOutputTerms is A
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

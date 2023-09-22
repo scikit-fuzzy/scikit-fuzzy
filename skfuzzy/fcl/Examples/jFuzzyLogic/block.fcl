@@ -1,0 +1,51 @@
+FUNCTION_BLOCK ip    // Block definition (there may be more than one block per file)
+
+VAR_OUTPUT            // Define input variables
+    force : REAL;
+END_VAR
+
+VAR_INPUT           // Define output variable
+    x : REAL;
+    dxdt : REAL;
+END_VAR
+
+FUZZIFY x           
+    TERM ok    :=  (-0.1,0)  (0,1) (0.1,0) ;
+    TERM left  :=  (-2,1)  (0,0);
+    TERM right := (  0, 0) (2,1) ;
+  RANGE := (-2.0 .. 2.0) WITH 0.1; // Added range for x
+END_FUZZIFY
+
+FUZZIFY dxdt     
+    TERM  ok := TRIAN -1 0 1 ;   
+    TERM  left := (-1,1) (0,0);
+    TERM  right := (0,0) (1,1) ;
+    TERM  tooRight := (3,0) (4,1);
+    TERM  tooLeft  := (-4,1) (-3,0);
+  RANGE := (-4.0 .. 4.0) WITH 0.1; // Added range for dxdt
+END_FUZZIFY
+
+DEFUZZIFY force          
+    TERM zero  :=  TRIAN -1 0 1 ;
+    TERM left  :=  (-101,0) (-100,1) (-99,0);
+    TERM right :=   (99,0) (100,1) (101,0);
+
+    METHOD : COG;        // Use 'Center Of Gravity' defuzzification method
+    DEFAULT := 0;        // Default value is 0 (if no rule activates defuzzifier)
+  RANGE := (-101.0 .. 101.0); // Added range for force
+END_DEFUZZIFY
+
+RULEBLOCK No1
+    AND : MIN;            // Use 'min' for 'and' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+    ACT : MIN;            // Use 'min' activation method
+    ACCU : MAX;            // Use 'max' accumulation method
+   
+    RULE 1 : IF x    IS  right AND dxdt IS  NOT  tooLeft  THEN force IS left  ;
+    RULE 2 : IF x    IS  left  AND dxdt IS  NOT  tooRight THEN force IS right  ;
+    RULE 3 : IF x    IS  ok    AND dxdt IS  right THEN force IS left ; 
+    RULE 4 : IF x    IS  ok    AND dxdt IS  left  THEN force IS right ; 
+    RULE 5 : IF x    IS  ok    AND dxdt IS ok THEN force IS zero ;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

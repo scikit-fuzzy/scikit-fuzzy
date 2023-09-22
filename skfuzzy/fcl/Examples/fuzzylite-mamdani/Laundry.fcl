@@ -1,0 +1,58 @@
+//Code automatically generated with fuzzylite 6.0.
+
+FUNCTION_BLOCK Laundry
+
+VAR_INPUT
+  Load: REAL;
+  Dirt: REAL;
+END_VAR
+
+VAR_OUTPUT
+  Detergent: REAL;
+  Cycle: REAL;
+END_VAR
+
+FUZZIFY Load
+  RANGE := (0.000 .. 6.000);
+  TERM small := (0.000, 1.000) (1.000, 1.000) (2.000, 0.800) (5.000, 0.000);
+  TERM normal := (3.000, 0.000) (4.000, 1.000) (6.000, 0.000);
+END_FUZZIFY
+
+FUZZIFY Dirt
+  RANGE := (0.000 .. 6.000);
+  TERM low := (0.000, 1.000) (2.000, 0.800) (5.000, 0.000);
+  TERM high := (1.000, 0.000) (2.000, 0.200) (4.000, 0.800) (6.000, 1.000);
+END_FUZZIFY
+
+DEFUZZIFY Detergent
+  RANGE := (0.000 .. 80.000);
+  TERM less_than_usual := (10.000, 0.000) (40.000, 1.000) (50.000, 0.000);
+  TERM usual := (40.000, 0.000) (50.000, 1.000) (60.000, 1.000) (80.000, 0.000);
+  TERM more_than_usual := (50.000, 0.000) (80.000, 1.000);
+  METHOD : MM;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+DEFUZZIFY Cycle
+  RANGE := (0.000 .. 20.000);
+  TERM short := (0.000, 1.000) (10.000, 1.000) (20.000, 0.000);
+  TERM long := (10.000, 0.000) (20.000, 1.000);
+  METHOD : MM;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+RULEBLOCK 
+  AND : MIN;
+  OR : MAX;
+  ACT : MIN;
+  RULE 1 : if Load is small and Dirt is not high then Detergent is less_than_usual
+  RULE 2 : if Load is small and Dirt is high then  Detergent is usual
+  RULE 3 : if Load is normal and Dirt is low then Detergent is less_than_usual
+  RULE 4 : if Load is normal and Dirt is high then Detergent is more_than_usual
+  RULE 5 : if Detergent is usual  or Detergent is less_than_usual  then Cycle is short
+  RULE 6 : if Detergent is more_than_usual  then Cycle is long
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
