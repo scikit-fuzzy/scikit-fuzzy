@@ -147,7 +147,7 @@ class _MembershipValueAccessor(object):
         elif self.agg.kind == 'not':
             return 1. - self.agg.term1.membership_value[key]
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
 
 
 class TermAggregate(TermPrimitive):

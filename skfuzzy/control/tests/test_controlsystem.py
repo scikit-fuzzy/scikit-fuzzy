@@ -1,4 +1,4 @@
-import networkx
+import networkx as nx
 import numpy as np
 import numpy.testing as tst
 import skfuzzy as fuzz
@@ -127,7 +127,7 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
+@pytest.mark.skipif(Version(nx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
 def test_rule_order(setup_rule_order):
     # Make sure rules are exposed in the order needed to solve them
     # correctly
@@ -144,7 +144,7 @@ def test_rule_order(setup_rule_order):
                                               [r1.label, r2.label, r3.label]))
 
 
-@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
+@pytest.mark.skipif(Version(nx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
 def test_unresolvable_rule_order(setup_rule_order):
     # Make sure we don't get suck in an infinite loop when the user
     # gives an unresolvable rule order

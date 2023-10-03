@@ -155,12 +155,12 @@ from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.directives.images import Image
 import jinja2  # Sphinx dependency.
 
-import matplotlib
+import matplotlib as mpl
 from matplotlib.backend_bases import FigureManagerBase
 try:
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("error", UserWarning)
-        matplotlib.use('Agg')
+        mpl.use('Agg')
 except UserWarning:
     import matplotlib.pyplot as plt
     plt.switch_backend("Agg")
@@ -279,7 +279,7 @@ class PlotDirective(Directive):
 
 
 def setup(app):
-    import matplotlib
+    import matplotlib as mpl
     setup.app = app
     setup.config = app.config
     setup.confdir = app.confdir
@@ -298,7 +298,7 @@ def setup(app):
     app.connect('doctree-read', mark_plot_labels)
 
     metadata = {'parallel_read_safe': True, 'parallel_write_safe': True,
-                'version': matplotlib.__version__}
+                'version': mpl.__version__}
     return metadata
 
 
@@ -526,8 +526,8 @@ def run_code(code, code_path, ns=None, function_name=None):
 def clear_state(plot_rcparams, close=True):
     if close:
         plt.close('all')
-    matplotlib.rc_file_defaults()
-    matplotlib.rcParams.update(plot_rcparams)
+    mpl.rc_file_defaults()
+    mpl.rcParams.update(plot_rcparams)
 
 
 def get_plot_formats(config):

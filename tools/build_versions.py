@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import networkx
+import networkx as nx
 import numpy as np
 import scipy as sp
 from PIL import Image
 
-for m in (np, sp, Image, networkx):
+for m in (np, sp, Image, nx):
     if m is not None:
         if m is Image:
             # Pillow 6.0.0 and above have removed the 'VERSION' attribute

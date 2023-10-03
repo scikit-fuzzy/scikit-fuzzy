@@ -11,7 +11,6 @@ description = "Fuzzy logic toolkit for SciPy"
 [project.readme]
 content-type = "text/markdown"
 file = "README.md"
-
 license = {text = "Modified BSD"}
 maintainers = [{name = "Joshua Warner", email = "joshua.dale.warner@gmail.com"}]
 requires-python = ">=3.8"
@@ -28,6 +27,10 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering",
 ]
@@ -63,10 +66,64 @@ mkpkg = [
 
 [tool.ruff]
 select = [
-  "C9",     # McCabe cyclomatic complexity
-  "E",      # pycodestyle errors
+  "AIR",    # Airflow
+  "ASYNC",  # flake8-async
+  "C4",     # flake8-comprehensions
+  "C90",    # McCabe cyclomatic complexity
+  "CPY",    # flake8-copyright
+  "DJ",     # flake8-django
+  "DTZ",    # flake8-datetimez
+  "E",      # pycodestyle
+  "EXE",    # flake8-executable
   "F",      # Pyflakes
-  "W",      # pycodestyle warnings
+  "FA",     # flake8-future-annotations
+  "FLY",    # flynt
+  "FURB",   # refurb
+  "G",      # flake8-logging-format
+  "ICN",    # flake8-import-conventions
+  "INT",    # flake8-gettext
+  "ISC",    # flake8-implicit-str-concat
+  "PD",     # pandas-vet
+  "PERF",   # Perflint
+  "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PLR091", # Pylint Refactor just for max-args, max-branches, etc.
+  "RSE",    # flake8-raise
+  "SLOT",   # flake8-slots
+  "T10",    # flake8-debugger
+  "TCH",    # flake8-type-checking
+  "W",      # pycodestyle
+  "YTT",    # flake8-2020
+  # "A",    # flake8-builtins
+  # "ANN",  # flake8-annotations
+  # "ARG",  # flake8-unused-arguments
+  # "B",    # flake8-bugbear
+  # "BLE",  # flake8-blind-except
+  # "COM",  # flake8-commas
+  # "D",    # pydocstyle
+  # "EM",   # flake8-errmsg
+  # "ERA",  # eradicate
+  # "FBT",  # flake8-boolean-trap
+  # "FIX",  # flake8-fixme
+  # "I",    # isort
+  # "INP",  # flake8-no-pep420
+  # "N",    # pep8-naming
+  # "NPY",  # NumPy-specific rules
+  # "PL",   # Pylint
+  # "PT",   # flake8-pytest-style
+  # "PTH",  # flake8-use-pathlib
+  # "PYI",  # flake8-pyi
+  # "Q",    # flake8-quotes
+  # "RET",  # flake8-return
+  # "RUF",  # Ruff-specific rules
+  # "S",    # flake8-bandit
+  # "SIM",  # flake8-simplify
+  # "SLF",  # flake8-self
+  # "T20",  # flake8-print
+  # "TD",   # flake8-todos
+  # "TID",  # flake8-tidy-imports
+  # "TRY",  # tryceratops
+  # "UP",   # pyupgrade
 ]
 line-length = 126
 target-version = "py38"
@@ -78,9 +135,14 @@ max-complexity = 35
 "docs/ext/docscrape_sphinx.py" = ["E401"]
 "docs/ext/docscrape.py" = ["E701", "E741"]
 "docs/ext/numpydoc.py" = ["E401", "E402", "E701"]
-"docs/ext/plot2rst.py" = ["E402"]
+"docs/ext/plot2rst.py" = ["E402", "PGH001"]
 "docs/source/conf.py" = ["E402"]
 "docs/tools/plot_pr.py" = ["E741"]
+
+[tool.ruff.pylint]
+max-args = 9  # Default is 5
+max-branches = 35  # Default is 12
+max-statements = 95  # Default is 50
 
 [tool.pytest.ini_options]
 addopts = "-s --maxfail=1 --failed-first --color=yes"
