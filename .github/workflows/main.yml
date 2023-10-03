@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]  # , windows-latest]  # Windows passes even when pytests fail
-        python: [3.8, 3.9, "3.10", 3.11, 3.12]
+        python: [3.8, 3.9, "3.10", 3.11, 3.12] 
 
     steps:
       - uses: actions/checkout@v4
