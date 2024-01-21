@@ -32,7 +32,7 @@ class FuzzyVariable(object):
     Consequent classes, not for individual use.
     """
 
-    def __init__(self, universe, label, defuzzify_method='centroid'):
+    def __init__(self, universe, label, defuzzify_method='mom'):
         """
         Initialization of fuzzy variable
 
