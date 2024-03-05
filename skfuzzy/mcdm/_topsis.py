@@ -264,42 +264,36 @@ class FuzzyTOPSIS(object):
 
     def _get_min_left_or_max_right_for_criteria(self, crit_j):
         is_benefit_criterion = self.criteria_benefit_indicator[crit_j]
-        final_value = 0
-        if is_benefit_criterion is False:
-            final_value = np.inf
-        # get min/max for cost/benefit criteria
-        for alternative in self.agg_decision_matrix:
-            criterion = alternative[crit_j]
-            left_value, middle_value, right_value = criterion
+        value_index = -1 if is_benefit_criterion else 0
 
-            if is_benefit_criterion:
-                final_value = max(final_value, right_value)
-            else:
-                final_value = min(final_value, left_value)
+        # Initialize an array with either np.inf or 0
+        # based on the benefit criterion
+        init_value = np.inf if not is_benefit_criterion else 0
+
+        comp_method = np.max if is_benefit_criterion else np.min
+
+        values = np.array([init_value]) + np.array([
+            alternative[crit_j][value_index]
+            for alternative in self.agg_decision_matrix
+        ])
+
+        final_value = comp_method(values)
         return final_value
 
     def _default_normalize_alternative_method(
         self, alt_i, crit_j, minl_or_maxr_criteria
     ):
         alternative = self.agg_decision_matrix[alt_i]
-        criterion = alternative[crit_j]
-        left_value, middle_value, right_value = criterion
+        criterion = np.array(alternative[crit_j])
 
-        norm_alt_crit_j = None
         is_benefit_criterion = self.criteria_benefit_indicator[crit_j]
+
         if is_benefit_criterion:
-            norm_alt_crit_j = (
-                (left_value / minl_or_maxr_criteria),
-                (middle_value / minl_or_maxr_criteria),
-                (right_value / minl_or_maxr_criteria),
-            )
+            norm_alt_crit_j = criterion / minl_or_maxr_criteria
         else:
-            norm_alt_crit_j = (
-                (minl_or_maxr_criteria / right_value),
-                (minl_or_maxr_criteria / middle_value),
-                (minl_or_maxr_criteria / left_value),
-            )
-        return norm_alt_crit_j
+            norm_alt_crit_j = minl_or_maxr_criteria / criterion
+
+        return tuple(norm_alt_crit_j)
 
     def _normalized_decision_matrix(self):
         """
