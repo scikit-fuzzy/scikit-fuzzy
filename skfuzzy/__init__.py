@@ -42,9 +42,9 @@ __all__.extend(_intervals.__all__)
 
 
 # MCDM subpackage including fuzzy TOPSIS
-import skfuzzy.mcdm as _topsis  # noqa: E402
+import skfuzzy.mcdm as _mcdm  # noqa: E402
 from skfuzzy.mcdm import *  # noqa: E402,F403
-__all__.extend(_topsis.__all__)
+__all__.extend(_mcdm.__all__)
 
 
 # Filtering subpackage, including 1D and 2D FIRE functions
