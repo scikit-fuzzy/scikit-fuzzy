@@ -323,15 +323,17 @@ class FuzzyTOPSIS(object):
         """
         self.weighted_norm_decision_matrix = []
         for alternative in self.norm_decision_matrix:
-            alt_weighted_norm_criteria = []
-            for crit_j, criterion in enumerate(alternative):
-                weight_norm_criterion = []
-                weight = self.agg_criteria_weights[crit_j]
-                for i in range(3):
-                    weight_norm_criterion.append(criterion[i] * weight[i])
-                alt_weighted_norm_criteria.append(weight_norm_criterion)
+
+            alt_weighted_norm_criteria = np.array([
+                np.array(criterion) * np.array(weight)
+
+                for criterion, weight in zip(
+                    alternative, self.agg_criteria_weights
+                )
+            ])
+
             self.weighted_norm_decision_matrix.append(
-                alt_weighted_norm_criteria
+                alt_weighted_norm_criteria.tolist()
             )
 
     def _calculate_FPIS_FNIS(self):
@@ -344,36 +346,26 @@ class FuzzyTOPSIS(object):
             negative ideal are an alternative with 1s and 0s respectivelly
             FNIS: (0, 0, 0)...
         """
-        self.FPIS_value = []
-        self.FNIS_value = []
-        for crit_j in range(self.num_criteria):
-            fpis = [1, 1, 1]
-            fnis = [0, 0, 0]
-            self.FPIS_value.append(fpis)
-            self.FNIS_value.append(fnis)
+        self.FPIS_value = np.ones((self.num_criteria, 3), dtype=int)
+        self.FNIS_value = np.zeros((self.num_criteria, 3), dtype=int)
 
     def _fuzzy_number_distance_calculation(self, val1, val2):
         """
-        euclidian distance of two triangular fuzzy numbers
+        Euclidean distance of two triangular fuzzy numbers
         proposed by Chen, C.T., 2000
         """
-        first_part = 0
-        for vi in range(3):
-            first_part += (val1[vi] - val2[vi]) ** 2
-        second_part = first_part / 3
-        third_part = np.sqrt(second_part)
-        return third_part
+        difference = np.array(val1) - np.array(val2)
+        squared_difference = difference ** 2
+        mean_squared_difference = np.mean(squared_difference)
+        euclidean_distance = np.sqrt(mean_squared_difference)
+        return euclidean_distance
 
     def _calculate_distance_from_ideal_solutions(
         self, alt_i, crit_j, is_positive=True
     ):
-        if is_positive:
-            ideal_solution = self.FPIS_value
-        else:
-            ideal_solution = self.FNIS_value
+        ideal_solution = self.FPIS_value if is_positive else self.FNIS_value
         ideal_criterion = ideal_solution[crit_j]
         criterion = self.weighted_norm_decision_matrix[alt_i][crit_j]
-        dist = 0
         dist = self._fuzzy_number_distance_calculation(
             criterion, ideal_criterion
         )
