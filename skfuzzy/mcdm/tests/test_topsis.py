@@ -1,8 +1,9 @@
-import nose
+import pytest
 import numpy as np
 import skfuzzy as fuzz
 
 
+@pytest.fixture
 def setupChenInput():
     global ranker
 
@@ -70,6 +71,7 @@ def setupChenInput():
     )
 
 
+@pytest.fixture
 def setupOtherInputMultipleDMs():
     global ranker
 
@@ -121,6 +123,7 @@ def setupOtherInputMultipleDMs():
     )
 
 
+@pytest.fixture
 def setupOtherInputSingleDMs():
     global ranker
 
@@ -162,8 +165,7 @@ def setupOtherInputSingleDMs():
     )
 
 
-@nose.with_setup(setupChenInput)
-def test_fuzzy_topsis_ccs_with_chen_inputs():
+def test_fuzzy_topsis_ccs_with_chen_inputs(setupChenInput):
     """
     Test fuzzy topsis with Chen input.
 
@@ -184,8 +186,7 @@ def test_fuzzy_topsis_ccs_with_chen_inputs():
     np.testing.assert_allclose(expected_ccs[2], ranker.closeness_coefficients[2], rtol=0.01)
 
 
-@nose.with_setup(setupOtherInputMultipleDMs)
-def test_fuzzy_topsis_ccs_with_multiple_dms():
+def test_fuzzy_topsis_ccs_with_multiple_dms(setupOtherInputMultipleDMs):
     """
     Test fuzzy topsis with other inputs using multiple dms.
 
@@ -202,8 +203,7 @@ def test_fuzzy_topsis_ccs_with_multiple_dms():
     np.testing.assert_allclose(expected_ccs[1], ranker.closeness_coefficients[1], rtol=0.01)
 
 
-@nose.with_setup(setupOtherInputSingleDMs)
-def test_fuzzy_topsis_ccs_with_easy_single_dm():
+def test_fuzzy_topsis_ccs_with_easy_single_dm(setupOtherInputSingleDMs):
     """
     Test fuzzy topsis with other inputs using logically sound
      and easy to interpret input, with a single DM.
