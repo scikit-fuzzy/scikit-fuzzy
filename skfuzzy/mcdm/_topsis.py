@@ -3,10 +3,6 @@ topsis.py : Fuzzy TOPSIS algorithm.
 """
 import numpy as np
 
-# from scipy.spatial.distance import cdist
-
-# from .normalize_columns import normalize_columns, normalize_power_columns
-
 
 class FuzzyTOPSIS(object):
     """
@@ -111,12 +107,10 @@ class FuzzyTOPSIS(object):
         self.weighted_norm_decision_matrix = None
 
         self.FPIS_value = None
-        # self.FPIS_indexes = None
         self.fpis_distances = None
         self.fpis_distances_per_criterion = None
 
         self.FNIS_value = None
-        # self.FNIS_indexes = None
         self.fnis_distances = None
         self.fnis_distances_per_criterion = None
 
