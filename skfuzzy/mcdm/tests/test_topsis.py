@@ -6,9 +6,6 @@ import skfuzzy as fuzz
 def setup():
     global ranker
 
-    # Set random seed
-    np.random.seed(42)
-
     crit_lf = {
         'VH': (0.9, 1.0, 1.0),
         'H': (0.7, 0.9, 1.0),
@@ -83,20 +80,18 @@ def test_fuzzy_topsis_centers():
     """
     global ranker
 
-
     ret = ranker.evaluate()
     expected_rank_index = [1, 2, 0]
 
     np.testing.assert_array_equal(expected_rank_index, ret)
 
     # deviation from reported values in Chen's original paper  (0.62, 0.77, 0.71)
-    # the rounding of numbers and a wrong value on Table 5 (aggregated attributes) for A1, C2
+    # the rounding of numbers and the wrong reported value on Table 5 (aggregated attributes) for A1, C2
     # could be the culprit for this disdrepancy
     expected_ccs = [0.64, 0.77, 0.70]
+    np.testing.assert_allclose(expected_ccs[0], ranker.closeness_coefficients[0], rtol=0.01)
     np.testing.assert_allclose(expected_ccs[1], ranker.closeness_coefficients[1], rtol=0.01)
-    # self.assertAlmostEqual(ranker.closeness_coefficients[1], expected_ccs[1], places=2)
-    # self.assertAlmostEqual(ranker.closeness_coefficients[2], expected_ccs[2], places=2)
-    # self.assertAlmostEqual(ranker.closeness_coefficients[0], expected_ccs[0], places=2)
+    np.testing.assert_allclose(expected_ccs[2], ranker.closeness_coefficients[2], rtol=0.01)
 
 
 

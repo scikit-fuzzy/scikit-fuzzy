@@ -408,14 +408,15 @@ class FuzzyTOPSIS(object):
         Seventh step in fuzzy TOPSIS, where it is calculated the closeness
         coefficient for each alternative.
         """
-        self.closeness_coefficients = []
-        for alt_j in range(self.num_alternatives):
-            nominator = self.fnis_distances[alt_j]
-            denominator = (
-                self.fnis_distances[alt_j] + self.fpis_distances[alt_j]
-            )
-            close_coeff = nominator / denominator
-            self.closeness_coefficients.append(close_coeff)
+        fnis_distances = np.array(self.fnis_distances)
+        fpis_distances = np.array(self.fpis_distances)
+
+        denominators = fnis_distances + fpis_distances
+        closeness_coefficients = np.divide(
+            fnis_distances, denominators
+        )
+
+        self.closeness_coefficients = closeness_coefficients.tolist()
 
     def get_alternatives_ranking_scores(self):
         return self.closeness_coefficients
