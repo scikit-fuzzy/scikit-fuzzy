@@ -47,7 +47,7 @@ class FuzzyTOPSIS(object):
     ]
     weights_list = [decision_maker_1_weights, decision_maker_2_weights]
     criteria_benefit_indicator = [True, False, True]
-    # indicates that crit1 and 3 are benefit, and crit 2 is cost.
+    # indicates that criteria 1 and 3 are benefit, and criteria 2 is cost.
 
     Notes
     -----
@@ -231,8 +231,10 @@ class FuzzyTOPSIS(object):
         return agg_decision_matrix
 
     def _defaut_crit_agg_fuzzy_weight_method(self, crit_j):
-        # for each decision maker K weight specified for this criteria
-        # (initializing with first K)
+        """
+        Same method for aggregating fuzzy criteria used in Chen [1].
+        Returns the avg of each individual value in the triangular fuzzy number
+        """
         avg_values = np.mean(
             [
                 weights[crit_j]
@@ -272,7 +274,7 @@ class FuzzyTOPSIS(object):
 
         comp_method = np.max if is_benefit_criterion else np.min
 
-        values = np.array([init_value]) + np.array([
+        values = np.array([init_value] + [
             alternative[crit_j][value_index]
             for alternative in self.agg_decision_matrix
         ])
@@ -291,7 +293,7 @@ class FuzzyTOPSIS(object):
         if is_benefit_criterion:
             norm_alt_crit_j = criterion / minl_or_maxr_criteria
         else:
-            norm_alt_crit_j = minl_or_maxr_criteria / criterion
+            norm_alt_crit_j = minl_or_maxr_criteria / criterion[::-1]
 
         return tuple(norm_alt_crit_j)
 
