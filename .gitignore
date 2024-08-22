@@ -30,3 +30,4 @@ docs/source/_static/random.js
 docs/logo/*.png
 docs/source/gitwash
 .idea/
+*.ipynb
