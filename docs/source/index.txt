@@ -60,9 +60,6 @@ Sections
 Indices and tables
 ==================
 
-`Table of Contents <contents.html>`_
-   Lists all sections and subsections.
-
 :ref:`search`
    Search this documentation.
 
