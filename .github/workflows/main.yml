@@ -44,7 +44,7 @@ jobs:
         run: |
           pytest
           # pytest --doctest-modules  # TODO: Fix four failing doctests
-          ruff check *.py --format=github
+          ruff check --output-format=github .
       - name: Build docs
         if: matrix.os == 'ubuntu-latest'
         run: |
