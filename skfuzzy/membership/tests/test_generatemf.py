@@ -78,7 +78,7 @@ def test_gpiecemf_g_smaller_than_a():
                      1.]
     test = gpiecemf(x, [2.5, 3, 3.2], [1, 1.25, 2])
     assert_allclose(test, expected, rtol=1e-5)
-    
+
 
 def test_pimf_smf_zmf():
     x = np.arange(-4.0, 4.1, 0.1)
