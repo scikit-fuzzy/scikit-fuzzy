@@ -168,7 +168,7 @@ def cmeans(data, c, m, error, maxiter,
     p = 0
 
     # Main cmeans loop
-    while p < maxiter - 1:
+    while p < maxiter:
         u2 = u.copy()
         [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m, metric)
         jm = np.hstack((jm, Jjm))
@@ -263,7 +263,7 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
     p = 0
 
     # Main cmeans loop
-    while p < maxiter - 1:
+    while p < maxiter:
         u2 = u.copy()
         [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m,
                                        metric)
