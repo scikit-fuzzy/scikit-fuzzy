@@ -1,0 +1,10 @@
+
+This is a copy of *part of* the PLY distribution.
+
+I only use the lexer-geenrating part of PLY, so this is just the lexer
+component of PLY. There's lots more in the full PLY distribution
+at http://www.dabeaz.com/ply/
+
+See the README.md file for PLY authorship and copyright.
+
+

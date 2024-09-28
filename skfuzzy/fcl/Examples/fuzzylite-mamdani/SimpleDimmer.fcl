@@ -1,0 +1,37 @@
+//Code automatically generated with fuzzylite 6.0.
+
+FUNCTION_BLOCK SimpleDimmer
+
+VAR_INPUT
+  Ambient: REAL;
+END_VAR
+
+VAR_OUTPUT
+  Power: REAL;
+END_VAR
+
+FUZZIFY Ambient
+  RANGE := (0.000 .. 1.000) WITH .01;
+  TERM DARK := Triangle 0.000 0.250 0.500;
+  TERM MEDIUM := Triangle 0.250 0.500 0.750;
+  TERM BRIGHT := Triangle 0.500 0.750 1.000;
+END_FUZZIFY
+
+DEFUZZIFY Power
+  RANGE := (0.000 .. 1.000) WITH .01;
+  TERM LOW := Triangle 0.000 0.250 0.500;
+  TERM MEDIUM := Triangle 0.250 0.500 0.750;
+  TERM HIGH := Triangle 0.500 0.750 1.000;
+  METHOD : COG;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+RULEBLOCK 
+  ACT : MIN;
+  RULE 1 : if Ambient is DARK then Power is HIGH
+  RULE 2 : if Ambient is MEDIUM then Power is MEDIUM
+  RULE 3 : if Ambient is BRIGHT then Power is LOW
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

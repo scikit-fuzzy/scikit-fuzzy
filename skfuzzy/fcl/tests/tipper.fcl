@@ -1,0 +1,50 @@
+// Example taken from the fuzzylite distribution, 
+// Covered by the GNU General Public License (GPL) 3.0.
+// see: https://www.fuzzylite.com/cpp/
+//Code automatically generated with fuzzylite 6.0.
+
+
+FUNCTION_BLOCK tipper
+
+VAR_INPUT
+  service: REAL;
+  food: REAL;
+END_VAR
+
+VAR_OUTPUT
+  tip: REAL;
+END_VAR
+
+FUZZIFY service
+  RANGE := (0.000 .. 10.000);
+  TERM poor := Gaussian 0.000 1.500;
+  TERM good := Gaussian 5.000 1.500;
+  TERM excellent := Gaussian 10.000 1.500;
+END_FUZZIFY
+
+FUZZIFY food
+  RANGE := (0.000 .. 10.000);
+  TERM rancid := Trapezoid 0.000 0.000 1.000 3.000;
+  TERM delicious := Trapezoid 7.000 9.000 10.000 10.000;
+END_FUZZIFY
+
+DEFUZZIFY tip
+  RANGE := (0.000 .. 30.000);
+  TERM cheap := Triangle 0.000 5.000 10.000;
+  TERM average := Triangle 10.000 15.000 20.000;
+  TERM generous := Triangle 20.000 25.000 30.000;
+  METHOD : COG;
+  ACCU : MAX;
+  DEFAULT := nan;
+END_DEFUZZIFY
+
+RULEBLOCK 
+  AND : MIN;
+  OR : MAX;
+  ACT : MIN;
+  RULE 1 : if service is poor or food is rancid then tip is cheap
+  RULE 2 : if service is good then tip is average
+  RULE 3 : if service is excellent or food is delicious then tip is generous
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

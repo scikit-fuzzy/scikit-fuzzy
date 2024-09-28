@@ -1,0 +1,42 @@
+FUNCTION_BLOCK Example
+
+VAR_INPUT
+	temp:	REAL;
+END_VAR
+
+VAR_OUTPUT
+	hot_valve:	REAL;
+	cold_valve:	REAL;
+END_VAR
+
+FUZZIFY temp
+	TERM hot	:=	(1,0)(70,0)(90,1);
+	TERM cold	:=	(1,1)(50,1)(80,0);
+  RANGE := (1.0 .. 90.0); // Added range for temp
+END_FUZZIFY
+
+DEFUZZIFY hot_valve
+	TERM open	:=	100;
+	TERM closed	:=	0;
+	METHOD : COGS;
+	DEFAULT		:= 0;	
+  RANGE := (0.0 .. 100.0); // Added range for hot_valve
+END_DEFUZZIFY
+
+DEFUZZIFY cold_valve
+	TERM open	:=	100;
+	TERM closed	:=	0;
+	METHOD : COGS;
+	DEFAULT		:= 0;
+  RANGE := (0.0 .. 100.0); // Added range for cold_valve
+END_DEFUZZIFY
+
+RULEBLOCK Control
+	AND: MIN;
+	ACCU: MAX;
+	RULE 1:	IF temp IS cold THEN hot_valve IS open;
+	RULE 2: IF temp IS hot THEN cold_valve IS open;
+END_RULEBLOCK
+
+
+END_FUNCTION_BLOCK

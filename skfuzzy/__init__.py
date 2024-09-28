@@ -50,6 +50,12 @@ import skfuzzy.defuzzify as _defuzz  # noqa: E402
 from skfuzzy.defuzzify import *  # noqa: E402,F403
 __all__.extend(_defuzz.__all__)
 
+# Read FCL file subpackage
+import skfuzzy.fcl as _fcl
+from skfuzzy.fcl import *
+__all__.extend(_fcl.__all__)
+
+
 # Image processing subpackage
 import skfuzzy.image as _image  # noqa: E402
 from skfuzzy.image import *  # noqa: E402,F403
