@@ -31,3 +31,4 @@ docs/logo/*.png
 docs/source/gitwash
 .idea/
 Pipfile*
+*.ipynb

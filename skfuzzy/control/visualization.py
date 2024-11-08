@@ -179,7 +179,7 @@ class ControlSystemVisualizer(object):
             raise ImportError("`ControlSystemVisualizer` can only be used "
                               "with `matplotlib` present in the system.")
 
-            self.ctrl = control_system
+        self.ctrl = control_system
 
         self.fig, self.ax = plt.subplots()
 

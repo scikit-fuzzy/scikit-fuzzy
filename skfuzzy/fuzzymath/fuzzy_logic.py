@@ -16,7 +16,12 @@ def _resampleuniverse(x, mfx, y, mfy):
 
     mi = min(x.min(), y.min())
     ma = max(x.max(), y.max())
-    z = np.r_[mi:ma:minstep]
+    z = np.r_[mi:ma+minstep:minstep]
+
+    # Occasionally this oversteps depending on precision and ends up with too
+    # large of a universe. This checks and eliminates the last point if so.
+    if z.max() > (ma + minstep/2):
+        z = z[:-1]
 
     xidx = np.argsort(x)
     mfx = mfx[xidx]

@@ -371,8 +371,8 @@ plot2rst_rcparams = {'image.cmap' : 'gray',
 # intersphinx
 # -----------------------------------------------------------------------------
 intersphinx_mapping = {
-    'http://docs.python.org/3.5': None,
-    'http://docs.scipy.org/doc/numpy': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-    'http://scikit-learn.org/stable': None
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
 }
