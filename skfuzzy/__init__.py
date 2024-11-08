@@ -40,6 +40,13 @@ import skfuzzy.intervals as _intervals  # noqa: E402
 from skfuzzy.intervals import *  # noqa: E402,F403
 __all__.extend(_intervals.__all__)
 
+
+# MCDM subpackage including fuzzy TOPSIS
+import skfuzzy.mcdm as _mcdm  # noqa: E402
+from skfuzzy.mcdm import *  # noqa: E402,F403
+__all__.extend(_mcdm.__all__)
+
+
 # Filtering subpackage, including 1D and 2D FIRE functions
 import skfuzzy.filters as _filters  # noqa: E402
 from skfuzzy.filters import *  # noqa: E402,F403
