@@ -155,8 +155,19 @@ tipping.compute()
 
 """
 Once computed, we can view the result as well as visualize it.
+
+The ``print_state`` method shows how each fuzzy rule contributes to
+the final result. It reports the membership values of the antecedents,
+the aggregation (IF-clause) and activation (THEN-clause) of each rule,
+and the accumulated consequent values. This is useful for understanding
+which rules are active for the given inputs and how they contribute to
+the final defuzzified output.
 """
 print(tipping.output['tip'])
+
+# Display the fuzzy rule evaluation details.
+tipping.print_state()
+
 tip.view(sim=tipping)
 
 """
