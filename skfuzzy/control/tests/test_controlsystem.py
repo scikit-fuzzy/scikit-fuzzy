@@ -537,6 +537,18 @@ def test_complex_system():
     # Ensure results are within expected limits
     np.testing.assert_allclose(z1, expected)
 
+def test_control_system_visualizer_initializes_ctrl():
+    """ControlSystemVisualizer should retain the supplied control system."""
+    pytest.importorskip("matplotlib")
+    from skfuzzy.control.visualization import ControlSystemVisualizer
+
+    control_system = ctrl.ControlSystem()
+    visualizer = ControlSystemVisualizer(control_system)
+
+    assert visualizer.ctrl is control_system
+
+
+
 
 if __name__ == '__main__':
     tst.run_module_suite()
