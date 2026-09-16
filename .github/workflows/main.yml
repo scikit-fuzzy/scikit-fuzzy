@@ -54,7 +54,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: |
           github.repository == 'scikit-fuzzy/scikit-fuzzy' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'refs/heads/master' &&
           matrix.os == 'ubuntu-latest' &&
           matrix.python == 3.9
         with:
