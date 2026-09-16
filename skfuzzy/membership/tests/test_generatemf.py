@@ -130,3 +130,14 @@ def test_trimf():
 
 if __name__ == '__main__':
     np.testing.run_module_suite()
+
+
+def test_pwlmf():
+    import numpy as np
+    import skfuzzy as fuzz
+    x = np.arange(0, 10.1, 0.1)
+    pts = [2, 0, 4, 1, 6, 0.5, 8, 0]
+    y = fuzz.pwlmf(x, pts)
+    assert y.max() <= 1.0
+    assert y.min() >= 0.0
+    assert len(y) == len(x)

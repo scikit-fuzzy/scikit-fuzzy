@@ -9,6 +9,7 @@ __all__ = ['dsigmf',
            'gpiecemf',
            'ipiecemf',
            'piecemf',
+           'pwlmf',
            'pimf',
            'psigmf',
            'sigmf',
@@ -18,5 +19,5 @@ __all__ = ['dsigmf',
            'zmf']
 
 from .generatemf import (dsigmf, gaussmf, gauss2mf, gbellmf, gpiecemf,
-                         ipiecemf, piecemf, pimf, psigmf, sigmf, smf, trapmf,
+                         ipiecemf, piecemf, pwlmf, pimf, psigmf, sigmf, smf, trapmf,
                          trimf, zmf)

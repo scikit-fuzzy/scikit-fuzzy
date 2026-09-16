@@ -190,6 +190,42 @@ def piecemf(x, abc):
     return y
 
 
+
+def pwlmf(x, pts):
+    """
+    Arbitrary piecewise linear membership function.
+    Parameters
+    ----------
+    x : 1d array
+        Independent variable vector.
+    pts : 1d array or list of pairs
+        A flat array [x0, y0, x1, y1, ...] or Nx2 array
+        defining the (x, y) points of the piecewise linear function.
+        The x values must be monotonically increasing.
+    Returns
+    -------
+    y : 1d array
+        Piecewise linear fuzzy membership function for x.
+    """
+    import numpy as np
+    pts = np.asarray(pts)
+    if pts.ndim == 1:
+        if len(pts) % 2 != 0:
+            raise ValueError("pts must be an even length array of x,y pairs.")
+        xp = pts[0::2]
+        yp = pts[1::2]
+    else:
+        if pts.shape[1] != 2:
+            raise ValueError("pts must be an Nx2 array of x,y pairs.")
+        xp = pts[:, 0]
+        yp = pts[:, 1]
+    if not np.all(np.diff(xp) > 0):
+        raise ValueError("x coordinates in pts must be strictly increasing.")
+    if not np.all((yp >= 0) & (yp <= 1)):
+        raise ValueError("y coordinates must be in [0, 1].")
+    return np.interp(x, xp, yp)
+
+
 def ipiecemf(x, abc):
     """
     Inverse piecewise linear membership function (inverse of piecemf).
