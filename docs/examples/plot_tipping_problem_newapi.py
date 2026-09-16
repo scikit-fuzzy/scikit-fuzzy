@@ -56,6 +56,7 @@ define fuzzy variables
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
+import matplotlib.pyplot as plt
 
 # New Antecedent/Consequent objects hold universe variables and membership
 # functions
@@ -83,14 +84,20 @@ command after each `.view()`.
 
 # You can see how these look with .view()
 quality['average'].view()
+plt.savefig("quality_average.png")
+plt.close()
 """
 .. image:: PLOT2RST.current_figure
 """
 service.view()
+plt.savefig("service.png")
+plt.close()
 """
 .. image:: PLOT2RST.current_figure
 """
 tip.view()
+plt.savefig("tip_membership.png")
+plt.close()
 """
 .. image:: PLOT2RST.current_figure
 
@@ -116,6 +123,8 @@ rule2 = ctrl.Rule(service['average'], tip['medium'])
 rule3 = ctrl.Rule(service['good'] | quality['good'], tip['high'])
 
 rule1.view()
+plt.savefig("rule1.png")
+plt.close()
 
 """
 .. image:: PLOT2RST.current_figure
@@ -158,7 +167,8 @@ Once computed, we can view the result as well as visualize it.
 """
 print(tipping.output['tip'])
 tip.view(sim=tipping)
-
+plt.savefig("final_tipping_result.png")
+plt.show()
 """
 .. image:: PLOT2RST.current_figure
 
