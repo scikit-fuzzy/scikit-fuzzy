@@ -538,5 +538,91 @@ def test_complex_system():
     np.testing.assert_allclose(z1, expected)
 
 
+def _tipping_system():
+    # Small helper building the classic tipping problem, shared by the
+    # rule_activations / percent_rules_activated / antecedent_pertinence
+    # tests below.
+    food = ctrl.Antecedent(np.linspace(0, 10, 11), 'quality')
+    service = ctrl.Antecedent(np.linspace(0, 10, 11), 'service')
+    tip = ctrl.Consequent(np.linspace(0, 25, 26), 'tip')
+
+    food.automf(3)
+    service.automf(3)
+
+    tip['bad'] = fuzz.trimf(tip.universe, [0, 0, 13])
+    tip['middling'] = fuzz.trimf(tip.universe, [0, 13, 25])
+    tip['lots'] = fuzz.trimf(tip.universe, [13, 25, 25])
+
+    rule1 = ctrl.Rule(food['poor'] | service['poor'], tip['bad'],
+                      label='rule1')
+    rule2 = ctrl.Rule(service['average'], tip['middling'], label='rule2')
+    rule3 = ctrl.Rule(service['good'] | food['good'], tip['lots'],
+                      label='rule3')
+
+    system = ctrl.ControlSystem([rule1, rule2, rule3])
+    return ctrl.ControlSystemSimulation(system)
+
+
+def test_rule_activations_requires_compute():
+    sim = _tipping_system()
+    with pytest.raises(ValueError):
+        sim.rule_activations()
+
+
+def test_rule_activations():
+    sim = _tipping_system()
+    sim.input['quality'] = 6.5
+    sim.input['service'] = 9.8
+    sim.compute()
+
+    activations = sim.rule_activations()
+
+    # All three rules are reported, keyed by their label
+    assert set(activations.keys()) == {'rule1', 'rule2', 'rule3'}
+
+    # 'poor' has zero membership for both inputs, so rule1 never fires
+    tst.assert_allclose(activations['rule1'], 0.0, atol=1e-10)
+
+    # Every firing strength is a valid degree of membership
+    for value in activations.values():
+        assert 0.0 <= value <= 1.0
+
+
+def test_percent_rules_activated():
+    sim = _tipping_system()
+    sim.input['quality'] = 6.5
+    sim.input['service'] = 9.8
+    sim.compute()
+
+    # Only rule2 and rule3 have nonzero firing strength for this input
+    tst.assert_allclose(sim.percent_rules_activated(),
+                        200. / 3., atol=1e-6)
+
+    # A very high threshold means only strongly-firing rules count
+    percent_strict = sim.percent_rules_activated(threshold=0.5)
+    assert percent_strict <= sim.percent_rules_activated()
+
+
+def test_antecedent_pertinence():
+    sim = _tipping_system()
+    sim.input['quality'] = 6.5
+    sim.input['service'] = 9.8
+    sim.compute()
+
+    pertinence = sim.antecedent_pertinence()
+
+    assert set(pertinence.keys()) == {'quality', 'service'}
+    assert set(pertinence['quality'].keys()) == {'poor', 'average', 'good'}
+
+    # Every reported pertinence is a percentage
+    for term_values in pertinence.values():
+        for value in term_values.values():
+            assert 0.0 <= value <= 100.0
+
+    # service=9.8 is deep into 'good' territory
+    assert pertinence['service']['good'] > pertinence['service']['average']
+    tst.assert_allclose(pertinence['service']['poor'], 0.0, atol=1e-10)
+
+
 if __name__ == '__main__':
     tst.run_module_suite()

@@ -460,6 +460,91 @@ class ControlSystemSimulation(object):
         """
         self._reset_simulation()
 
+    def rule_activations(self):
+        """
+        Report the firing (aggregate) strength of every Rule in the system
+        for the most recently computed simulation state.
+
+        Returns
+        -------
+        activations : OrderedDict
+            Maps each rule's label to its aggregate firing strength, a
+            value in the range [0, 1], as of the most recent ``compute()``.
+
+        Notes
+        -----
+        Call ``compute()`` before this method so results reflect the
+        current inputs. See also ``percent_rules_activated`` for a single
+        summary statistic derived from this data, and
+        ``antecedent_pertinence`` for the per-term membership degrees
+        that feed into these firing strengths.
+        """
+        if next(self.ctrl.consequents).output[self] is None:
+            raise ValueError("Call compute method first.")
+
+        activations = OrderedDict()
+        for rule in self.ctrl.rules:
+            activations[rule.label] = rule.aggregate_firing[self]
+        return activations
+
+    def percent_rules_activated(self, threshold=0.0):
+        """
+        Percentage of rules in the system whose firing strength exceeds
+        ``threshold`` for the most recently computed simulation state.
+
+        Parameters
+        ----------
+        threshold : float, optional
+            Minimum aggregate firing strength, in [0, 1], required for a
+            rule to be counted as "activated". Defaults to 0.0, so any
+            rule with a nonzero firing strength is counted.
+
+        Returns
+        -------
+        percent : float
+            Percentage (0-100) of rules that are activated.
+
+        Notes
+        -----
+        Call ``compute()`` before this method so results reflect the
+        current inputs.
+        """
+        activations = self.rule_activations()
+        if len(activations) == 0:
+            return 0.0
+
+        activated = sum(1 for value in activations.values()
+                        if value is not None and value > threshold)
+        return 100. * activated / len(activations)
+
+    def antecedent_pertinence(self):
+        """
+        Percent pertinence (membership degree) of every term of every
+        Antecedent, for the most recently computed simulation state.
+
+        Returns
+        -------
+        pertinence : OrderedDict
+            Maps each Antecedent's label to an OrderedDict of
+            ``{term_label: percent_pertinence}``, where
+            ``percent_pertinence`` is a value in [0, 100] describing how
+            strongly the current input belongs to that term. Terms with
+            no membership value computed yet are reported as ``None``.
+
+        Notes
+        -----
+        Call ``compute()`` (or at minimum set the relevant inputs) before
+        this method so results reflect the current inputs.
+        """
+        pertinence = OrderedDict()
+        for antecedent in self.ctrl.antecedents:
+            terms = OrderedDict()
+            for label, term in antecedent.terms.items():
+                value = term.membership_value[self]
+                terms[label] = None if value is None else 100. * value
+            pertinence[antecedent.label] = terms
+        return pertinence
+
     def _reset_simulation(self):
         """
         Clear temporary data from simulation objects.
