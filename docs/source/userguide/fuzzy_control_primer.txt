@@ -65,8 +65,55 @@ estimates the tip we should give at a restaurant, we might structure it as such:
    - it would recommend I leave:
       * a 20.2% tip.
 
+
+Fuzzy Control System Workflow
+-----------------------------
+
+A fuzzy control system can be developed using the following workflow:
+
+1. **Define the input variables:** Create the antecedents and specify the
+   universe of values for each input.
+
+2. **Define membership functions:** Assign fuzzy terms such as ``poor``,
+   ``average``, or ``good`` to the input variables using membership functions.
+
+3. **Define the output variable:** Create the consequent and specify its
+   universe and fuzzy terms.
+
+4. **Create fuzzy rules:** Define IF-THEN rules that connect the input
+   conditions to the desired output. Multiple input conditions can be combined
+   using logical operators such as ``and`` and ``or``.
+
+5. **Create the control system:** Combine the fuzzy rules into a
+   ``ControlSystem``.
+
+6. **Create a simulation:** A ``ControlSystemSimulation`` can be used to
+   provide input values and evaluate the fuzzy control system.
+
+7. **Provide input values:** Assign crisp values to the input variables using
+   the simulation's ``input`` interface.
+
+8. **Compute the result:** Call ``compute()`` to evaluate the fuzzy rules and
+   calculate the output.
+
+9. **Read the output:** The resulting crisp value can be obtained through the
+   simulation's ``output`` interface.
+
+A typical simulation follows this general pattern::
+
+    simulation.input['service'] = 9.8
+    simulation.input['food_quality'] = 6.5
+    simulation.compute()
+    tip = simulation.output['tip']
+
+This workflow separates the definition of fuzzy variables and rules from the
+execution of the controller, making the fuzzy control system easier to
+understand and reuse.
+
+
 Example
 -------
+
 To see a worked example of the tipping problem using the :mod:`scikit-fuzzy`
 library visit the `Fuzzy Control Systems example
 <../auto_examples/plot_tipping_problem.html>`_.
