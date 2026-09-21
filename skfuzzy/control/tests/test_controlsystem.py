@@ -538,5 +538,44 @@ def test_complex_system():
     np.testing.assert_allclose(z1, expected)
 
 
+def test_fuzzy_medical_diagnosis_system():
+    # Verify complete 9-rule medical fuzzy risk inference system
+    temp = ctrl.Antecedent(np.linspace(35, 42, 141), 'temperature')
+    hr = ctrl.Antecedent(np.linspace(40, 180, 141), 'heart_rate')
+    risk = ctrl.Consequent(np.linspace(0, 100, 101), 'risk')
+
+    temp['hypo'] = fuzz.gaussmf(temp.universe, 35.5, 0.8)
+    temp['norm'] = fuzz.gaussmf(temp.universe, 37.0, 0.6)
+    temp['fever'] = fuzz.gaussmf(temp.universe, 39.5, 1.0)
+
+    hr['brady'] = fuzz.gaussmf(hr.universe, 50, 10)
+    hr['norm'] = fuzz.gaussmf(hr.universe, 75, 12)
+    hr['tachy'] = fuzz.gaussmf(hr.universe, 140, 18)
+
+    risk['low'] = fuzz.trimf(risk.universe, [0, 0, 35])
+    risk['med'] = fuzz.trimf(risk.universe, [20, 50, 80])
+    risk['high'] = fuzz.trimf(risk.universe, [65, 100, 100])
+
+    r1 = ctrl.Rule(temp['hypo'] & hr['brady'], risk['high'])
+    r2 = ctrl.Rule(temp['hypo'] & hr['norm'], risk['med'])
+    r3 = ctrl.Rule(temp['hypo'] & hr['tachy'], risk['high'])
+    r4 = ctrl.Rule(temp['norm'] & hr['brady'], risk['med'])
+    r5 = ctrl.Rule(temp['norm'] & hr['norm'], risk['low'])
+    r6 = ctrl.Rule(temp['norm'] & hr['tachy'], risk['med'])
+    r7 = ctrl.Rule(temp['fever'] & hr['brady'], risk['high'])
+    r8 = ctrl.Rule(temp['fever'] & hr['norm'], risk['med'])
+    r9 = ctrl.Rule(temp['fever'] & hr['tachy'], risk['high'])
+
+    cs = ctrl.ControlSystem([r1, r2, r3, r4, r5, r6, r7, r8, r9])
+    sim = ctrl.ControlSystemSimulation(cs)
+
+    sim.input['temperature'] = 39.8
+    sim.input['heart_rate'] = 135.0
+    sim.compute()
+
+    assert sim.output['risk'] > 75.0
+
+
 if __name__ == '__main__':
     tst.run_module_suite()
+
