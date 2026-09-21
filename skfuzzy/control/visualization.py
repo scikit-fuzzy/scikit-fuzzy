@@ -162,6 +162,11 @@ class FuzzyVariableVisualizer(object):
 class ControlSystemVisualizer(object):
     """
     Visualize a control system with Matplotlib and NetworkX.
+
+    Parameters
+    ----------
+    control_system : ControlSystem
+        The ControlSystem instance to visualize.
     """
     def __init__(self, control_system):
         """
@@ -170,10 +175,11 @@ class ControlSystemVisualizer(object):
         Parameters
         ----------
         control_system : ControlSystem
+            The ControlSystem instance to visualize.
 
         Returns
         -------
-
+        None
         """
         if not matplotlib_present:
             raise ImportError("`ControlSystemVisualizer` can only be used "
@@ -218,11 +224,11 @@ class ControlSystemVisualizer(object):
         Notes
         -----
         This method uses the NetworkX ``draw_networkx`` command, to check that
-        all Mebership Functions, MF, are used (green) among the rules. The plot
+        all Membership Functions, MF, are used (green) among the rules. The plot
         also writes the name of the MF. If further customization is desired,
         the matplotlib Figure/Axis objects are returned.  In a Jupyter
         notebook, these will be displayed inline.
-        If the network model fails, it will return the ordenary view.
+        If the network model fails, it will return the ordinary view.
         """
         try:
             graph, color_list = self.ctrl.graph_n
@@ -240,8 +246,9 @@ class ControlSystemVisualizer(object):
                 else:
                     c_nodes.append(c_node)
                     c_colors.append(c_color)
-            colors += [c_colors[c_nodes.index(node)]for node in graph]
+            colors += [c_colors[c_nodes.index(node)] for node in graph]
             nx.draw_networkx(graph, node_color=colors)
         except ValueError:
             nx.draw(self.ctrl.graph, ax=self.ax)
         return self.fig, self.ax
+

@@ -538,5 +538,31 @@ def test_complex_system():
     np.testing.assert_allclose(z1, expected)
 
 
+def test_controlsystemvisualizer_ctrl_parameter_issue333():
+    # Regression test for Issue #333: ControlSystemVisualizer parameter ctrl initialization
+    quality = ctrl.Antecedent(np.linspace(0, 10, 11), 'quality')
+    service = ctrl.Antecedent(np.linspace(0, 10, 11), 'service')
+    tip = ctrl.Consequent(np.linspace(0, 25, 26), 'tip')
+
+    quality.automf(3)
+    service.automf(3)
+    tip.automf(3)
+
+    rule = ctrl.Rule(quality['poor'] | service['poor'], tip['poor'])
+    cs = ctrl.ControlSystem([rule])
+
+    try:
+        from skfuzzy.control.visualization import ControlSystemVisualizer
+        visualizer = ControlSystemVisualizer(cs)
+        assert hasattr(visualizer, 'ctrl')
+        assert visualizer.ctrl is cs
+        fig, ax = visualizer.view()
+        assert fig is not None
+        assert ax is not None
+    except ImportError:
+        pass
+
+
 if __name__ == '__main__':
     tst.run_module_suite()
+
