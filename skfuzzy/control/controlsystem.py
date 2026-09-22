@@ -679,7 +679,7 @@ class CrispValueCalculator(object):
                                              new_universe)
 
             term_mfs[label] = np.minimum(term._cut, upsampled_mf)
-            np.maximum(output_mf, term_mfs[label], output_mf)
+            np.maximum(output_mf, term_mfs[label], out=output_mf)
 
         return new_universe, output_mf, term_mfs
 
@@ -720,7 +720,7 @@ class CrispValueCalculator(object):
                                              new_universe)
 
             term_mfs[label] = np.minimum(term._cut, upsampled_mf)
-            np.maximum(output_mf, term_mfs[label], output_mf)
+            np.maximum(output_mf, term_mfs[label], out=output_mf)
 
         return new_universe, output_mf
 
