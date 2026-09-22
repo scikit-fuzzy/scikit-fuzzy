@@ -532,10 +532,13 @@ def interp_membership(x, xmf, xx, zero_outside_x=True):
 
     Parameters
     ----------
-    x : 1d array
-        Independent discrete variable vector.
-    xmf : 1d array
-        Fuzzy membership function for ``x``.  Same length as ``x``.
+    x : 1d array or FuzzyVariable
+        Independent discrete variable vector, or an object exposing a
+        ``.universe`` attribute (e.g. `Antecedent`, `Consequent`, or
+        `FuzzyVariable`).
+    xmf : 1d array or Term
+        Fuzzy membership function for ``x``, or an object exposing a ``.mf``
+        attribute (e.g. `Term` or `WeightedTerm`). Same length as ``x``.
     xx : float or array of floats
         Value(s) on universe ``x`` where the interpolated membership is
         desired.
@@ -562,6 +565,11 @@ def interp_membership(x, xmf, xx, zero_outside_x=True):
     corresponding to the value ``xx`` using linear interpolation.
 
     """
+    if hasattr(x, 'universe'):
+        x = x.universe
+    if hasattr(xmf, 'mf'):
+        xmf = xmf.mf
+
     # Not much beats NumPy's built-in interpolation
     if not zero_outside_x:
         kwargs = (None, None)
@@ -576,10 +584,13 @@ def interp_universe(x, xmf, y):
 
     Parameters
     ----------
-    x : 1d array
-        Independent discrete variable vector.
-    xmf : 1d array
-        Fuzzy membership function for ``x``.  Same length as ``x``.
+    x : 1d array or FuzzyVariable
+        Independent discrete variable vector, or an object exposing a
+        ``.universe`` attribute (e.g. `Antecedent`, `Consequent`, or
+        `FuzzyVariable`).
+    xmf : 1d array or Term
+        Fuzzy membership function for ``x``, or an object exposing a ``.mf``
+        attribute (e.g. `Term` or `WeightedTerm`). Same length as ``x``.
     y : float
         Specific fuzzy membership value.
 
@@ -600,6 +611,11 @@ def interp_universe(x, xmf, y):
     such that ``u(xx) == y`` using linear interpolation.
 
     """
+    if hasattr(x, 'universe'):
+        x = x.universe
+    if hasattr(xmf, 'mf'):
+        xmf = xmf.mf
+
     # Special case required or zero-level cut does not work with faster method
     if y == 0.:
         idx = np.where(np.diff(xmf > y))[0]
@@ -625,10 +641,13 @@ def _interp_universe_fast(x, xmf, y):
 
     Parameters
     ----------
-    x : 1d array
-        Independent discrete variable vector.
-    xmf : 1d array
-        Fuzzy membership function for ``x``.  Same length as ``x``.
+    x : 1d array or FuzzyVariable
+        Independent discrete variable vector, or an object exposing a
+        ``.universe`` attribute (e.g. `Antecedent`, `Consequent`, or
+        `FuzzyVariable`).
+    xmf : 1d array or Term
+        Fuzzy membership function for ``x``, or an object exposing a ``.mf``
+        attribute (e.g. `Term` or `WeightedTerm`). Same length as ``x``.
     y : float
         Specific fuzzy membership value.
 
@@ -648,6 +667,11 @@ def _interp_universe_fast(x, xmf, y):
     values on ``x``. This function computes the value (or values) of ``xx``
     such that ``u(xx) == y`` using linear interpolation.
     """
+    if hasattr(x, 'universe'):
+        x = x.universe
+    if hasattr(xmf, 'mf'):
+        xmf = xmf.mf
+
     # Special case required or zero-level cut does not work with faster method
     if y == 0.:
         idx = np.where(np.diff(xmf > y))[0]

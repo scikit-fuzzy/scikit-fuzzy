@@ -340,6 +340,55 @@ def test_interp_universe():
     assert_allclose(y, 0.3)
 
 
+def test_interp_membership_with_terms_and_antecedents():
+    from skfuzzy.control import Antecedent, Consequent
+    x_arr = np.r_[0:4.1:0.1]
+    mfx_arr = trapmf(x_arr, [0, 1, 2, 4])
+
+    ant = Antecedent(x_arr, 'ant')
+    ant['trap'] = mfx_arr
+
+    # Both Antecedent and Term
+    yy = interp_membership(ant, ant['trap'], 0.535)
+    assert_allclose(np.r_[yy], np.r_[0.535])
+
+    # Raw array as x and Term as xmf
+    yy2 = interp_membership(x_arr, ant['trap'], 0.535)
+    assert_allclose(np.r_[yy2], np.r_[0.535])
+
+    # Antecedent as x and raw array as xmf
+    yy3 = interp_membership(ant, mfx_arr, 0.535)
+    assert_allclose(np.r_[yy3], np.r_[0.535])
+
+    # Test arrays and out-of-bounds
+    val_arr = np.array([0.2, 2.73, 3.14])
+    assert_allclose(interp_membership(ant, ant['trap'], val_arr),
+                    interp_membership(x_arr, mfx_arr, val_arr))
+
+    # Consequent
+    cons = Consequent(x_arr, 'cons')
+    cons['trap'] = mfx_arr
+    assert_allclose(interp_membership(cons, cons['trap'], val_arr),
+                    interp_membership(x_arr, mfx_arr, val_arr))
+
+
+def test_interp_universe_with_terms_and_antecedents():
+    from skfuzzy.control import Antecedent, Consequent
+    x_arr = np.r_[0:4.1:0.1]
+    mfx_arr = trapmf(x_arr, [0, 1, 2, 4])
+
+    ant = Antecedent(x_arr, 'ant')
+    ant['trap'] = mfx_arr
+
+    xx = interp_universe(ant, ant['trap'], 0.5)
+    assert_allclose(xx, [0.5, 3])
+
+    cons = Consequent(x_arr, 'cons')
+    cons['trap'] = mfx_arr
+    xx_cons = interp_universe(cons, cons['trap'], 0.5)
+    assert_allclose(xx_cons, [0.5, 3])
+
+
 def test_modus_ponens():
     A = np.r_[0, 0.6, 1, 0.2]
     B = np.r_[0, 0.4, 1, 0.8, 0.3, 0]
