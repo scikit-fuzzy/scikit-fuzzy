@@ -1,0 +1,5 @@
+Bug fixes
+---------
+
+* Accept valid array inputs with strict bounds checking when the antecedent
+  universe is entirely positive or negative.

@@ -185,8 +185,8 @@ class _InputAcceptor(object):
                              "all inputs."
                              .format(value.shape, self.sim._array_shape))
                 self.sim._array_shape = value.shape
-                maxval = value.max(initial=0)
-                minval = value.min(initial=0)
+                maxval = value.max() if value.size else 0
+                minval = value.min() if value.size else 0
             else:
                 # Input isn't an array, but we saw arrays before... reset!
                 if self.sim._array_inputs is not False:
