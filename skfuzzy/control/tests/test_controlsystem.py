@@ -127,6 +127,73 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
+@pytest.mark.parametrize('bounds', [(20, 30), (-30, -20), (1.5, 6.5),
+                                   (-6.5, -1.5), (-5, 5)])
+@pytest.mark.parametrize('dtype', [np.float64, np.int8])
+@pytest.mark.parametrize('clip_to_bounds', [False, True])
+def test_array_input_bounds(bounds, dtype, clip_to_bounds):
+    antecedent = ctrl.Antecedent(np.linspace(*bounds, 11), 'input')
+    consequent = ctrl.Consequent(np.arange(11), 'output')
+    antecedent.automf(3)
+    consequent.automf(3)
+    rules = [ctrl.Rule(antecedent[label], consequent[label])
+             for label in ('poor', 'average', 'good')]
+    system = ctrl.ControlSystem(rules)
+    simulation = ctrl.ControlSystemSimulation(system,
+                                              clip_to_bounds=clip_to_bounds)
+    if np.issubdtype(dtype, np.integer):
+        values = np.linspace(np.ceil(bounds[0]), np.floor(bounds[1]), 3)
+    else:
+        values = np.linspace(*bounds, 3)
+    values = values.astype(dtype)
+    values = np.array([values, values[::-1]])
+    expected = np.empty_like(values, dtype=float)
+    for index in np.ndindex(values.shape):
+        scalar_simulation = ctrl.ControlSystemSimulation(
+            system, clip_to_bounds=clip_to_bounds)
+        scalar_simulation.input['input'] = values[index]
+        scalar_simulation.compute()
+        expected[index] = scalar_simulation.output['output']
+
+    simulation.input['input'] = values
+    simulation.compute()
+    tst.assert_allclose(simulation.output['output'], expected)
+
+    for value in (bounds[0] - 1, bounds[1] + 1):
+        outside = ctrl.ControlSystemSimulation(system,
+                                               clip_to_bounds=clip_to_bounds)
+        if clip_to_bounds:
+            outside.input['input'] = np.array([value])
+            outside.compute()
+            scalar_simulation.input['input'] = value
+            scalar_simulation.compute()
+            tst.assert_allclose(outside.output['output'],
+                                [scalar_simulation.output['output']])
+        else:
+            with pytest.raises(IndexError):
+                outside.input['input'] = np.array([value])
+
+
+@pytest.mark.parametrize('bounds', [(20, 30), (-30, -20), (-5, 5)])
+@pytest.mark.parametrize('clip_to_bounds', [False, True])
+def test_empty_array_input_bounds(bounds, clip_to_bounds):
+    antecedent = ctrl.Antecedent(np.linspace(*bounds, 11), 'input')
+    consequent = ctrl.Consequent(np.arange(11), 'output')
+    antecedent.automf(3)
+    consequent.automf(3)
+    system = ctrl.ControlSystem(ctrl.Rule(antecedent['average'],
+                                        consequent['average']))
+    simulation = ctrl.ControlSystemSimulation(system,
+                                              clip_to_bounds=clip_to_bounds)
+    if not clip_to_bounds and not bounds[0] <= 0 <= bounds[1]:
+        with pytest.raises(IndexError):
+            simulation.input['input'] = np.array([])
+    else:
+        simulation.input['input'] = np.array([])
+        with pytest.raises(ValueError, match='zero-sized operands'):
+            simulation.compute()
+
+
 @pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
 def test_rule_order(setup_rule_order):
     # Make sure rules are exposed in the order needed to solve them
