@@ -823,11 +823,11 @@ def partial_dmf(x, mf_name, mf_parameter_dict, partial_parameter):
         mean = mf_parameter_dict['mean']
 
         if partial_parameter == 'sigma':
-            result = ((2. / sigma**3) *
-                      np.exp(-(((x - mean)**2) / (sigma)**2)) * (x - mean)**2)
+            result = ((1. / sigma**3) *
+                      np.exp(-(((x - mean)**2) / (2. * sigma**2))) * (x - mean)**2)
         elif partial_parameter == 'mean':
-            result = ((2. / sigma**2) *
-                      np.exp(-(((x - mean)**2) / (sigma)**2)) * (x - mean))
+            result = ((1. / sigma**2) *
+                      np.exp(-(((x - mean)**2) / (2. * sigma**2))) * (x - mean))
 
     elif mf_name == 'gbellmf':
 

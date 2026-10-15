@@ -1,0 +1,8 @@
+Development release notes
+=========================
+
+Bug fixes
+---------
+
+* Gaussian ``partial_dmf`` derivatives now match the ``gaussmf`` definition
+  corrected in pull request #147, including its factor of two in the exponent.
