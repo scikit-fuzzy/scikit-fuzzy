@@ -19,6 +19,7 @@ Sections
    install
    user_guide
    contribute
+   release_dev
    license
    auto_examples/index
    documentation

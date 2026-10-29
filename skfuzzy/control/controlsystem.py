@@ -350,6 +350,9 @@ class ControlSystemSimulation(object):
 
         # Shortcut with lookup if this calculation was done before
         if self.cache is not False and self.unique_id in self._calculated:
+            # Rebuild the output so skipped consequents cannot retain values
+            # from a different set of inputs.
+            self.output = {}
             for consequent in self.ctrl.consequents:
                 if consequent.output[self] is not None:
                     self.output[consequent.label] = consequent.output[self]

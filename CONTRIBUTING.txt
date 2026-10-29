@@ -81,7 +81,7 @@ For a more detailed discussion, read these :doc:`detailed documents
 
    Before merging your commits, you must add a description of your changes
    to the release notes of the upcoming version in
-   ``doc/release/release_dev.txt``.
+   ``docs/source/release_dev.txt``.
 
 .. note::
 

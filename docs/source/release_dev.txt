@@ -1,0 +1,7 @@
+Development release notes
+=========================
+
+Bug fixes
+---------
+* Cached control simulations no longer retain output values from different
+  inputs when lenient evaluation omits a consequent.
