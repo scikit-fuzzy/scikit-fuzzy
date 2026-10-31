@@ -9,11 +9,16 @@ caching will result in major efficiency gains.
 """
 
 
+from weakref import WeakKeyDictionary
+
+
 class StatefulProperty(object):
 
     def __init__(self, initial_condition=None):
         self.default = initial_condition
-        self.data = {'current': initial_condition}
+        # Owners must not be kept alive by this class-level descriptor.
+        # The per-simulation 'current' value belongs to StatePerSimulation.
+        self.data = WeakKeyDictionary()
 
     def __get__(self, instance, owner):
         if instance is None:

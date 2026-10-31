@@ -1,0 +1,11 @@
+Development release notes
+=========================
+
+Control system memory
+---------------------
+
+Discarded fuzzy control variables, terms and rules can now be garbage-collected
+instead of being retained by class-level simulation state. This addresses
+retained objects when repeatedly constructing and discarding controllers,
+including when caching is disabled or simulations are reset. Input-result
+caching and automatic flushing for live controllers are unchanged.
