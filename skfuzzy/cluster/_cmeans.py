@@ -259,15 +259,23 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
     u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
-    jm = np.zeros(0)
+    jm = []
     p = 0
+
+    # Built-in metrics depend only on the fixed centers and observations.
+    # Keep calls to user-supplied metric callbacks in their original order.
+    prepared = None
+    if isinstance(metric, str) and maxiter > 0:
+        fixed_d = np.fmax(_distance(test_data.T, cntr_trained, metric),
+                          np.finfo(np.float64).eps)
+        prepared = (fixed_d, normalize_power_columns(fixed_d, -2. / (m - 1)))
 
     # Main cmeans loop
     while p < maxiter:
-        u2 = u.copy()
+        u2 = np.ascontiguousarray(u)
         [u, Jjm, d] = _cmeans_predict0(test_data, cntr_trained, u2, c, m,
-                                       metric)
-        jm = np.hstack((jm, Jjm))
+                                       metric, prepared=prepared)
+        jm.append(Jjm)
         p += 1
 
         # Stopping rule
@@ -278,10 +286,10 @@ def cmeans_predict(test_data, cntr_trained, m, error, maxiter,
     error = np.linalg.norm(u - u2)
     fpc = _fp_coeff(u)
 
-    return u, u0, d, jm, p, fpc
+    return u, u0, d, np.asarray(jm), p, fpc
 
 
-def _cmeans_predict0(test_data, cntr, u_old, c, m, metric):
+def _cmeans_predict0(test_data, cntr, u_old, c, m, metric, prepared=None):
     """
     Single step in fuzzy c-means prediction algorithm. Clustering algorithm
     modified from Ross, Fuzzy Logic w/Engineering Applications (2010)
@@ -303,11 +311,18 @@ def _cmeans_predict0(test_data, cntr, u_old, c, m, metric):
     # For prediction, we do not recalculate cluster centers. The test_data is
     # forced to conform to the prior clustering.
 
-    d = _distance(test_data, cntr, metric)
-    d = np.fmax(d, np.finfo(np.float64).eps)
+    if prepared is None:
+        d = _distance(test_data, cntr, metric)
+        d = np.fmax(d, np.finfo(np.float64).eps)
+    else:
+        d = prepared[0]
 
-    jm = (um * d ** 2).sum()
+    squared = np.empty_like(um, dtype=np.result_type(um, d), order='K')
+    np.square(d, out=squared)
+    np.multiply(um, squared, out=squared)
+    jm = squared.sum()
 
-    u = normalize_power_columns(d, - 2. / (m - 1))
+    u = (normalize_power_columns(d, - 2. / (m - 1))
+         if prepared is None else prepared[1])
 
     return u, jm, d
