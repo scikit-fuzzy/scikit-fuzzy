@@ -390,8 +390,13 @@ def sigmoid(wx, b):
     sigmoid : 2d array, (K, N)
         Sigmoid function result.
     """
-    return 1. / (1. + np.exp(-(wx + np.dot(np.atleast_2d(b).T,
-                                           np.ones((1, wx.shape[1]))))))
+
+    bias = np.atleast_2d(b).T
+    # Preserve the original dot product's shape checks for nonvector biases.
+    if bias.shape[1] != 1:
+        return 1. / (1. + np.exp(-(wx + np.dot(bias, np.ones((1, wx.shape[1]))))))
+    bias = bias.astype(np.result_type(bias.dtype, np.float64), copy=False)
+    return 1. / (1. + np.exp(-(wx + bias)))
 
 
 def sigmf(x, b, c):
@@ -477,24 +482,23 @@ def trapmf(x, abcd):
     y : 1d array
         Trapezoidal membership function.
     """
+
     assert len(abcd) == 4, 'abcd parameter must have exactly four elements.'
     a, b, c, d = np.r_[abcd]
-    assert a <= b and b <= c and c <= d, 'abcd requires the four elements \
-                                          a <= b <= c <= d.'
+    assert a <= b and b <= c and c <= d, 'abcd requires the four elements a <= b <= c <= d.'
     y = np.ones(len(x))
-
-    idx = np.nonzero(x <= b)[0]
-    y[idx] = trimf(x[idx], np.r_[a, b, b])
-
-    idx = np.nonzero(x >= c)[0]
-    y[idx] = trimf(x[idx], np.r_[c, c, d])
-
-    idx = np.nonzero(x < a)[0]
-    y[idx] = np.zeros(len(idx))
-
-    idx = np.nonzero(x > d)[0]
-    y[idx] = np.zeros(len(idx))
-
+    y[x <= b] = 0
+    if a != b:
+        idx = np.logical_and(a < x, x < b)
+        y[idx] = (x[idx] - a) / float(b - a)
+    y[x == b] = 1
+    y[x >= c] = 0
+    if c != d:
+        idx = np.logical_and(c < x, x < d)
+        y[idx] = (d - x[idx]) / float(d - c)
+    y[x == c] = 1
+    y[x < a] = 0
+    y[x > d] = 0
     return y
 
 
@@ -523,15 +527,15 @@ def trimf(x, abc):
 
     # Left side
     if a != b:
-        idx = np.nonzero(np.logical_and(a < x, x < b))[0]
+        idx = np.logical_and(a < x, x < b)
         y[idx] = (x[idx] - a) / float(b - a)
 
     # Right side
     if b != c:
-        idx = np.nonzero(np.logical_and(b < x, x < c))[0]
+        idx = np.logical_and(b < x, x < c)
         y[idx] = (c - x[idx]) / float(c - b)
 
-    idx = np.nonzero(x == b)
+    idx = x == b
     y[idx] = 1
     return y
 
