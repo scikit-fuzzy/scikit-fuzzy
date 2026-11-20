@@ -101,25 +101,19 @@ def dsw_add(x, mfx, y, mfy, n):
     .. [1] W. Dong and H. Shah and F. Wong, Fuzzy computations in risk and
            decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
     """
-    # Restricted DSW w/n lambda cuts
+
     x = lambda_cut_series(x, mfx, n)
     y = lambda_cut_series(y, mfy, n)
     n1, n2 = x.shape
     ff = np.zeros((n1, n2))
     ff[:, 0] = x[:, 0]
-
-    # Compute F = x + y
-    for n in range(n1):
-        ff[n, [1, 2]] = addval(x[n, [1, 2]], y[n, [1, 2]])
-
-    # Arrange for output or plotting
+    a, b = x[:, 1:], y[:, 1:]
+    ff[:, 1:] = a + b
     out = np.zeros((2 * n1, 2))
-    out[0:n1, 1] = ff[:, 0]
-    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    out[0:n1, 0] = ff[:, 1]
-    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
-
-    # No need for transposes; rank-1 arrays have no transpose in Python
+    out[:n1, 1] = ff[:, 0]
+    out[n1:, 1] = np.flipud(ff[:, 0])
+    out[:n1, 0] = ff[:, 1]
+    out[n1:, 0] = np.flipud(ff[:, 2])
     return out[:, 0], out[:, 1]
 
 
@@ -160,25 +154,22 @@ def dsw_div(x, mfx, y, mfy, n):
            decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
-    # Restricted DSW w/n lambda cuts
+
     x = lambda_cut_series(x, mfx, n)
     y = lambda_cut_series(y, mfy, n)
     n1, n2 = x.shape
     ff = np.zeros((n1, n2))
     ff[:, 0] = x[:, 0]
-
-    # Compute F = x / y
-    for n in range(n1):
-        ff[n, [1, 2]] = divval(x[n, [1, 2]], y[n, [1, 2]])
-
-    # Arrange for output or plotting
+    a, b = x[:, 1:], y[:, 1:]
+    b = 1. / b
+    corners = a[:, :, None] * b[:, None, :]
+    ff[:, 1] = corners.min(axis=(1, 2))
+    ff[:, 2] = corners.max(axis=(1, 2))
     out = np.zeros((2 * n1, 2))
-    out[0:n1, 1] = ff[:, 0]
-    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    out[0:n1, 0] = ff[:, 1]
-    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
-
-    # No need for transposes; rank-1 arrays have no transpose in Python
+    out[:n1, 1] = ff[:, 0]
+    out[n1:, 1] = np.flipud(ff[:, 0])
+    out[:n1, 0] = ff[:, 1]
+    out[n1:, 0] = np.flipud(ff[:, 2])
     return out[:, 0], out[:, 1]
 
 
@@ -219,25 +210,21 @@ def dsw_mult(x, mfx, y, mfy, n):
            decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
-    # Restricted DSW w/n lambda cuts
+
     x = lambda_cut_series(x, mfx, n)
     y = lambda_cut_series(y, mfy, n)
     n1, n2 = x.shape
     ff = np.zeros((n1, n2))
     ff[:, 0] = x[:, 0]
-
-    # Compute F = x * y
-    for n in range(n1):
-        ff[n, [1, 2]] = multval(x[n, [1, 2]], y[n, [1, 2]])
-
-    # Arrange for output or plotting
+    a, b = x[:, 1:], y[:, 1:]
+    corners = a[:, :, None] * b[:, None, :]
+    ff[:, 1] = corners.min(axis=(1, 2))
+    ff[:, 2] = corners.max(axis=(1, 2))
     out = np.zeros((2 * n1, 2))
-    out[0:n1, 1] = ff[:, 0]
-    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    out[0:n1, 0] = ff[:, 1]
-    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
-
-    # No need for transposes; rank-1 arrays have no transpose in Python
+    out[:n1, 1] = ff[:, 0]
+    out[n1:, 1] = np.flipud(ff[:, 0])
+    out[:n1, 0] = ff[:, 1]
+    out[n1:, 0] = np.flipud(ff[:, 2])
     return out[:, 0], out[:, 1]
 
 
@@ -279,25 +266,19 @@ def dsw_sub(x, mfx, y, mfy, n):
            decision analysis, Civ Eng Syst, 2, 1985, pp 201-208.
 
     """
-    # Restricted DSW w/n lambda cuts
+
     x = lambda_cut_series(x, mfx, n)
     y = lambda_cut_series(y, mfy, n)
     n1, n2 = x.shape
     ff = np.zeros((n1, n2))
     ff[:, 0] = x[:, 0]
-
-    # Compute F = x - y
-    for n in range(n1):
-        ff[n, [1, 2]] = subval(x[n, [1, 2]], y[n, [1, 2]])
-
-    # Arrange for output or plotting
+    a, b = x[:, 1:], y[:, 1:]
+    ff[:, 1:] = np.column_stack((a[:, 0] - b[:, 1], a[:, 1] - b[:, 0]))
     out = np.zeros((2 * n1, 2))
-    out[0:n1, 1] = ff[:, 0]
-    out[n1:2 * n1, 1] = np.flipud(ff[:, 0])
-    out[0:n1, 0] = ff[:, 1]
-    out[n1:2 * n1, 0] = np.flipud(ff[:, 2])
-
-    # No need for transposes; rank-1 arrays have no transpose in Python
+    out[:n1, 1] = ff[:, 0]
+    out[n1:, 1] = np.flipud(ff[:, 0])
+    out[:n1, 0] = ff[:, 1]
+    out[n1:, 0] = np.flipud(ff[:, 2])
     return out[:, 0], out[:, 1]
 
 
