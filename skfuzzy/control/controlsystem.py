@@ -1,7 +1,7 @@
 """
 controlsystem.py : Framework for the new fuzzy logic control system API.
 """
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from warnings import warn
 
 import networkx as nx
@@ -790,13 +790,17 @@ class RuleOrderGenerator(object):
     def _process_rules(self, rules):
         # Recursive function to process rules in the correct firing order.
         len_rules = len(rules)
+        rules = deque(rules)
         skipped_rules = []
         while len(rules) > 0:
-            rule = rules.pop(0)
+            rule = rules.popleft()
             if self._can_calc_rule(rule):
                 yield rule
                 # Add rule to the calculated graph:
-                self.calced_graph = nx.compose(self.calced_graph, rule.graph)
+                graph = rule.graph
+                self.calced_graph.graph.update(graph.graph)
+                self.calced_graph.add_nodes_from(graph.nodes(data=True))
+                self.calced_graph.add_edges_from(graph.edges(data=True))
             else:
                 # We have not calculated the predecessors for this rule yet.
                 # Skip it for now:
