@@ -1,10 +1,8 @@
-import networkx
 import numpy as np
 import numpy.testing as tst
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
 import pytest
-from packaging.version import Version
 
 from skfuzzy.control import EmptyMembershipError
 
@@ -63,8 +61,8 @@ def setup_rule_order():
     global a, b, c, d
     a = ctrl.Antecedent(np.linspace(0, 10, 11), 'a')
     b = ctrl.Antecedent(np.linspace(0, 10, 11), 'b')
-    c = ctrl.Antecedent(np.linspace(0, 10, 11), 'c')
-    d = ctrl.Antecedent(np.linspace(0, 10, 11), 'd')
+    c = ctrl.Consequent(np.linspace(0, 10, 11), 'c')
+    d = ctrl.Consequent(np.linspace(0, 10, 11), 'd')
 
     for v in (a, b, c, d):
         v.automf(3)
@@ -127,7 +125,6 @@ def test_bad_inputs():
                              'raise an IndexError.')
 
 
-@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
 def test_rule_order(setup_rule_order):
     # Make sure rules are exposed in the order needed to solve them
     # correctly
@@ -144,18 +141,18 @@ def test_rule_order(setup_rule_order):
                                               [r1.label, r2.label, r3.label]))
 
 
-@pytest.mark.skipif(Version(networkx.__version__) >= Version("2.0"), reason="networkx 2.0+ does not support topological sort")
 def test_unresolvable_rule_order(setup_rule_order):
     # Make sure we don't get suck in an infinite loop when the user
     # gives an unresolvable rule order
     global a, b, c, d
 
-    r1 = ctrl.Rule(a['average'] | a['poor'], c['poor'], label='r1')
-    r2 = ctrl.Rule(c['poor'] | b['poor'], c['poor'], label='r2')
+    # Neither intermediate variable has an independently evaluable producer.
+    r1 = ctrl.Rule(c['poor'] | a['poor'], d['poor'], label='r1')
+    r2 = ctrl.Rule(d['poor'] | b['poor'], c['poor'], label='r2')
     r3 = ctrl.Rule(c['good'] | a['good'], d['good'], label='r3')
 
     ex_msg = "Unable to resolve rule execution order"
-    with tst.assert_raises(RuntimeError, expected_regexp=ex_msg):
+    with pytest.raises(RuntimeError, match=ex_msg):
         ctrl_sys = ctrl.ControlSystem([r1, r2, r3])
         list(ctrl_sys.rules)
 
