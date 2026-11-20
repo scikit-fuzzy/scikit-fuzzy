@@ -838,14 +838,9 @@ class RuleOrderGenerator(object):
             if p not in self.calced_graph:
                 return False
 
-            # NetworkX compatibility
-            try:
-                all_degree = len(self.all_graph.predecessors(p))
-                calced_degree = len(self.calced_graph.predecessors(p))
-            except TypeError:
-                # New iterator doesn't work with len()
-                all_degree = self.all_graph.predecessors(p).__sizeof__()
-                calced_degree = self.calced_graph.predecessors(p).__sizeof__()
+            # Iterator object size is not the number of predecessor nodes.
+            all_degree = self.all_graph.in_degree(p)
+            calced_degree = self.calced_graph.in_degree(p)
 
             if all_degree != calced_degree:
                 return False
