@@ -78,9 +78,10 @@ def _fp_coeff(u):
         Fuzzy partition coefficient.
 
     """
-    n = u.shape[1]
 
-    return np.trace(u.dot(u.T)) / float(n)
+    n = u.shape[1]
+    # The trace needs only squared elements, not the full C by C Gram matrix.
+    return np.einsum('ij,ij->', u, u) / float(n)
 
 
 def cmeans(data, c, m, error, maxiter,
