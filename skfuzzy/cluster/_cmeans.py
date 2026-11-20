@@ -29,7 +29,10 @@ def _cmeans0(data, u_old, c, m, metric):
     d = _distance(data, cntr, metric)
     d = np.fmax(d, np.finfo(np.float64).eps)
 
-    jm = (um * d ** 2).sum()
+    squared = np.empty_like(um, dtype=np.result_type(um, d), order='K')
+    np.square(d, out=squared)
+    np.multiply(um, squared, out=squared)
+    jm = squared.sum()
 
     u = normalize_power_columns(d, - 2. / (m - 1))
 
@@ -164,14 +167,14 @@ def cmeans(data, c, m, error, maxiter,
     u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters
-    jm = np.zeros(0)
+    jm = []
     p = 0
 
     # Main cmeans loop
     while p < maxiter:
-        u2 = u.copy()
+        u2 = np.ascontiguousarray(u)
         [cntr, u, Jjm, d] = _cmeans0(data, u2, c, m, metric)
-        jm = np.hstack((jm, Jjm))
+        jm.append(Jjm)
         p += 1
 
         # Stopping rule
@@ -182,7 +185,7 @@ def cmeans(data, c, m, error, maxiter,
     error = np.linalg.norm(u - u2)
     fpc = _fp_coeff(u)
 
-    return cntr, u, u0, d, jm, p, fpc
+    return cntr, u, u0, d, np.asarray(jm), p, fpc
 
 
 def cmeans_predict(test_data, cntr_trained, m, error, maxiter,

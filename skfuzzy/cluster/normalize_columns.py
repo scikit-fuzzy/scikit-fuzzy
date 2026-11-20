@@ -49,10 +49,10 @@ def normalize_power_columns(x, exponent):
     x = x.astype(np.float64)
 
     # values in range [0, 1]
-    x = x/np.max(x, axis=0, keepdims=True)
+    x /= np.max(x, axis=0, keepdims=True)
 
     # values in range [eps, 1]
-    x = np.fmax(x, np.finfo(x.dtype).eps)
+    np.fmax(x, np.finfo(x.dtype).eps, out=x)
 
     if exponent < 0:
         # values in range [1, 1/eps]
@@ -61,11 +61,12 @@ def normalize_power_columns(x, exponent):
         # values in range [1, (1/eps)**exponent] where exponent < 0
         # this line might trigger an underflow warning
         # if (1/eps)**exponent becomes zero, but that's ok
-        x = x**exponent
+        np.power(x, exponent, out=x)
     else:
         # values in range [eps**exponent, 1] where exponent >= 0
-        x = x**exponent
+        np.power(x, exponent, out=x)
 
-    result = normalize_columns(x)
+    x /= np.sum(x, axis=0, keepdims=True)
+    result = x
 
     return result
