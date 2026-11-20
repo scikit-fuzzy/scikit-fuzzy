@@ -479,18 +479,20 @@ def maxmin_composition(s, r):
         Max-min composition, defined by ``T = s o r``.
 
     """
+
     if s.ndim < 2:
         s = np.atleast_2d(s)
     if r.ndim < 2:
         r = np.atleast_2d(r).T
-    m = s.shape[0]
-    p = r.shape[1]
+    m, p = s.shape[0], r.shape[1]
     t = np.zeros((m, p))
-
-    for pp in range(p):
-        for mm in range(m):
-            t[mm, pp] = (np.fmin(s[mm, :], r[:, pp].T)).max()
-
+    if m == 0 or p == 0:
+        return t
+    # Bound the M by N by P working tensor to roughly one million elements.
+    block = max(1, 1048576 // max(1, s.shape[1] * p))
+    for start in range(0, m, block):
+        t[start:start + block] = np.fmin(
+            s[start:start + block, :, None], r[None, :, :]).max(axis=1)
     return t
 
 
@@ -511,18 +513,20 @@ def maxprod_composition(s, r):
         Max-product composition matrix.
 
     """
+
     if s.ndim < 2:
         s = np.atleast_2d(s)
     if r.ndim < 2:
         r = np.atleast_2d(r).T
-    m = s.shape[0]
-    p = r.shape[1]
+    m, p = s.shape[0], r.shape[1]
     t = np.zeros((m, p))
-
-    for mm in range(m):
-        for pp in range(p):
-            t[mm, pp] = (s[mm, :] * r[:, pp].T).max()
-
+    if m == 0 or p == 0:
+        return t
+    # Bound the M by N by P working tensor to roughly one million elements.
+    block = max(1, 1048576 // max(1, s.shape[1] * p))
+    for start in range(0, m, block):
+        t[start:start + block] = np.multiply(
+            s[start:start + block, :, None], r[None, :, :]).max(axis=1)
     return t
 
 
