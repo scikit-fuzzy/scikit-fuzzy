@@ -6,7 +6,6 @@ imops.py : scikit-fuzzy subpackage for 2-D fuzzy processing, usually applied
 
 import numpy as np
 from .arraypad import pad
-from .shape import view_as_windows
 
 
 def defocus_local_means(im):
@@ -48,7 +47,10 @@ def defocus_local_means(im):
     out = pad(im.astype(np.float64), ((1, 1), (1, 1)), mode='reflect')
 
     # Rolling windows into array
-    out = view_as_windows(out, (3, 3))
-
-    # Slice out & average along axis representing 4 nearest neighbors
-    return out[:, :, [1, 1, 0, 2], [0, 2, 1, 1]].mean(axis=2)
+    # Accumulate in the same left right up down order without gathering
+    # a height by width by four tensor.
+    result = out[1:-1, :-2] + out[1:-1, 2:]
+    result += out[:-2, 1:-1]
+    result += out[2:, 1:-1]
+    result /= 4
+    return result
