@@ -318,10 +318,16 @@ def _fuzzy_op_alpha(x, a, y, b, op, n_levels=None, include_support=True):
         cut_a = _alpha_cut_intervals(x, a, alpha)
         cut_b = _alpha_cut_intervals(y, b, alpha)
         # Image of every pair of intervals: op evaluated at the four corners
-        corners = np.stack([op(cut_a[:, i, np.newaxis], cut_b[np.newaxis, :, j])
-                            for i in (0, 1) for j in (0, 1)])
-        lows.append(corners.min(axis=0).ravel())
-        highs.append(corners.max(axis=0).ravel())
+        if isinstance(op, np.ufunc) and op in (np.add, np.subtract, np.multiply, np.divide, np.fmin, np.fmax):
+            corners = op(cut_a[:, None, :, None], cut_b[None, :, None, :])
+            lows.append(corners.min(axis=(-2, -1)).ravel())
+            highs.append(corners.max(axis=(-2, -1)).ravel())
+        else:
+            # Preserve call count, operand shapes, and order for callbacks.
+            corners = np.stack([op(cut_a[:, i, None], cut_b[None, :, j])
+                                for i in (0, 1) for j in (0, 1)])
+            lows.append(corners.min(axis=0).ravel())
+            highs.append(corners.max(axis=0).ravel())
         alphas.append(np.full(lows[-1].shape, alpha))
     alphas = np.concatenate(alphas)
     lows, highs = np.concatenate(lows), np.concatenate(highs)
@@ -329,8 +335,12 @@ def _fuzzy_op_alpha(x, a, y, b, op, n_levels=None, include_support=True):
     # mfz(z) is the largest alpha whose cut contains z
     z = np.unique(np.r_[lows, highs])
     tol = 1e-12 * max(1., float(np.abs(z).max()))
-    contains = (z[:, np.newaxis] >= lows - tol) & (z[:, np.newaxis] <= highs + tol)
-    mfz = np.where(contains, alphas, 0.).max(axis=1)
+    mfz = np.empty(z.shape)
+    block = max(1, 1048576 // max(1, lows.size))
+    for start in range(0, z.size, block):
+        part = z[start:start + block, None]
+        contains = (part >= lows - tol) & (part <= highs + tol)
+        mfz[start:start + block] = np.where(contains, alphas, 0.).max(axis=1)
     return z, mfz
 
 
