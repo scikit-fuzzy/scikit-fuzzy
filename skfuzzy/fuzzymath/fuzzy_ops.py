@@ -24,8 +24,7 @@ def cartadd(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-    b, a = np.meshgrid(y, x, sparse=True)
-    return a + b
+    return x[:, None] + y[None, :]
 
 
 def cartprod(x, y):
@@ -47,8 +46,7 @@ def cartprod(x, y):
     """
     # Ensure rank-1 input
     x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
-    b, a = np.meshgrid(y, x, sparse=True)
-    return np.fmin(a, b)
+    return np.fmin(x[:, None], y[None, :])
 
 
 def classic_relation(a, b):
@@ -76,8 +74,11 @@ def classic_relation(a, b):
     where ``x`` represents a cartesian product and ``N`` is len(``b``).
 
     """
-    a = np.asarray(a)
-    return np.fmax(cartprod(a, b), cartprod(1 - a, np.ones_like(b)))
+    a = np.asarray(a).ravel()
+    b = np.asarray(b).ravel()
+    constant = np.ones((), dtype=b.dtype)
+    return np.fmax(np.fmin(a[:, None], b[None, :]),
+                   np.fmin(1 - a[:, None], constant))
 
 
 def contrast(arr, amount=0.2, split=0.5, normalize=True):
@@ -439,7 +440,8 @@ def inner_product(a, b):
         Fuzzy inner product value, on range [0, 1]
 
     """
-    return np.max(np.fmin(np.r_[a], np.r_[b]))
+    return np.max(np.fmin(a if isinstance(a, np.ndarray) else np.r_[a],
+                          b if isinstance(b, np.ndarray) else np.r_[b]))
 
 
 def interp10(x):
@@ -711,7 +713,8 @@ def outer_product(a, b):
         Fuzzy outer product value, on range [0, 1]
 
     """
-    return np.min(np.fmax(np.r_[a], np.r_[b]))
+    return np.min(np.fmax(a if isinstance(a, np.ndarray) else np.r_[a],
+                          b if isinstance(b, np.ndarray) else np.r_[b]))
 
 
 def relation_min(a, b):
@@ -732,8 +735,8 @@ def relation_min(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    bb, aa = np.meshgrid(b, a, sparse=True)
-    return np.fmin(aa, bb)
+    return np.fmin(np.asarray(a).ravel()[:, None],
+                   np.asarray(b).ravel()[None, :])
 
 
 def relation_product(a, b):
@@ -754,8 +757,8 @@ def relation_product(a, b):
         Fuzzy relation between ``a`` and ``b``, of shape (M, N).
 
     """
-    bb, aa = np.meshgrid(b, a, sparse=True)
-    return aa * bb
+    return (np.asarray(a).ravel()[:, None]
+            * np.asarray(b).ravel()[None, :])
 
 
 def fuzzy_similarity(ai, b, mode='min'):
