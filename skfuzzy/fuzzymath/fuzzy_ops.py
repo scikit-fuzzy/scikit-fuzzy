@@ -2,6 +2,8 @@
 fuzzy_ops.py : Package of general operations on fuzzy sets, fuzzy membership
                functions, and their associated universe variables.
 """
+import warnings
+
 import numpy as np
 
 
@@ -155,7 +157,7 @@ def contrast(arr, amount=0.2, split=0.5, normalize=True):
     return focused * ma
 
 
-def fuzzy_op(x, a, y, b, op):
+def fuzzy_op(x, a, y, b, op, method='discrete', n_levels=None):
     """Operation of two fuzzy sets.
 
     Operate fuzzy set ``a`` with fuzzy set ``b``,
@@ -173,6 +175,13 @@ def fuzzy_op(x, a, y, b, op):
         Fuzzy set for universe ``y``.
     op: Function, pointwise binary operator on two matrices
         (pointwise version of) +, -, *, /, min, max etc.
+    method : {'discrete', 'alpha'}, optional
+        How the Extension Principle is evaluated; see Notes.
+        Default is ``'discrete'``.
+    n_levels : int, optional
+        Used only with ``method='alpha'``: number of equally spaced alpha
+        levels in (0, 1] evaluated in addition to every membership value
+        present in ``a`` and ``b``. Default is 100.
 
     Returns
     -------
@@ -183,45 +192,159 @@ def fuzzy_op(x, a, y, b, op):
 
     Notes
     -----
-    Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
-    Engineering Applications (2010), pp. 414, Eq. 12.17.
+    Both methods implement Zadeh's Extension Principle,
+    ``mfz(z) = sup {min(a(x), b(y)) : op(x, y) = z}``, as described in Ross,
+    Fuzzy Logic with Engineering Applications (2010), pp. 414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    ``method='discrete'`` takes the supremum over the sample pairs only. It
+    is exact for genuinely discrete fuzzy sets. When ``x`` and ``y`` sample
+    continuous membership functions, a nonlinear ``op`` (``*``, ``/``) maps
+    the grid onto an irregular set of outputs, most of which are reached by
+    very few pairs. The supremum is then taken over too few pairs and the
+    result shows spurious low degrees inside its support: it is saw-toothed
+    and non-convex even when ``a`` and ``b`` are convex.
+
+    ``method='alpha'`` uses the level-set form of the Extension Principle
+    (Nguyen, 1978): for a continuous ``op`` and membership functions with
+    compact alpha-cuts, ``C_alpha = op(A_alpha, B_alpha)``. The operands are
+    interpolated linearly between samples, their alpha-cuts are computed
+    exactly as unions of closed intervals (convexity is not required), and
+    each pair of intervals is mapped through ``op`` by evaluating its four
+    corners. This is exact for operators that are monotonic in each argument
+    on each interval: ``np.add``, ``np.subtract``, ``np.multiply``,
+    ``np.divide`` (divisor away from zero), ``np.fmin`` and ``np.fmax``.
+    The returned universe holds the endpoints of every computed alpha-cut,
+    where ``mfz`` is exact for the levels evaluated. Use this method when the
+    universes are samplings of a continuum. For convex operands it agrees
+    with the ``skfuzzy.dsw_*`` functions (Dong, Shah and Wong method).
+
+    References
+    ----------
+    .. [1] H. T. Nguyen, A note on the extension principle for fuzzy sets,
+           J. Math. Anal. Appl., 64(2), 1978, pp. 369-380.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
+    if method == 'discrete':
+        return _fuzzy_op_discrete(x, a, y, b, op)
+    if method == 'alpha':
+        return _fuzzy_op_alpha(x, a, y, b, op, n_levels)
+    raise ValueError("method must be 'discrete' or 'alpha', got {!r}".format(method))
 
-    yy, xx = np.meshgrid(y, x, sparse=True)       # consider broadcasting rules
-    bb, aa = np.meshgrid(b, a, sparse=True)
 
-    # Do the operation
-    zz = op(xx, yy).ravel()
-    zz_index = np.argsort(zz)
-    zz = np.sort(zz)
+def _fuzzy_op_discrete(x, a, y, b, op):
+    """Extension Principle over the sample pairs (discrete fuzzy sets)."""
+    x, y = np.asarray(x).ravel(), np.asarray(y).ravel()
+    a = np.asarray(a, dtype=np.float64).ravel()
+    b = np.asarray(b, dtype=np.float64).ravel()
 
-    # Array min() operation
-    c = np.fmin(aa, bb).ravel()
-    c = c[zz_index]
+    # Every pair (x_i, y_j) produces op(x_i, y_j) with degree min(a_i, b_j)
+    zz = op(x[:, np.newaxis], y[np.newaxis, :]).ravel()
+    c = np.fmin(a[:, np.newaxis], b[np.newaxis, :]).ravel()
 
-    # Initialize loop
-    z, mfz = np.zeros(0), np.zeros(0)
-    idx = 0
-
-    for _ in range(len(c)):
-        index = np.nonzero(zz == zz[idx])[0]
-        z = np.hstack((z, zz[idx]))
-        mfz = np.hstack((mfz, c[index].max()))
-        idx = index[-1] + 1
-        if idx >= len(zz):
-            break
-
+    # Supremum over the pairs that produce the same output value
+    z, inverse = np.unique(zz, return_inverse=True)
+    mfz = np.zeros(z.shape, dtype=np.float64)
+    np.maximum.at(mfz, inverse.ravel(), c)
     return z, mfz
 
 
-def fuzzy_add(x, a, y, b):
+def _sorted_universe(x, mfx):
+    """Return ``x`` and ``mfx`` as float arrays sorted by ``x``."""
+    x = np.asarray(x, dtype=np.float64).ravel()
+    mfx = np.asarray(mfx, dtype=np.float64).ravel()
+    if x.shape != mfx.shape:
+        raise ValueError('Universe and membership arrays must have the same length.')
+    order = np.argsort(x, kind='stable')
+    return x[order], mfx[order]
+
+
+def _alpha_cut_intervals(x, mfx, alpha):
+    """Alpha-cut of a piecewise-linear membership function.
+
+    Returns an array of shape (K, 2) holding the closed intervals whose union
+    is ``{u : mfx(u) >= alpha}``, with ``mfx`` linearly interpolated between
+    the sorted samples ``x``. For ``alpha == 0`` the closure of the support
+    is returned instead of the whole universe.
+    """
+    if alpha > 0:
+        inside = mfx >= alpha
+    else:
+        positive = mfx > 0
+        inside = positive.copy()
+        inside[1:] |= positive[:-1]
+        inside[:-1] |= positive[1:]
+    if not inside.any():
+        return np.empty((0, 2))
+
+    edges = np.diff(inside.astype(np.int8))
+    starts = np.flatnonzero(edges == 1) + 1
+    ends = np.flatnonzero(edges == -1)
+    if inside[0]:
+        starts = np.r_[0, starts]
+    if inside[-1]:
+        ends = np.r_[ends, len(x) - 1]
+    lo, hi = x[starts], x[ends]
+
+    if alpha > 0:
+        # Move interior endpoints to where the interpolant crosses alpha
+        inner = starts > 0
+        i = starts[inner]
+        lo[inner] = x[i - 1] + (alpha - mfx[i - 1]) * (x[i] - x[i - 1]) / (mfx[i] - mfx[i - 1])
+        inner = ends < len(x) - 1
+        j = ends[inner]
+        hi[inner] = x[j] + (alpha - mfx[j]) * (x[j + 1] - x[j]) / (mfx[j + 1] - mfx[j])
+    return np.column_stack((lo, hi))
+
+
+def _fuzzy_op_alpha(x, a, y, b, op, n_levels=None, include_support=True):
+    """Level-set (alpha-cut) form of the Extension Principle."""
+    x, a = _sorted_universe(x, a)
+    y, b = _sorted_universe(y, b)
+    n_levels = 100 if n_levels is None else int(n_levels)
+    if n_levels < 1:
+        raise ValueError('n_levels must be a positive integer.')
+
+    height = min(a.max(initial=0.), b.max(initial=0.))
+    if height <= 0:
+        raise ValueError('Both fuzzy sets need at least one positive membership value.')
+    levels = np.union1d(np.union1d(a[a > 0], b[b > 0]),
+                        np.linspace(0., 1., n_levels + 1)[1:])
+    levels = levels[levels <= height]
+    if include_support:
+        levels = np.r_[0., levels]
+
+    alphas, lows, highs = [], [], []
+    for alpha in levels:
+        cut_a = _alpha_cut_intervals(x, a, alpha)
+        cut_b = _alpha_cut_intervals(y, b, alpha)
+        # Image of every pair of intervals: op evaluated at the four corners
+        if isinstance(op, np.ufunc) and op in (np.add, np.subtract, np.multiply, np.divide, np.fmin, np.fmax):
+            corners = op(cut_a[:, None, :, None], cut_b[None, :, None, :])
+            lows.append(corners.min(axis=(-2, -1)).ravel())
+            highs.append(corners.max(axis=(-2, -1)).ravel())
+        else:
+            # Preserve call count, operand shapes, and order for callbacks.
+            corners = np.stack([op(cut_a[:, i, None], cut_b[None, :, j])
+                                for i in (0, 1) for j in (0, 1)])
+            lows.append(corners.min(axis=0).ravel())
+            highs.append(corners.max(axis=0).ravel())
+        alphas.append(np.full(lows[-1].shape, alpha))
+    alphas = np.concatenate(alphas)
+    lows, highs = np.concatenate(lows), np.concatenate(highs)
+
+    # mfz(z) is the largest alpha whose cut contains z
+    z = np.unique(np.r_[lows, highs])
+    tol = 1e-12 * max(1., float(np.abs(z).max()))
+    mfz = np.empty(z.shape)
+    block = max(1, 1048576 // max(1, lows.size))
+    for start in range(0, z.size, block):
+        part = z[start:start + block, None]
+        contains = (part >= lows - tol) & (part <= highs + tol)
+        mfz[start:start + block] = np.where(contains, alphas, 0.).max(axis=1)
+    return z, mfz
+
+
+def fuzzy_add(x, a, y, b, method='discrete', n_levels=None):
     """
     Add fuzzy set ``a`` to fuzzy set ``b``.
 
@@ -236,6 +359,17 @@ def fuzzy_add(x, a, y, b):
     b : 1d array, length M
         Fuzzy set for universe ``y``.
 
+    method : {'discrete', 'alpha'}, optional
+        ``'discrete'`` (default) applies the Extension Principle to the
+        sample pairs only, which is exact for discrete fuzzy sets.
+        ``'alpha'`` treats ``a`` and ``b`` as piecewise-linear membership
+        functions and works level by level on their alpha-cuts; use it when
+        the universes sample a continuum. See ``fuzzy_op`` for details.
+    n_levels : int, optional
+        Number of equally spaced alpha levels used by ``method='alpha'``
+        in addition to the membership values of ``a`` and ``b``.
+        Default is 100.
+
     Returns
     -------
     z : 1d array
@@ -248,12 +382,12 @@ def fuzzy_add(x, a, y, b):
     Uses Zadeh's Extension Principle as described in Ross, Fuzzy Logic with
     Engineering Applications (2010), pp. 414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    If ``x`` and ``y`` sample continuous membership functions, use
+    ``method='alpha'``; the default discrete evaluation can produce a
+    saw-toothed, non-convex result for nonlinear operations.
 
     """
-    return fuzzy_op(x, a, y, b, op=np.add)
+    return fuzzy_op(x, a, y, b, op=np.add, method=method, n_levels=n_levels)
 
 
 def fuzzy_compare(q):
@@ -275,7 +409,7 @@ def fuzzy_compare(q):
     return q.T / np.fmax(q, q.T).astype(float)
 
 
-def fuzzy_div(x, a, y, b):
+def fuzzy_div(x, a, y, b, method='discrete', n_levels=None):
     """
     Divide fuzzy set ``b`` into fuzzy set ``a``.
 
@@ -290,6 +424,17 @@ def fuzzy_div(x, a, y, b):
     b : 1d array, length M
         Fuzzy set for universe ``y``.
 
+    method : {'discrete', 'alpha'}, optional
+        ``'discrete'`` (default) applies the Extension Principle to the
+        sample pairs only, which is exact for discrete fuzzy sets.
+        ``'alpha'`` treats ``a`` and ``b`` as piecewise-linear membership
+        functions and works level by level on their alpha-cuts; use it when
+        the universes sample a continuum. See ``fuzzy_op`` for details.
+    n_levels : int, optional
+        Number of equally spaced alpha levels used by ``method='alpha'``
+        in addition to the membership values of ``a`` and ``b``.
+        Default is 100.
+
     Returns
     -------
     z : 1d array
@@ -302,22 +447,36 @@ def fuzzy_div(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    If ``x`` and ``y`` sample continuous membership functions, use
+    ``method='alpha'``; the default discrete evaluation can produce a
+    saw-toothed, non-convex result for nonlinear operations.
 
     """
-    # a and x, and b and y, are formed into (MxN) matrices.  The former has
-    # identical rows; the latter identical identical columns.
-    if np.all(np.asarray(y) == 0):
-        Warning('The 0 value(s) will never be used in the calculation!')
-    index = np.where(y == 0)[0]
-    np.delete(y, index)
-    np.delete(b, index)
-    return fuzzy_op(x, a, y, b, op=np.divide)
+    y = np.asarray(y).ravel()
+    b = np.asarray(b, dtype=np.float64).ravel()
+    if method == 'alpha':
+        y_sorted, b_sorted = _sorted_universe(y, b)
+        support = _alpha_cut_intervals(y_sorted, b_sorted, 0.)
+        touches_zero = np.any((support[:, 0] <= 0) & (support[:, 1] >= 0))
+        if touches_zero and np.interp(0., y_sorted, b_sorted) > 0:
+            raise ValueError('Division by a fuzzy set whose support contains '
+                             'zero is undefined.')
+        # If zero is only a boundary point of the support, the alpha = 0 cut
+        # of the quotient is unbounded; positive levels are still finite.
+        return _fuzzy_op_alpha(x, a, y, b, np.divide, n_levels,
+                               include_support=not touches_zero)
+
+    zero = y == 0
+    if zero.all():
+        raise ValueError('The divisor universe ``y`` contains only zeros.')
+    if zero.any():
+        warnings.warn('Zero values in ``y`` are excluded from the division.',
+                      RuntimeWarning, stacklevel=2)
+        y, b = y[~zero], b[~zero]
+    return fuzzy_op(x, a, y, b, op=np.divide, method=method)
 
 
-def fuzzy_min(x, a, y, b):
+def fuzzy_min(x, a, y, b, method='discrete', n_levels=None):
     """
     Find minimum between fuzzy set ``a`` fuzzy set ``b``.
 
@@ -332,6 +491,17 @@ def fuzzy_min(x, a, y, b):
     b : 1d array, length M
         Fuzzy set for universe ``y``.
 
+    method : {'discrete', 'alpha'}, optional
+        ``'discrete'`` (default) applies the Extension Principle to the
+        sample pairs only, which is exact for discrete fuzzy sets.
+        ``'alpha'`` treats ``a`` and ``b`` as piecewise-linear membership
+        functions and works level by level on their alpha-cuts; use it when
+        the universes sample a continuum. See ``fuzzy_op`` for details.
+    n_levels : int, optional
+        Number of equally spaced alpha levels used by ``method='alpha'``
+        in addition to the membership values of ``a`` and ``b``.
+        Default is 100.
+
     Returns
     -------
     z : 1d array
@@ -344,15 +514,15 @@ def fuzzy_min(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    If ``x`` and ``y`` sample continuous membership functions, use
+    ``method='alpha'``; the default discrete evaluation can produce a
+    saw-toothed, non-convex result for nonlinear operations.
 
     """
-    return fuzzy_op(x, a, y, b, op=np.fmin)
+    return fuzzy_op(x, a, y, b, op=np.fmin, method=method, n_levels=n_levels)
 
 
-def fuzzy_mult(x, a, y, b):
+def fuzzy_mult(x, a, y, b, method='discrete', n_levels=None):
     """
     Multiplies fuzzy set ``a`` and fuzzy set ``b``.
 
@@ -360,12 +530,23 @@ def fuzzy_mult(x, a, y, b):
     ----------
     x : 1d array, length N
         Universe variable for fuzzy set ``a``.
-    A : 1d array, length N
+    a : 1d array, length N
         Fuzzy set for universe ``x``.
     y : 1d array, length M
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
+
+    method : {'discrete', 'alpha'}, optional
+        ``'discrete'`` (default) applies the Extension Principle to the
+        sample pairs only, which is exact for discrete fuzzy sets.
+        ``'alpha'`` treats ``a`` and ``b`` as piecewise-linear membership
+        functions and works level by level on their alpha-cuts; use it when
+        the universes sample a continuum. See ``fuzzy_op`` for details.
+    n_levels : int, optional
+        Number of equally spaced alpha levels used by ``method='alpha'``
+        in addition to the membership values of ``a`` and ``b``.
+        Default is 100.
 
     Returns
     -------
@@ -379,15 +560,15 @@ def fuzzy_mult(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    If ``x`` and ``y`` sample continuous membership functions, use
+    ``method='alpha'``; the default discrete evaluation can produce a
+    saw-toothed, non-convex result for nonlinear operations.
 
     """
-    return fuzzy_op(x, a, y, b, op=np.multiply)
+    return fuzzy_op(x, a, y, b, op=np.multiply, method=method, n_levels=n_levels)
 
 
-def fuzzy_sub(x, a, y, b):
+def fuzzy_sub(x, a, y, b, method='discrete', n_levels=None):
     """
     Subtract fuzzy set ``b`` from fuzzy set ``a``.
 
@@ -395,12 +576,23 @@ def fuzzy_sub(x, a, y, b):
     ----------
     x : 1d array, length N
         Universe variable for fuzzy set ``a``.
-    A : 1d array, length N
+    a : 1d array, length N
         Fuzzy set for universe ``x``.
     y : 1d array, length M
         Universe variable for fuzzy set ``b``.
     b : 1d array, length M
         Fuzzy set for universe ``y``.
+
+    method : {'discrete', 'alpha'}, optional
+        ``'discrete'`` (default) applies the Extension Principle to the
+        sample pairs only, which is exact for discrete fuzzy sets.
+        ``'alpha'`` treats ``a`` and ``b`` as piecewise-linear membership
+        functions and works level by level on their alpha-cuts; use it when
+        the universes sample a continuum. See ``fuzzy_op`` for details.
+    n_levels : int, optional
+        Number of equally spaced alpha levels used by ``method='alpha'``
+        in addition to the membership values of ``a`` and ``b``.
+        Default is 100.
 
     Returns
     -------
@@ -414,12 +606,12 @@ def fuzzy_sub(x, a, y, b):
     Uses Zadeh's Extension Principle from Ross, Fuzzy Logic w/Engineering
     Applications, (2010), pp.414, Eq. 12.17.
 
-    If these results are unexpected and your membership functions are convex,
-    consider trying the ``skfuzzy.dsw_*`` functions for fuzzy mathematics
-    using interval arithmetic via the restricted Dong, Shah, and Wong method.
+    If ``x`` and ``y`` sample continuous membership functions, use
+    ``method='alpha'``; the default discrete evaluation can produce a
+    saw-toothed, non-convex result for nonlinear operations.
 
     """
-    return fuzzy_op(x, a, y, b, op=np.subtract)
+    return fuzzy_op(x, a, y, b, op=np.subtract, method=method, n_levels=n_levels)
 
 
 def inner_product(a, b):

@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal, TestCase
 from random import randint
@@ -9,7 +11,7 @@ from skfuzzy.fuzzymath import (cartadd, cartprod, classic_relation, contrast,
                                fuzzy_div, fuzzy_compare, inner_product,
                                modus_ponens, outer_product, fuzzy_similarity,
                                sigmoid, partial_dmf)
-from skfuzzy.membership import trapmf
+from skfuzzy.membership import trapmf, trimf
 
 
 def test_cartadd():
@@ -227,6 +229,118 @@ def test_fuzzy_div():
                         0.5, 1., 0.5, 0.5, 0., 0.5, 0.5, 0., 0., 0., 0., 0.]
     assert_allclose(test_u, expected_u)
     assert_allclose(test_mf, expected_mf)
+
+
+def _triangles():
+    # A = tri(1, 2, 3) and B = tri(2, 3, 4), sampled on fine universes
+    x = np.linspace(0, 4, 81)
+    y = np.linspace(1, 5, 81)
+    return x, trimf(x, [1, 2, 3]), y, trimf(y, [2, 3, 4])
+
+
+def _is_convex(mf, tol=1e-9):
+    # Non-decreasing up to the peak, non-increasing after it
+    peak = int(np.argmax(mf))
+    return (np.all(np.diff(mf[:peak + 1]) >= -tol)
+            and np.all(np.diff(mf[peak:]) <= tol))
+
+
+def test_fuzzy_mult_discrete_is_not_convex_on_sampled_sets():
+    # Documents the known limitation of the default discrete method
+    x, a, y, b = _triangles()
+    z, mfz = fuzzy_mult(x, a, y, b)
+    assert not _is_convex(mfz[(z >= 2) & (z <= 12)])
+
+
+def test_fuzzy_mult_alpha_matches_closed_form():
+    # (A * B)_alpha = [(1 + alpha)(2 + alpha), (3 - alpha)(4 - alpha)]
+    x, a, y, b = _triangles()
+    z, mfz = fuzzy_mult(x, a, y, b, method='alpha')
+    assert _is_convex(mfz)
+    assert_allclose(z[[0, -1]], [2., 12.])
+    assert_allclose(mfz[np.argmin(np.abs(z - 6.))], 1.)
+    left, right = z <= 6, z >= 6
+    assert_allclose(mfz[left], (-3 + np.sqrt(1 + 4 * z[left])) / 2, atol=1e-9)
+    assert_allclose(mfz[right], (7 - np.sqrt(1 + 4 * z[right])) / 2, atol=1e-9)
+
+
+def test_fuzzy_div_alpha_matches_closed_form():
+    # (A / B)_alpha = [(1 + alpha) / (4 - alpha), (3 - alpha) / (2 + alpha)]
+    x, a, y, b = _triangles()
+    z, mfz = fuzzy_div(x, a, y, b, method='alpha')
+    assert _is_convex(mfz)
+    assert_allclose(z[[0, -1]], [0.25, 1.5])
+    left, right = z <= 2. / 3, z >= 2. / 3
+    assert_allclose(mfz[left], (4 * z[left] - 1) / (1 + z[left]), atol=1e-9)
+    assert_allclose(mfz[right], (3 - 2 * z[right]) / (1 + z[right]), atol=1e-9)
+
+
+def test_fuzzy_add_sub_alpha_match_closed_form():
+    x, a, y, b = _triangles()
+    z, mfz = fuzzy_add(x, a, y, b, method='alpha')
+    assert_allclose(mfz, trimf(z, [3, 5, 7]), atol=1e-9)
+    z, mfz = fuzzy_sub(x, a, y, b, method='alpha')
+    assert_allclose(mfz, trimf(z, [-3, -1, 1]), atol=1e-9)
+
+
+def test_fuzzy_mult_alpha_agrees_with_dsw():
+    from skfuzzy import dsw_mult
+    x, a, y, b = _triangles()
+    z, mfz = fuzzy_mult(x, a, y, b, method='alpha')
+    zd, mfd = dsw_mult(x, a, y, b, 50)
+    # DSW snaps alpha-cut endpoints to universe samples (step 0.05 here),
+    # so it agrees only up to the sampling resolution
+    assert_allclose(np.interp(zd, z, mfz), mfd, atol=0.05)
+
+
+def test_fuzzy_mult_alpha_non_convex_operand():
+    # A has two peaks; the result must keep the dip between them
+    x = np.linspace(0, 6, 61)
+    a = np.fmax(trimf(x, [0, 1, 2]), trimf(x, [4, 5, 6]))
+    y = np.linspace(0, 4, 41)
+    b = trimf(y, [1, 2, 3])
+    z, mfz = fuzzy_mult(x, a, y, b, method='alpha')
+    assert_allclose(mfz[np.argmin(np.abs(z - 2.))], 1.)
+    assert_allclose(mfz[np.argmin(np.abs(z - 10.))], 1.)
+    gap = (z > 3.75 + 1e-9) & (z < 6.75 - 1e-9)
+    assert gap.any() and np.all(mfz[gap] < 0.5)
+
+
+def test_fuzzy_div_zero_in_universe():
+    x = np.linspace(1, 3, 21)
+    a = trimf(x, [1, 2, 3])
+    y = np.linspace(-1, 3, 41)
+    b = trimf(y, [1, 2, 3])          # zero is in the universe, not the support
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        z, mfz = fuzzy_div(x, a, y, b)
+    assert any(issubclass(w.category, RuntimeWarning) for w in caught)
+    assert np.all(np.isfinite(z))
+    z, mfz = fuzzy_div(x, a, y, b, method='alpha')
+    assert np.all(np.isfinite(z)) and _is_convex(mfz)
+
+
+def test_fuzzy_div_alpha_rejects_zero_in_support():
+    x = np.linspace(1, 3, 21)
+    a = trimf(x, [1, 2, 3])
+    y = np.linspace(-1, 1, 21)
+    b = trimf(y, [-1, 0, 1])
+    np.testing.assert_raises(ValueError, fuzzy_div, x, a, y, b, method='alpha')
+
+
+def test_fuzzy_div_alpha_zero_on_support_boundary():
+    # B = tri(0, 1, 2): zero only bounds the support, quotients stay finite
+    x = np.linspace(1, 3, 21)
+    a = trimf(x, [1, 2, 3])
+    y = np.linspace(0, 2, 21)
+    b = trimf(y, [0, 1, 2])
+    z, mfz = fuzzy_div(x, a, y, b, method='alpha')
+    assert np.all(np.isfinite(z)) and mfz.min() > 0
+
+
+def test_fuzzy_op_bad_method():
+    x, a, y, b = _triangles()
+    np.testing.assert_raises(ValueError, fuzzy_mult, x, a, y, b, method='exact')
 
 
 def test_inner_product():
