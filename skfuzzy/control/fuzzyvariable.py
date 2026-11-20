@@ -223,6 +223,30 @@ class FuzzyVariable(object):
         # Clear existing adjectives, if any
         self.terms = OrderedDict()
 
-        # Repopulate
-        for name, abc in zip(names, abcs):
-            self[name] = trimf(self.universe, abc)
+        # Batch the numerical work; creating Term objects remains ordered.
+        # Small standard partitions avoid the setup cost of batching.
+        if number > 7 and self.universe.dtype == np.float64:
+            block = max(1, 1048576 // max(1, self.universe.size))
+            for start in range(0, number, block):
+                matrix = _automf_triangles(self.universe, abcs[start:start + block])
+                for name, row in zip(names[start:start + block], matrix):
+                    self[name] = row.copy()
+        else:
+            for name, abc in zip(names, abcs):
+                self[name] = trimf(self.universe, abc)
+
+
+def _automf_triangles(universe, parameters):
+    """Generate a block of independent triangular membership rows."""
+    parameters = np.asarray(parameters)
+    a, b, c = (parameters[:, i, None] for i in range(3))
+    x = universe[None, :]
+    result = np.zeros((len(parameters), len(universe)), dtype=float)
+    left = (a < x) & (x < b) & (a != b)
+    right = (b < x) & (x < c) & (b != c)
+    rows, cols = np.nonzero(left)
+    result[rows, cols] = (universe[cols] - a[rows, 0]) / (b[rows, 0] - a[rows, 0]).astype(float)
+    rows, cols = np.nonzero(right)
+    result[rows, cols] = (c[rows, 0] - universe[cols]) / (c[rows, 0] - b[rows, 0]).astype(float)
+    result[np.broadcast_to(x == b, result.shape)] = 1
+    return result
