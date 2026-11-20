@@ -58,47 +58,13 @@ def centroid(x, mfx):
     skfuzzy.defuzzify.defuzz, skfuzzy.defuzzify.dcentroid
     """
 
-    '''
-    As we suppose linearity between each pair of points of x, we can calculate
-    the exact area of the figure (a triangle or a rectangle).
-    '''
-
-    sum_moment_area = 0.0
-    sum_area = 0.0
-
-    # If the membership function is a singleton fuzzy set:
     if len(x) == 1:
         return (x[0] * mfx[0]
                 / np.fmax(mfx[0], np.finfo(float).eps).astype(float))
-
-    # else return the sum of moment*area/sum of area
-    for i in range(1, len(x)):
-        x1 = x[i - 1]
-        x2 = x[i]
-        y1 = mfx[i - 1]
-        y2 = mfx[i]
-
-        # if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or width
-        if not (y1 == y2 == 0.0 or x1 == x2):
-            if y1 == y2:  # rectangle
-                moment = 0.5 * (x1 + x2)
-                area = (x2 - x1) * y1
-            elif y1 == 0.0 and y2 != 0.0:  # triangle, height y2
-                moment = 2.0 / 3.0 * (x2 - x1) + x1
-                area = 0.5 * (x2 - x1) * y2
-            elif y2 == 0.0 and y1 != 0.0:  # triangle, height y1
-                moment = 1.0 / 3.0 * (x2 - x1) + x1
-                area = 0.5 * (x2 - x1) * y1
-            else:
-                moment = ((2.0 / 3.0 * (x2 - x1) * (y2 + 0.5 * y1))
-                          / (y1 + y2) + x1)
-                area = 0.5 * (x2 - x1) * (y1 + y2)
-
-            sum_moment_area += moment * area
-            sum_area += area
-
-    return (sum_moment_area
-            / np.fmax(sum_area, np.finfo(float).eps).astype(float))
+    area, moment, valid = _linear_segments(x, mfx, moments=True)
+    sum_area = _ordered_sum(area[valid])
+    sum_moment_area = _ordered_sum((moment * area)[valid])
+    return sum_moment_area / np.fmax(sum_area, np.finfo(float).eps).astype(float)
 
 
 def dcentroid(x, mfx, x0):
@@ -147,37 +113,15 @@ def bisector(x, mfx):
     --------
     skfuzzy.defuzzify.defuzz
     """
-    '''
-    As we suppose linearity between each pair of points of x, we can calculate
-    the exact area of the figure (a triangle or a rectangle).
-    '''
-    sum_area = 0.0
-    accum_area = [0.0] * (len(x) - 1)
 
-    # If the membership function is a singleton fuzzy set:
     if len(x) == 1:
         return x[0]
-
-    # else return the sum of moment*area/sum of area
-    for i in range(1, len(x)):
-        x1 = x[i - 1]
-        x2 = x[i]
-        y1 = mfx[i - 1]
-        y2 = mfx[i]
-
-        # if y1 == y2 == 0.0 or x1==x2: --> rectangle of zero height or width
-        if not (y1 == y2 == 0. or x1 == x2):
-            if y1 == y2:  # rectangle
-                area = (x2 - x1) * y1
-            elif y1 == 0. and y2 != 0.:  # triangle, height y2
-                area = 0.5 * (x2 - x1) * y2
-            elif y2 == 0. and y1 != 0.:  # triangle, height y1
-                area = 0.5 * (x2 - x1) * y1
-            else:
-                area = 0.5 * (x2 - x1) * (y1 + y2)
-            sum_area += area
-            accum_area[i - 1] = sum_area
-
+    areas, valid = _linear_segments(x, mfx)
+    sum_area = _ordered_sum(areas[valid])
+    cumulative = np.cumsum(np.concatenate((np.zeros(1, dtype=areas.dtype), areas)))[1:]
+    # A zero-area segment must carry the previous cumulative area forward.
+    # Resetting it to zero can place the reported bisector outside its segment.
+    accum_area = cumulative
     # index to the figure which contains the x point that divide the area of
     # the whole fuzzy set in two
     index = np.nonzero(np.array(accum_area) >= sum_area / 2.)[0][0]
@@ -461,3 +405,45 @@ def _support(x, mfx):
     xx = x[m:n]
     mfxx = mfx[m:n]
     return np.r_[z, xx[mfxx == mfxx.min()].min()]
+
+
+def _linear_segments(x, mfx, moments=False):
+    """Areas and first moments with the scalar formulas and branch order."""
+    x, mfx = np.asarray(x), np.asarray(mfx)
+    x1, x2 = x[..., :-1], x[..., 1:]
+    y1, y2 = mfx[..., :-1], mfx[..., 1:]
+    dx = x2 - x1
+    valid = ~(((y1 == 0) & (y2 == 0)) | (x1 == x2))
+    dtype = np.result_type(dx, y1, np.asarray(0.5 * dx.dtype.type(0)).dtype)
+    area = np.zeros(dx.shape, dtype=dtype)
+    rect = valid & (y1 == y2)
+    rise = valid & ~rect & (y1 == 0) & (y2 != 0)
+    fall = valid & ~rect & ~rise & (y2 == 0) & (y1 != 0)
+    general = valid & ~rect & ~rise & ~fall
+    area[rect] = dx[rect] * y1[rect]
+    area[rise] = _scalar_scale(0.5, dx[rise]) * y2[rise]
+    area[fall] = _scalar_scale(0.5, dx[fall]) * y1[fall]
+    area[general] = _scalar_scale(0.5, dx[general]) * (y1[general] + y2[general])
+    if not moments:
+        return area, valid
+    moment = np.zeros(dx.shape, dtype=dtype)
+    moment[rect] = _scalar_scale(0.5, x1[rect] + x2[rect])
+    moment[rise] = _scalar_scale(2.0 / 3.0, dx[rise]) + x1[rise]
+    moment[fall] = _scalar_scale(1.0 / 3.0, dx[fall]) + x1[fall]
+    moment[general] = ((_scalar_scale(2.0 / 3.0, dx[general])
+                       * (y2[general] + _scalar_scale(0.5, y1[general])))
+                      / (y1[general] + y2[general]) + x1[general])
+    return area, moment, valid
+
+
+def _ordered_sum(values):
+    """Preserve the scalar loop's left to right additions including its zero."""
+    values = np.asarray(values)
+    return np.cumsum(np.concatenate((np.zeros(1, dtype=values.dtype), values)))[-1]
+
+
+
+def _scalar_scale(factor, values):
+    """Match Python float times NumPy scalar promotion on NumPy 1 and 2."""
+    dtype = np.asarray(factor * values.dtype.type(0)).dtype
+    return np.multiply(factor, values, dtype=dtype)
