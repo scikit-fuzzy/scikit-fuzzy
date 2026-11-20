@@ -5,7 +5,6 @@ defuzz.py : Various methods for defuzzification and lambda-cuts, to convert
 import numpy as np
 
 from .exceptions import EmptyMembershipError, InconsistentMFDataError
-from ..image.arraypad import pad
 
 
 def arglcut(ms, lambdacut):
@@ -320,19 +319,25 @@ def lambda_cut_series(x, mfx, n):
     z : 2d array, (n, 3)
         Lambda cut intevals.
     """
+
     x = np.asarray(x)
     mfx = np.asarray(mfx)
-
     step = (mfx.max() - mfx.min()) / float(n - 1)
     lambda_cuts = np.arange(mfx.min(), mfx.max() + np.finfo(float).eps, step)
     z = np.zeros((n, 3))
     z[:, 0] = lambda_cuts.T
     z[0, [1, 2]] = _support(x, mfx)
-
-    for ii in range(1, n):
-        xx = _lcutinterval(x, mfx, lambda_cuts[ii])
-        z[ii, [1, 2]] = xx
-
+    # Sorting by membership turns every threshold into one suffix of the data.
+    # Prefix reductions of reversed x provide all suffix extrema in linear work.
+    order = np.argsort(mfx, kind='stable')
+    ordered_x = x[order]
+    lower = np.minimum.accumulate(ordered_x[::-1])[::-1]
+    upper = np.maximum.accumulate(ordered_x[::-1])[::-1]
+    index = np.searchsorted(mfx[order], lambda_cuts[1:] - 1e-6, side='left')
+    if np.any(index == x.size):
+        np.empty(0).min()  # Preserve the legacy empty-cut reduction error.
+    z[1:, 1] = lower[index]
+    z[1:, 2] = upper[index]
     return z
 
 
@@ -414,25 +419,18 @@ def lambda_cut_boundaries(x, mfx, lambdacut):
     be crossings found exactly at the bounds of ``x`` unless the value of
     ``mfx`` at the boundary is exactly ``lambdacut``.
     """
-    # Pad binary set two values by extension
-    mfxx = pad(mfx, [2, 2], 'edge')
 
-    # Find binary lambda cut set
-    lcutset = lambda_cut(mfxx, lambdacut)
-
-    # Detect crossings with convolution, cutting off one padded value
-    crossings = np.convolve(lcutset, [1, -1])[1:-1]
-    argcrossings = np.where(np.abs(crossings) > 0)[0] - 1
-
-    # Calculate exact crossing points, removing the last padded value
-    boundaries = []
-    for cross in argcrossings:
-        idx = slice(cross - 1, cross + 1)
-        boundaries.append(
-            x[cross - 1] + _interp_universe(x[idx], mfx[idx], lambdacut))
-
-    # Eliminate degenerate points at peaks with np.unique
-    return np.unique(np.r_[boundaries])
+    lcutset = lambda_cut(mfx, lambdacut)
+    # Edge extension creates no extra crossings, so no padded copy is necessary.
+    cross = np.flatnonzero(np.diff(lcutset)) + 1
+    if cross.size == 0:
+        return np.empty(0, dtype=float)
+    # Match NumPy's scalar promotion in the former per-crossing helper.
+    slope_dtype = np.asarray((mfx[0] - mfx[0]) / 1.0).dtype
+    slope = ((mfx[cross] - mfx[cross - 1])
+             / (x[cross] - x[cross - 1]).astype(slope_dtype))
+    boundaries = x[cross - 1] + (lambdacut - mfx[cross - 1]) / slope
+    return np.unique(boundaries)
 
 
 def _support(x, mfx):
